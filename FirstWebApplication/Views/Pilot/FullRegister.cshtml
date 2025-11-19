@@ -6,6 +6,7 @@
 
 @section Head {
     <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="~/lib/leaflet-draw/dist/leaflet.draw.css" />
 
     <style>
         /* Remove padding from main content for this page */
@@ -182,6 +183,7 @@
 </div>
 
 @section Scripts {
+    <script src="~/lib/leaflet-draw/dist/leaflet.draw.js"></script>
     <script>
         // Global variables for map access
         var map;
@@ -284,6 +286,26 @@
 
             var currentMarker = null;
 
+            // Add draw control with only marker tool
+            var drawControl = new L.Control.Draw({
+                edit: {
+                    featureGroup: drawnItems,
+                    edit: false,
+                    remove: false
+                },
+                draw: {
+                    polygon: false,
+                    polyline: false,
+                    rectangle: false,
+                    circle: false,
+                    circlemarker: false,
+                    marker: {
+                        icon: new L.Icon.Default()
+                    }
+                }
+            });
+            map.addControl(drawControl);
+
             // Function to place or move marker
             function placeMarker(latlng) {
                 if (currentMarker) {
@@ -303,6 +325,35 @@
                 // Update geometry input
                 document.getElementById('obstacleGeometryInput').value = `POINT(${latlng.lng} ${latlng.lat})`;
             }
+
+            // Handle marker created from toolbar
+            map.on(L.Draw.Event.CREATED, function (event) {
+                var layer = event.layer;
+
+                // Remove existing marker if any
+                if (currentMarker) {
+                    drawnItems.removeLayer(currentMarker);
+                }
+
+                // Make the new marker draggable
+                layer.options.draggable = true;
+                if (layer.dragging) {
+                    layer.dragging.enable();
+                }
+
+                drawnItems.addLayer(layer);
+                currentMarker = layer;
+
+                // Update coordinates when marker is dragged
+                currentMarker.on('dragend', function(e) {
+                    var pos = e.target.getLatLng();
+                    document.getElementById('obstacleGeometryInput').value = `POINT(${pos.lng} ${pos.lat})`;
+                });
+
+                // Set geometry input
+                var latlng = layer.getLatLng();
+                document.getElementById('obstacleGeometryInput').value = `POINT(${latlng.lng} ${latlng.lat})`;
+            });
 
             // Click on map to place/move marker
             map.on('click', function(e) {
