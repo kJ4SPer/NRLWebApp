@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Obstacle Registration System</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+
+    <!-- Leaflet CSS for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        /* Ensure content doesn't collide with fixed navbar */
+        .main-content {
+            padding-top: 1rem;
+        }
+
+        /* Mobile menu styles */
+        .mobile-menu {
+            display: none;
+        }
+
+        .mobile-menu.active {
+            display: block;
+        }
+
+        /* Ensure mobile menu is above other content */
+        .mobile-menu {
+            position: relative;
+            z-index: 100;
+        }
+
+        nav {
+            position: relative;
+            z-index: 50;
+        }
+
+        /* Hide desktop nav on smaller screens */
+        @@media (max-width: 1024px) {
+            .desktop-nav {
+                display: none;
+            }
+            .mobile-menu-button {
+                display: flex;
+            }
+        }
+
+        @@media (min-width: 1025px) {
+            .mobile-menu-button {
+                display: none;
+            }
+            .desktop-nav {
+                display: flex;
+            }
+        }
+
+        /* Dark mode styles */
+        .dark {
+            color-scheme: dark;
+        }
+
+        .dark .bg-gray-50 {
+            background-color: #111827 !important;
+        }
+
+        .dark .bg-white {
+            background-color: #1f2937 !important;
+        }
+
+        .dark .bg-gray-200 {
+            background-color: #374151 !important;
+        }
+
+        .dark .text-gray-900 {
+            color: #f9fafb !important;
+        }
+
+        .dark .text-gray-700 {
+            color: #d1d5db !important;
+        }
+
+        .dark .text-gray-600 {
+            color: #9ca3af !important;
+        }
+
+        .dark .border-gray-300 {
+            border-color: #4b5563 !important;
+        }
+
+        .dark .border-gray-200 {
+            border-color: #374151 !important;
+        }
+
+        .dark .shadow-gray-300 {
+            --tw-shadow-color: #1f2937 !important;
+        }
+
+        .dark input,
+        .dark textarea,
+        .dark select {
+            background-color: #374151 !important;
+            color: #f9fafb !important;
+            border-color: #4b5563 !important;
+        }
+
+        .dark .form-control {
+            background-color: #374151 !important;
+            color: #f9fafb !important;
+            border-color: #4b5563 !important;
+        }
+
+        /* Dark mode toggle button */
+        .dark-mode-toggle {
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dark-mode-toggle:hover {
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+
+        .dark .dark-mode-toggle:hover {
+            background-color: rgba(99, 102, 241, 0.2);
+        }
+    </style>
+
+    @await RenderSectionAsync("Head", required: false)
+</head>
+<body class="bg-gray-50">
+    <header>
+        <nav class="bg-gray-200 shadow shadow-gray-300 w-100 px-4 lg:px-8">
+            <div class="h-16 mx-auto container flex items-center justify-between">
+                <!-- Logo - Left -->
+                <div class="text-indigo-500 flex items-center flex-shrink-0">
+                    <a asp-controller="Home" asp-action="Index" class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                        </svg>
+                        <span class="font-bold text-lg hidden sm:inline">Obstacle Registration</span>
+                        <span class="font-bold text-lg sm:hidden">ORS</span>
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button class="mobile-menu-button items-center justify-center p-2 rounded-md text-gray-600 hover:text-indigo-500 hover:bg-gray-300 focus:outline-none" onclick="toggleMobileMenu()">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+
+                <!-- Desktop Navigation -->
+                <div class="desktop-nav items-center gap-4">
+                    <!-- Dark Mode Toggle -->
+                    <button class="dark-mode-toggle text-gray-600" onclick="toggleDarkMode()" title="Toggle dark mode">
+                        <svg id="sun-icon" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        <svg id="moon-icon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                    </button>
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <!-- Navigation Links -->
+                        <ul class="flex font-semibold text-gray-600 text-sm">
+                            @if (User.IsInRole("Pilot"))
+                            {
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                    <a asp-controller="Pilot" asp-action="RegisterType">Register</a>
+                                </li>
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                    <a asp-controller="Pilot" asp-action="MyRegistrations">My Registrations</a>
+                                </li>
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                    <a asp-controller="Pilot" asp-action="Dashboard">Dashboard</a>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("Registerfører"))
+                            {
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                    <a asp-controller="Registerforer" asp-action="RegisterforerDashboard">Dashboard</a>
+                                </li>
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                    <a asp-controller="Registerforer" asp-action="MapView">Map View</a>
+                                </li>
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                    <a asp-controller="Registerforer" asp-action="AllObstacles">All Obstacles</a>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                    <a asp-controller="Admin" asp-action="AdminDashboard">Dashboard</a>
+                                </li>
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                    <a asp-controller="Admin" asp-action="AdminUsers">Users</a>
+                                </li>
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                    <a asp-controller="Admin" asp-action="AdminStatistics">Statistics</a>
+                                </li>
+                            }
+                        </ul>
+
+                        <!-- User Email - hidden on smaller desktops -->
+                        <span class="text-gray-600 text-xs font-medium hidden xl:inline truncate max-w-32">
+                            @User.Identity?.Name
+                        </span>
+
+                        <!-- Logout Button -->
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="inline flex-shrink-0">
+                            <button type="submit" class="px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-gray-50 rounded-lg flex items-center gap-1 transition text-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
+                                </svg>
+                                <span>Logout</span>
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-controller="Home" asp-action="Index">
+                            <button class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-gray-50 rounded-xl flex items-center gap-2 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                                <span>Login</span>
+                            </button>
+                        </a>
+                    }
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div class="mobile-menu pb-4" id="mobile-menu">
+                <!-- Dark Mode Toggle for Mobile -->
+                <div class="border-t border-gray-300 pt-4 px-4 mb-2">
+                    <button class="flex items-center gap-2 text-gray-600 font-semibold" onclick="toggleDarkMode()">
+                        <svg id="mobile-sun-icon" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        <svg id="mobile-moon-icon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                        <span id="dark-mode-text">Dark Mode</span>
+                    </button>
+                </div>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <div class="border-t border-gray-300 pt-4">
+                        <!-- User info -->
+                        <div class="px-4 py-2 text-sm text-gray-600 font-medium border-b border-gray-300 mb-2">
+                            @User.Identity?.Name
+                        </div>
+
+                        @if (User.IsInRole("Pilot"))
+                        {
+                            <a asp-controller="Pilot" asp-action="RegisterType" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                                Register Obstacle
+                            </a>
+                            <a asp-controller="Pilot" asp-action="MyRegistrations" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                                My Registrations
+                            </a>
+                            <a asp-controller="Pilot" asp-action="Dashboard" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                                Dashboard
+                            </a>
+                        }
+
+                        @if (User.IsInRole("Registerfører"))
+                        {
+                            <a asp-controller="Registerforer" asp-action="RegisterforerDashboard" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                                Dashboard
+                            </a>
+                            <a asp-controller="Registerforer" asp-action="MapView" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                                Map View
+                            </a>
+                            <a asp-controller="Registerforer" asp-action="AllObstacles" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                                All Obstacles
+                            </a>
+                        }
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a asp-controller="Admin" asp-action="AdminDashboard" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                                Dashboard
+                            </a>
+                            <a asp-controller="Admin" asp-action="AdminUsers" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                                Users
+                            </a>
+                            <a asp-controller="Admin" asp-action="AdminStatistics" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                                Statistics
+                            </a>
+                        }
+
+                        <!-- Logout -->
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="mt-2 px-4">
+                            <button type="submit" class="w-full px-4 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-semibold">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <div class="border-t border-gray-300 pt-4 px-4">
+                        <a asp-controller="Home" asp-action="Index" class="block w-full px-4 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-semibold text-center">
+                            Login
+                        </a>
+                    </div>
+                }
+            </div>
+        </nav>
+    </header>
+
+    <main role="main" class="min-h-screen main-content">
+        @RenderBody()
+    </main>
+
+    <footer class="bg-gray-800 text-white py-6 mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2024 - Obstacle Registration System - <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-indigo-400 hover:text-indigo-300">Privacy</a></p>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Leaflet JS for maps -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('active');
+        }
+
+        // Close mobile menu when clicking on links or outside
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('mobile-menu');
+            const button = document.querySelector('.mobile-menu-button');
+            const nav = document.querySelector('nav');
+
+            // Only close if click is outside the entire nav area
+            if (menu.classList.contains('active') && !nav.contains(event.target)) {
+                menu.classList.remove('active');
+            }
+        });
+
+        // Close menu when clicking a link inside it
+        document.querySelectorAll('#mobile-menu a, #mobile-menu button[type="submit"]').forEach(function(link) {
+            link.addEventListener('click', function() {
+                document.getElementById('mobile-menu').classList.remove('active');
+            });
+        });
+
+        // Dark mode functionality
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const body = document.body;
+            const isDark = body.classList.toggle('dark');
+
+            // Update icons
+            updateDarkModeIcons(isDark);
+
+            // Save preference
+            localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+        }
+
+        function updateDarkModeIcons(isDark) {
+            const sunIcon = document.getElementById('sun-icon');
+            const moonIcon = document.getElementById('moon-icon');
+            const mobileSunIcon = document.getElementById('mobile-sun-icon');
+            const mobileMoonIcon = document.getElementById('mobile-moon-icon');
+            const darkModeText = document.getElementById('dark-mode-text');
+
+            if (isDark) {
+                sunIcon?.classList.remove('hidden');
+                moonIcon?.classList.add('hidden');
+                mobileSunIcon?.classList.remove('hidden');
+                mobileMoonIcon?.classList.add('hidden');
+                if (darkModeText) darkModeText.textContent = 'Light Mode';
+            } else {
+                sunIcon?.classList.add('hidden');
+                moonIcon?.classList.remove('hidden');
+                mobileSunIcon?.classList.add('hidden');
+                mobileMoonIcon?.classList.remove('hidden');
+                if (darkModeText) darkModeText.textContent = 'Dark Mode';
+            }
+        }
+
+        // Check for saved dark mode preference on page load
+        (function() {
+            const darkMode = localStorage.getItem('darkMode');
+
+            if (darkMode === 'enabled') {
+                document.body.classList.add('dark');
+                updateDarkModeIcons(true);
+            } else if (darkMode === null) {
+                // Check system preference
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.body.classList.add('dark');
+                    updateDarkModeIcons(true);
+                }
+            }
+        })();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
