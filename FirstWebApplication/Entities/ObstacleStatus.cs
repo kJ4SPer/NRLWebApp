@@ -36,8 +36,5 @@ namespace FirstWebApplication.Entities
 
         // Er dette den aktive/nåværende status?
         public bool IsActive { get; set; } = true;
-
-        // Navigation: En status kan ha flere behandlinger
-        public ICollection<Behandling>? Behandlinger { get; set; }
     }
 }
