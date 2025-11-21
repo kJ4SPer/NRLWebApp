@@ -14,6 +14,8 @@ namespace FirstWebApplication.Controllers
             _logger = logger;
         }
 
+        // Viser forsiden med innloggings-/registreringsskjema
+        // Redirecter innloggede brukere til riktig dashboard basert på rolle
         [AllowAnonymous]
         public IActionResult Index()
         {
@@ -58,12 +60,14 @@ namespace FirstWebApplication.Controllers
             return View();
         }
 
+        // Viser personvernside
         [AllowAnonymous]
         public IActionResult Privacy()
         {
             return View();
         }
 
+        // Viser feilside med request ID for debugging
         [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

@@ -19,6 +19,7 @@ namespace FirstWebApplication.Controllers
             _logger = logger;
         }
 
+        // Viser dashboard med statistikk over hindringer
         [HttpGet]
         public async Task<IActionResult> RegisterforerDashboard()
         {
@@ -31,6 +32,7 @@ namespace FirstWebApplication.Controllers
             return View();
         }
 
+        // Viser liste over hindringer som venter på godkjenning
         [HttpGet]
         public async Task<IActionResult> PendingObstacles()
         {
@@ -51,6 +53,7 @@ namespace FirstWebApplication.Controllers
             return View(viewModels);
         }
 
+        // Viser liste over godkjente hindringer
         [HttpGet]
         public async Task<IActionResult> ApprovedObstacles()
         {
@@ -73,6 +76,7 @@ namespace FirstWebApplication.Controllers
             return View(viewModels);
         }
 
+        // Viser liste over avviste hindringer
         [HttpGet]
         public async Task<IActionResult> RejectedObstacles()
         {
@@ -95,6 +99,7 @@ namespace FirstWebApplication.Controllers
             return View(viewModels);
         }
 
+        // Viser detaljert side for å vurdere en hindring
         [HttpGet]
         public async Task<IActionResult> ReviewObstacle(int? id)
         {
@@ -112,6 +117,7 @@ namespace FirstWebApplication.Controllers
             return View(viewModel);
         }
 
+        // Godkjenner en hindring og oppdaterer status til Approved
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveObstacle(ApproveObstacleViewModel model)
@@ -136,6 +142,7 @@ namespace FirstWebApplication.Controllers
             return RedirectToAction("AllObstacles");
         }
 
+        // Avviser en hindring og oppdaterer status til Rejected
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RejectObstacle(RejectObstacleViewModel model)
@@ -164,6 +171,7 @@ namespace FirstWebApplication.Controllers
             return RedirectToAction("AllObstacles");
         }
 
+        // Viser detaljert informasjon om en hindring (read-only)
         [HttpGet]
         public async Task<IActionResult> ViewObstacle(int? id)
         {
@@ -181,12 +189,15 @@ namespace FirstWebApplication.Controllers
             return View(viewModel);
         }
 
+        // Viser kartvisning av alle hindringer
         [HttpGet]
         public IActionResult MapView()
         {
             return View();
         }
 
+        // Viser alle hindringer med filtrering og sortering
+        // Støtter filtrering på status og sortering på ulike felt
         [HttpGet]
         public async Task<IActionResult> AllObstacles(string? status = null, string? sortBy = null, string? sortOrder = "desc")
         {
@@ -217,6 +228,8 @@ namespace FirstWebApplication.Controllers
             }
         }
 
+        // Henter hindringer for kartvisning som JSON
+        // Støtter filtrering på type og status
         [HttpGet]
         public async Task<IActionResult> GetObstaclesForMapView(string? type = null, string? status = null)
         {
@@ -306,11 +319,13 @@ namespace FirstWebApplication.Controllers
 
         // Hjelpe-metoder
 
+        // Henter innlogget brukers ID
         private string GetCurrentUserId()
         {
             return User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
         }
 
+        // Henter statistikk for dashboard
         private async Task<RegisterforerStatistics> GetDashboardStatisticsAsync()
         {
             var pending = await GetObstacleCountByStatusAsync(2);
@@ -325,6 +340,7 @@ namespace FirstWebApplication.Controllers
             };
         }
 
+        // Teller antall hindringer med gitt status
         private async Task<int> GetObstacleCountByStatusAsync(int statusTypeId)
         {
             return await _context.ObstacleStatuses
@@ -334,6 +350,7 @@ namespace FirstWebApplication.Controllers
                 .CountAsync();
         }
 
+        // Mapper Obstacle til ObstacleListItemViewModel med gitt status
         private ObstacleListItemViewModel MapToListItemViewModel(
             Obstacle obstacle,
             bool isPending,
@@ -358,6 +375,7 @@ namespace FirstWebApplication.Controllers
             };
         }
 
+        // Mapper Obstacle til ObstacleListItemViewModel med automatisk statusdeteksjon
         private ObstacleListItemViewModel MapToListItemViewModelWithStatus(Obstacle obstacle)
         {
             return new ObstacleListItemViewModel
@@ -379,6 +397,7 @@ namespace FirstWebApplication.Controllers
             };
         }
 
+        // Henter hindring med alle detaljer og relasjoner
         private async Task<Obstacle?> GetObstacleWithDetailsAsync(long id)
         {
             return await _context.Obstacles
@@ -391,6 +410,7 @@ namespace FirstWebApplication.Controllers
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
+        // Henter inaktiv statushistorikk for en hindring
         private async Task<List<ObstacleStatus>> GetObstacleStatusHistoryAsync(long obstacleId)
         {
             return await _context.ObstacleStatuses
@@ -401,6 +421,7 @@ namespace FirstWebApplication.Controllers
                 .ToListAsync();
         }
 
+        // Bygger ObstacleDetailsViewModel med full informasjon
         private ObstacleDetailsViewModel BuildObstacleDetailsViewModel(
             Obstacle obstacle,
             List<ObstacleStatus> statusHistory)
@@ -434,6 +455,7 @@ namespace FirstWebApplication.Controllers
             };
         }
 
+        // Oppdaterer hindringsstatus og deaktiverer forrige status
         private async Task UpdateObstacleStatusAsync(Obstacle obstacle, int statusTypeId, string userId, string comments)
         {
             // Deaktiver gammel status
@@ -463,6 +485,7 @@ namespace FirstWebApplication.Controllers
             await _context.SaveChangesAsync();
         }
 
+        // Bygger query for AllObstacles med statusfiltrering
         private IQueryable<Obstacle> BuildAllObstaclesQuery(string? status)
         {
             var query = _context.Obstacles
@@ -485,6 +508,7 @@ namespace FirstWebApplication.Controllers
             return query;
         }
 
+        // Anvender statusfilter på query
         private IQueryable<Obstacle> ApplyStatusFilter(IQueryable<Obstacle> query, string status)
         {
             return status.ToLower() switch
@@ -496,6 +520,7 @@ namespace FirstWebApplication.Controllers
             };
         }
 
+        // Anvender sortering på query basert på sortBy og sortOrder
         private IQueryable<Obstacle> ApplySorting(IQueryable<Obstacle> query, string? sortBy, string? sortOrder)
         {
             return sortBy?.ToLower() switch

@@ -27,6 +27,7 @@ namespace FirstWebApplication.Controllers
             _context = context;
         }
 
+        // Viser admin dashboard med oversikt over brukere og hindringer
         [HttpGet]
         public async Task<IActionResult> AdminDashboard()
         {
@@ -44,6 +45,7 @@ namespace FirstWebApplication.Controllers
             return View();
         }
 
+        // Viser liste over alle brukere med mulighet for rollefiltrering
         [HttpGet]
         public async Task<IActionResult> AdminUsers(string roleFilter = "all")
         {
@@ -64,6 +66,7 @@ namespace FirstWebApplication.Controllers
             return View(users);
         }
 
+        // Viser side for å administrere en spesifikk brukers roller
         [HttpGet]
         public async Task<IActionResult> AdminManageUser(string id)
         {
@@ -83,6 +86,8 @@ namespace FirstWebApplication.Controllers
             return View(user);
         }
 
+        // Tildeler en rolle til bruker og fjerner alle eksisterende roller
+        // Implementerer EN rolle per bruker policy
         [HttpPost]
         public async Task<IActionResult> AssignRole(string userId, string roleName)
         {
@@ -111,6 +116,8 @@ namespace FirstWebApplication.Controllers
             return RedirectToAction("AdminManageUser", new { id = userId });
         }
 
+        // Fjerner en rolle fra bruker
+        // Beskytter mot fjerning av siste admin
         [HttpPost]
         public async Task<IActionResult> RemoveRole(string userId, string roleName)
         {
@@ -143,6 +150,8 @@ namespace FirstWebApplication.Controllers
             return RedirectToAction("AdminManageUser", new { id = userId });
         }
 
+        // Sletter en bruker fra systemet
+        // Beskytter mot å slette seg selv og siste admin
         [HttpPost]
         public async Task<IActionResult> DeleteUser(string userId)
         {
@@ -183,6 +192,7 @@ namespace FirstWebApplication.Controllers
             return RedirectToAction("AdminUsers");
         }
 
+        // Viser detaljert statistikkside med hindring- og brukerdata
         [HttpGet]
         public async Task<IActionResult> AdminStatistics()
         {
@@ -214,6 +224,8 @@ namespace FirstWebApplication.Controllers
             return View();
         }
 
+        // Eksporterer alle hindringer til Excel-fil med formatering
+        // Inkluderer WKT-parsing for å vise koordinater
         [HttpGet]
         public async Task<IActionResult> ExportObstaclesToExcel()
         {
@@ -272,6 +284,7 @@ namespace FirstWebApplication.Controllers
 
         // Hjelpe-metoder
 
+        // Henter samlet statistikk for dashboard
         private async Task<DashboardStatistics> GetDashboardStatisticsAsync()
         {
             var pilots = await _roleService.GetUsersInRoleAsync("Pilot");
@@ -291,6 +304,7 @@ namespace FirstWebApplication.Controllers
             };
         }
 
+        // Teller antall hindringer med gitt status
         private async Task<int> GetObstacleCountByStatusAsync(int statusTypeId)
         {
             return await _context.ObstacleStatuses
@@ -300,6 +314,7 @@ namespace FirstWebApplication.Controllers
                 .CountAsync();
         }
 
+        // Henter roller for en liste med brukere
         private async Task<Dictionary<string, IList<string>>> GetUserRolesAsync(List<ApplicationUser> users)
         {
             var userRoles = new Dictionary<string, IList<string>>();
@@ -311,6 +326,7 @@ namespace FirstWebApplication.Controllers
             return userRoles;
         }
 
+        // Stilsetter header-rad i Excel med blå bakgrunn og hvit tekst
         private void StyleHeaderRow(IXLWorksheet worksheet)
         {
             var headerRow = worksheet.Row(1);
@@ -320,6 +336,7 @@ namespace FirstWebApplication.Controllers
             headerRow.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
         }
 
+        // Oppretter kolonneoverskrifter i Excel
         private void CreateHeaderColumns(IXLWorksheet worksheet)
         {
             worksheet.Cell(1, 1).Value = "ID";
@@ -333,6 +350,7 @@ namespace FirstWebApplication.Controllers
             worksheet.Cell(1, 9).Value = "Registered Date";
         }
 
+        // Fyller en rad i Excel med hindringdata
         private void PopulateObstacleRow(IXLWorksheet worksheet, int row, Obstacle obstacle, WKTReader wktReader)
         {
             worksheet.Cell(row, 1).Value = obstacle.Id;
@@ -346,6 +364,7 @@ namespace FirstWebApplication.Controllers
             worksheet.Cell(row, 9).Value = obstacle.RegisteredDate.ToString("dd.MM.yyyy HH:mm");
         }
 
+        // Konverterer WKT-string til lesbare koordinater (lat, lng)
         private string ExtractLocationFromWkt(string? location, WKTReader wktReader)
         {
             if (string.IsNullOrEmpty(location))

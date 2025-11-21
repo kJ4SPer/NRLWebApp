@@ -14,12 +14,15 @@ namespace FirstWebApplication.Controllers
             _seeder = seeder;
         }
 
+        // Viser siden hvor admin kan kjøre database seeding
         [HttpGet]
         public IActionResult Index()
         {
             return View();
         }
 
+        // Kjører database seeding for å generere testdata
+        // Oppretter piloter, hindringtyper og hindringer
         [HttpPost]
         public async Task<IActionResult> SeedData()
         {

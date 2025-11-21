@@ -20,18 +20,22 @@ namespace FirstWebApplication.Controllers
             _logger = logger;
         }
 
+        // Viser valgside for registreringstype (Quick eller Full)
         [HttpGet]
         public IActionResult RegisterType()
         {
             return View();
         }
 
+        // Viser side for hurtigregistrering med kun kartmarkering
         [HttpGet]
         public IActionResult QuickRegister()
         {
             return View();
         }
 
+        // Lagrer hurtigregistrering med kun posisjon
+        // Oppretter ufullstendig obstacle som må kompletteres senere
         [HttpPost]
         public async Task<IActionResult> QuickRegister(string obstacleGeometry)
         {
@@ -68,12 +72,15 @@ namespace FirstWebApplication.Controllers
             return RedirectToAction("RegisterType");
         }
 
+        // Viser fullstendig registreringsskjema
         [HttpGet]
         public IActionResult FullRegister()
         {
             return View(new RegisterObstacleViewModel());
         }
 
+        // Behandler fullstendig registrering av hindring
+        // Validerer og lagrer komplett hindring med Pending-status
         [HttpPost]
         public async Task<IActionResult> FullRegister(RegisterObstacleViewModel model, string? CustomObstacleType)
         {
@@ -113,6 +120,7 @@ namespace FirstWebApplication.Controllers
             return RedirectToAction("Overview", new { id = obstacle.Id });
         }
 
+        // Viser skjema for å fullføre en hurtigregistrering
         [HttpGet]
         public async Task<IActionResult> CompleteQuickRegister(long id)
         {
@@ -144,6 +152,8 @@ namespace FirstWebApplication.Controllers
             return View(viewModel);
         }
 
+        // Fullfører en hurtigregistrering med manglende detaljer
+        // Oppdaterer status fra Registered til Pending
         [HttpPost]
         public async Task<IActionResult> CompleteQuickRegister(CompleteQuickRegViewModel model, string? CustomObstacleType)
         {
@@ -183,6 +193,8 @@ namespace FirstWebApplication.Controllers
             return RedirectToAction("MyRegistrations");
         }
 
+        // Viser oversikt over brukerens registreringer
+        // Grupperer hindringer i: Ufullstendige, Pending, Approved, Rejected
         [HttpGet]
         public async Task<IActionResult> MyRegistrations()
         {
@@ -205,6 +217,8 @@ namespace FirstWebApplication.Controllers
             return View(viewModel);
         }
 
+        // Viser detaljert oversikt over en hindring
+        // Inkluderer statushistorikk og behandlingsinformasjon
         [HttpGet]
         public async Task<IActionResult> Overview(long id)
         {
@@ -236,6 +250,8 @@ namespace FirstWebApplication.Controllers
             return View(viewModel);
         }
 
+        // Sletter en hindring som er Registered eller Pending
+        // Fjerner også alle relaterte statuser og behandlinger
         [HttpPost]
         public async Task<IActionResult> DeleteRegistration(long id)
         {
@@ -268,6 +284,7 @@ namespace FirstWebApplication.Controllers
             return RedirectToAction("MyRegistrations");
         }
 
+        // Viser pilot dashboard med statistikk over brukerens hindringer
         public async Task<IActionResult> Dashboard()
         {
             var userId = GetCurrentUserId();
@@ -285,6 +302,8 @@ namespace FirstWebApplication.Controllers
             return View();
         }
 
+        // Sjekker etter duplikathindringer innenfor gitt radius
+        // Brukes for å varsle pilot om nærliggende hindringer
         [HttpGet]
         public async Task<IActionResult> CheckDuplicates(double latitude, double longitude, double radiusMeters = 10)
         {
@@ -318,11 +337,13 @@ namespace FirstWebApplication.Controllers
 
         // Hjelpe-metoder
 
+        // Henter innlogget brukers ID
         private string GetCurrentUserId()
         {
             return User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         }
 
+        // Oppretter en ny ObstacleStatus
         private ObstacleStatus CreateObstacleStatus(long obstacleId, int statusTypeId, string userId, string comments)
         {
             return new ObstacleStatus
@@ -336,6 +357,7 @@ namespace FirstWebApplication.Controllers
             };
         }
 
+        // Validerer fullstendig hindringregistrering
         private void ValidateObstacleRegistration(RegisterObstacleViewModel model)
         {
             if (string.IsNullOrWhiteSpace(model.ObstacleName))
@@ -351,6 +373,7 @@ namespace FirstWebApplication.Controllers
                 ModelState.AddModelError("ObstacleGeometry", "Please mark the location on the map");
         }
 
+        // Validerer fullføring av hurtigregistrering
         private void ValidateQuickRegCompletion(CompleteQuickRegViewModel model)
         {
             if (string.IsNullOrWhiteSpace(model.ObstacleName))
@@ -363,6 +386,7 @@ namespace FirstWebApplication.Controllers
                 ModelState.AddModelError("ObstacleDescription", "Description is required");
         }
 
+        // Setter hindringtype, oppretter ny type hvis "Other" er valgt
         private async Task SetObstacleTypeAsync(Obstacle obstacle, string? obstacleType, string? customType)
         {
             if (obstacleType == "Other" && !string.IsNullOrWhiteSpace(customType))
@@ -398,6 +422,7 @@ namespace FirstWebApplication.Controllers
             }
         }
 
+        // Oppdaterer hindringsstatus og deaktiverer forrige status
         private async Task UpdateObstacleStatusAsync(Obstacle obstacle, int newStatusTypeId, string userId, string comments)
         {
             // Deaktiver gammel status
@@ -418,6 +443,7 @@ namespace FirstWebApplication.Controllers
             await _context.SaveChangesAsync();
         }
 
+        // Henter siste behandling for hver hindring
         private async Task<Dictionary<long, Behandling>> GetLatestBehandlingerAsync(List<long> obstacleIds)
         {
             return await _context.Behandlinger
@@ -428,6 +454,7 @@ namespace FirstWebApplication.Controllers
                 .ToDictionaryAsync(b => b.ObstacleId);
         }
 
+        // Bygger ViewModel for MyRegistrations med gruppering per status
         private MyRegistrationsViewModel BuildMyRegistrationsViewModel(
             List<Obstacle> obstacles,
             Dictionary<long, Behandling> behandlinger)
@@ -465,6 +492,7 @@ namespace FirstWebApplication.Controllers
             return viewModel;
         }
 
+        // Mapper Obstacle til ObstacleListItemViewModel
         private ObstacleListItemViewModel MapToListItem(Obstacle obstacle, Dictionary<long, Behandling> behandlinger)
         {
             var statusName = obstacle.CurrentStatus?.StatusType?.Name ?? "Unknown";
@@ -496,6 +524,7 @@ namespace FirstWebApplication.Controllers
             return item;
         }
 
+        // Bygger ObstacleDetailsViewModel med full hindringinformasjon
         private ObstacleDetailsViewModel BuildObstacleDetailsViewModel(Obstacle obstacle, Behandling? behandling)
         {
             var viewModel = new ObstacleDetailsViewModel
@@ -539,6 +568,7 @@ namespace FirstWebApplication.Controllers
             return viewModel;
         }
 
+        // Sletter hindring og alle relaterte data (statuser og behandlinger)
         private async Task DeleteObstacleAndRelatedDataAsync(Obstacle obstacle)
         {
             // Fjern foreign key referanse
@@ -565,6 +595,7 @@ namespace FirstWebApplication.Controllers
             await _context.SaveChangesAsync();
         }
 
+        // Henter statistikk for pilot (antall hindringer per status)
         private async Task<PilotStatistics> GetPilotStatisticsAsync(string userId)
         {
             var incomplete = await _context.Obstacles
@@ -593,6 +624,8 @@ namespace FirstWebApplication.Controllers
             };
         }
 
+        // Finner hindringer innenfor angitt radius fra gitt posisjon
+        // Bruker Haversine-formelen for å beregne avstand
         private List<dynamic> FindNearbyObstacles(
             List<Obstacle> obstacles,
             double latitude,
@@ -626,6 +659,7 @@ namespace FirstWebApplication.Controllers
             return nearby;
         }
 
+        // Parser WKT POINT-string til koordinater
         private (double lat, double lng)? ParseWktPoint(string? wkt)
         {
             if (string.IsNullOrEmpty(wkt))
@@ -650,6 +684,7 @@ namespace FirstWebApplication.Controllers
             return null;
         }
 
+        // Beregner avstand mellom to koordinater med Haversine-formelen
         private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
         {
             const double EarthRadiusMeters = 6371000;
@@ -666,6 +701,7 @@ namespace FirstWebApplication.Controllers
             return EarthRadiusMeters * c;
         }
 
+        // Konverterer grader til radianer
         private double ToRadians(double degrees)
         {
             return degrees * (Math.PI / 180);

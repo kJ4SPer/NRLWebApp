@@ -18,6 +18,8 @@ namespace FirstWebApplication.Controllers
             _signInManager = signInManager;
         }
 
+        // Registrerer ny bruker med Pilot-rolle
+        // Validerer input og logger inn brukeren automatisk ved suksess
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
@@ -59,6 +61,8 @@ namespace FirstWebApplication.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        // Logger inn bruker og redirecter basert på rolle
+        // Prioritering: Admin > Registerfører > Pilot
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
@@ -108,6 +112,7 @@ namespace FirstWebApplication.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        // Logger ut brukeren og redirecter til forsiden
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
