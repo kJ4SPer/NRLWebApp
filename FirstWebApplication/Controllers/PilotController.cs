@@ -578,19 +578,19 @@ namespace FirstWebApplication.Controllers
         private async Task<PilotStatistics> GetPilotStatisticsAsync(string userId)
         {
             var incomplete = await _context.Obstacles
-                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatusId == 1)
+                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatus!.StatusTypeId == 1)
                 .CountAsync();
 
             var pending = await _context.Obstacles
-                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatusId == 2)
+                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatus!.StatusTypeId == 2)
                 .CountAsync();
 
             var approved = await _context.Obstacles
-                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatusId == 3)
+                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatus!.StatusTypeId == 3)
                 .CountAsync();
 
             var rejected = await _context.Obstacles
-                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatusId == 4)
+                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatus!.StatusTypeId == 4)
                 .CountAsync();
 
             return new PilotStatistics
