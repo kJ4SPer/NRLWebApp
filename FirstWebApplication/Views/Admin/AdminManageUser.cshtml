@@ -77,7 +77,6 @@
                     @foreach (var role in allRoles)
                     {
                         var hasRole = userRoles != null && userRoles.Contains(role);
-
                         <div class="flex items-center justify-between p-3 @(hasRole ? "bg-gray-100" : "bg-green-50") rounded border @(hasRole ? "border-gray-200" : "border-green-200")">
                             <div>
                                 <span class="font-medium text-gray-900">@role</span>
