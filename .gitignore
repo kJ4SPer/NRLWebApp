@@ -7,6 +7,8 @@
 *.suo
 *.sln.docstates
 *.userosscache
+*.rsuser
+*.sln.iml
 
 # Build-resultater
 [Bb]in/
@@ -14,27 +16,125 @@
 [Dd]ebug/
 [Rr]elease/
 [Pp]ublish/
-TestResults/
+x64/
+x86/
+bld/
+[Ll]og/
+[Ll]ogs/
 
-# Brukergenererte filer
+# Test-resultater
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+.nuget/
+nuget.exe
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# MSBuild
+*.msbuild
+*.binlog
+
+# === Brukergenererte filer ===
 *.log
 *.tmp
 *.cache
 *.bak
+*.swp
+*~
 
-# === Frontend-pakker (Bootstrap, Leaflet etc.) ===
-# Ignorerer mappen der npm/yarn installerer pakker
+# === Cache og temp ===
+.cache/
+.temp/
+.tmp/
+project.nuget.cache
+**/Properties/launchSettings.json
+
+# === Frontend-pakker ===
 node_modules/
 npm-debug.log*
 yarn-error.log
+.npm/
+.yarn/
+
+# wwwroot library files (LibMan)
+wwwroot/lib/
 
 # === Hemmeligheter og lokale innstillinger ===
-# Filer som IKKE skal sjekkes inn (API-nøkler, passord)
 *.Secret.json
 *.secrets.json
 appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
 *.env
+.env.*
+secrets/
 
-# Unntak:
+# === Docker ===
+docker-compose.override.yml
+.docker/
+
+# === OS-genererte filer ===
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# === Entity Framework ===
+# Uncommenter hvis du ikke vil tracke migrations
+# **/Migrations/
+
+# === Diverse ===
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# NCrunch
+_NCrunch_*
+.*crunch*.local.xml
+nCrunchTemp_*
+
+# DocProject
+DocProject/buildhelp/
+DocProject/Help/*.HxT
+DocProject/Help/*.HxC
+DocProject/Help/*.hhc
+DocProject/Help/*.hhk
+DocProject/Help/*.hhp
+DocProject/Help/Html2
+DocProject/Help/html
+
+# Benchmark results
+BenchmarkDotNet.Artifacts/
+
+# Backup files
+*.orig
+
+# === Unntak ===
 # Ikke ignorer .gitignore-filen selv
 !.gitignore

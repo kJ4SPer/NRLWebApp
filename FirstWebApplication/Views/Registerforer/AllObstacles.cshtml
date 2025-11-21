@@ -161,6 +161,18 @@
                                 <span class="font-medium text-gray-900">@obstacle.Height.ToString("F2") m</span>
                             </div>
                             <div class="flex justify-between">
+                                <span class="text-gray-600">Location:</span>
+                                <span class="font-medium text-gray-900">
+                                    @{
+                                        var coords = obstacle.Location?.Replace("POINT(", "").Replace(")", "").Split(' ');
+                                        var displayCoords = coords?.Length == 2
+                                            ? $"{double.Parse(coords[1]).ToString("F4")}, {double.Parse(coords[0]).ToString("F4")}"
+                                            : "N/A";
+                                    }
+                                    📍 @displayCoords
+                                </span>
+                            </div>
+                            <div class="flex justify-between">
                                 <span class="text-gray-600">Registered by:</span>
                                 <span class="font-medium text-gray-900">@obstacle.RegisteredBy</span>
                             </div>

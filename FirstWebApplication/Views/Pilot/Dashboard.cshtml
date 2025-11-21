@@ -17,6 +17,32 @@
             </div>
         }
 
+        <!-- My Statistics -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">My Registration Statistics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                    <p class="text-yellow-800 font-semibold">Incomplete</p>
+                    <p class="text-3xl font-bold text-yellow-900">@ViewBag.IncompleteCount</p>
+                </div>
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                    <p class="text-blue-800 font-semibold">Pending</p>
+                    <p class="text-3xl font-bold text-blue-900">@ViewBag.PendingCount</p>
+                </div>
+                <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                    <p class="text-green-800 font-semibold">Approved</p>
+                    <p class="text-3xl font-bold text-green-900">@ViewBag.ApprovedCount</p>
+                </div>
+                <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                    <p class="text-red-800 font-semibold">Rejected</p>
+                    <p class="text-3xl font-bold text-red-900">@ViewBag.RejectedCount</p>
+                </div>
+            </div>
+            <div class="mt-4 text-center">
+                <p class="text-gray-600">Total Registrations: <strong class="text-gray-900">@ViewBag.TotalCount</strong></p>
+            </div>
+        </div>
+
         <!-- Quick Actions -->
         <div class="mb-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>

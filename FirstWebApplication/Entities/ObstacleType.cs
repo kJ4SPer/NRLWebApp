@@ -2,9 +2,8 @@
 
 namespace FirstWebApplication.Entities
 {
-    /// <summary>
     /// Lookup-tabell for hindertyper (Mast, Pole, Antenna, etc.)
-    /// </summary>
+
     public class ObstacleType
     {
         [Key]

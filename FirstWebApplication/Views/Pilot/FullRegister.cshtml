@@ -9,6 +9,11 @@
     <link rel="stylesheet" href="~/lib/leaflet-draw/dist/leaflet.draw.css" />
 
     <style>
+        /* Remove padding from main content for this page */
+        .main-content {
+            padding-top: 0 !important;
+        }
+
         #map {
             position: absolute;
             top: 64px;
@@ -16,6 +21,7 @@
             right: 400px;
             bottom: 0;
             z-index: 0;
+            cursor: crosshair;
         }
 
         .registration-form {
@@ -122,7 +128,7 @@
 
 <div class="registration-form">
     <h2 class="text-2xl font-bold mb-4">Full Registration</h2>
-    <p class="text-gray-600 mb-4">Fill in all details and mark the location on the map.</p>
+    <p class="text-gray-600 mb-4">Click on the map to place a marker, or drag it to adjust position.</p>
 
     <button type="button" id="useLocationBtn" class="btn btn-location" onclick="useMyLocation()">
         Use My Location
@@ -216,23 +222,10 @@
                     var lat = position.coords.latitude;
                     var lng = position.coords.longitude;
 
-                    // Clear existing drawings
-                    drawnItems.clearLayers();
-
-                    // Add draggable marker at current location
-                    var marker = L.marker([lat, lng], { draggable: true }).addTo(drawnItems);
-
-                    // Update geometry when marker is dragged
-                    marker.on('dragend', function(e) {
-                        var pos = e.target.getLatLng();
-                        document.getElementById('obstacleGeometryInput').value = `POINT(${pos.lng} ${pos.lat})`;
-                    });
-
-                    // Set geometry input
-                    document.getElementById('obstacleGeometryInput').value = `POINT(${lng} ${lat})`;
-
-                    // Pan and zoom to location
-                    map.setView([lat, lng], 15);
+                    // Place marker using the global function
+                    if (window.placeMarkerOnMap) {
+                        window.placeMarkerOnMap(lat, lng);
+                    }
 
                     btn.disabled = false;
                     btn.textContent = 'Use My Location';
@@ -291,73 +284,88 @@
             drawnItems = new L.FeatureGroup();
             map.addLayer(drawnItems);
 
+            var currentMarker = null;
+
+            // Add draw control with only marker tool
             var drawControl = new L.Control.Draw({
                 edit: {
                     featureGroup: drawnItems,
-                    edit: true,
-                    remove: true
+                    edit: false,
+                    remove: false
                 },
                 draw: {
-                    polygon: true,
-                    polyline: true,
-                    rectangle: true,
+                    polygon: false,
+                    polyline: false,
+                    rectangle: false,
                     circle: false,
                     circlemarker: false,
                     marker: {
-                        icon: new L.Icon.Default(),
-                        draggable: true
+                        icon: new L.Icon.Default()
                     }
                 }
             });
             map.addControl(drawControl);
 
-            map.on(L.Draw.Event.CREATED, function (event) {
-                var layer = event.layer;
+            // Function to place or move marker
+            function placeMarker(latlng) {
+                if (currentMarker) {
+                    // Move existing marker
+                    currentMarker.setLatLng(latlng);
+                } else {
+                    // Create new draggable marker
+                    currentMarker = L.marker(latlng, { draggable: true }).addTo(drawnItems);
 
-                drawnItems.clearLayers();
-                drawnItems.addLayer(layer);
-
-                // If it's a marker, add dragend listener
-                if (layer instanceof L.Marker) {
-                    layer.on('dragend', function(e) {
+                    // Update coordinates when marker is dragged
+                    currentMarker.on('dragend', function(e) {
                         var pos = e.target.getLatLng();
                         document.getElementById('obstacleGeometryInput').value = `POINT(${pos.lng} ${pos.lat})`;
                     });
                 }
 
-                var geometryWKT = convertToWKT(layer);
-                document.getElementById('obstacleGeometryInput').value = geometryWKT;
-            });
-
-            map.on(L.Draw.Event.EDITED, function (event) {
-                var layers = event.layers;
-                layers.eachLayer(function (layer) {
-                    var geometryWKT = convertToWKT(layer);
-                    document.getElementById('obstacleGeometryInput').value = geometryWKT;
-                });
-            });
-
-            map.on(L.Draw.Event.DELETED, function (event) {
-                document.getElementById('obstacleGeometryInput').value = '';
-            });
-
-            function convertToWKT(layer) {
-                if (layer instanceof L.Marker) {
-                    var latlng = layer.getLatLng();
-                    return `POINT(${latlng.lng} ${latlng.lat})`;
-                } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
-                    var latlngs = layer.getLatLngs();
-                    var coords = latlngs.map(ll => `${ll.lng} ${ll.lat}`).join(',');
-                    return `LINESTRING(${coords})`;
-                } else if (layer instanceof L.Polygon) {
-                    var latlngs = layer.getLatLngs()[0];
-                    var coords = latlngs.map(ll => `${ll.lng} ${ll.lat}`).join(',');
-                    var firstPoint = latlngs[0];
-                    coords += `,${firstPoint.lng} ${firstPoint.lat}`;
-                    return `POLYGON((${coords}))`;
-                }
-                return '';
+                // Update geometry input
+                document.getElementById('obstacleGeometryInput').value = `POINT(${latlng.lng} ${latlng.lat})`;
             }
+
+            // Handle marker created from toolbar
+            map.on(L.Draw.Event.CREATED, function (event) {
+                var layer = event.layer;
+
+                // Remove existing marker if any
+                if (currentMarker) {
+                    drawnItems.removeLayer(currentMarker);
+                }
+
+                // Make the new marker draggable
+                layer.options.draggable = true;
+                if (layer.dragging) {
+                    layer.dragging.enable();
+                }
+
+                drawnItems.addLayer(layer);
+                currentMarker = layer;
+
+                // Update coordinates when marker is dragged
+                currentMarker.on('dragend', function(e) {
+                    var pos = e.target.getLatLng();
+                    document.getElementById('obstacleGeometryInput').value = `POINT(${pos.lng} ${pos.lat})`;
+                });
+
+                // Set geometry input
+                var latlng = layer.getLatLng();
+                document.getElementById('obstacleGeometryInput').value = `POINT(${latlng.lng} ${latlng.lat})`;
+            });
+
+            // Click on map to place/move marker
+            map.on('click', function(e) {
+                placeMarker(e.latlng);
+            });
+
+            // Make placeMarker available globally for useMyLocation
+            window.placeMarkerOnMap = function(lat, lng) {
+                var latlng = L.latLng(lat, lng);
+                placeMarker(latlng);
+                map.setView(latlng, 15);
+            };
         });
     </script>
 }

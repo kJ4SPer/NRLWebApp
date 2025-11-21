@@ -23,6 +23,7 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">ID</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Location</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Height</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Type</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Approved By</th>
@@ -36,6 +37,15 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#@obstacle.Id</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@obstacle.Name</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                @{
+                                    var coords = obstacle.Location?.Replace("POINT(", "").Replace(")", "").Split(' ');
+                                    var displayCoords = coords?.Length == 2
+                                        ? $"{double.Parse(coords[1]).ToString("F4")}, {double.Parse(coords[0]).ToString("F4")}"
+                                        : "N/A";
+                                }
+                                📍 @displayCoords
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">@obstacle.Height m</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">@(obstacle.Type ?? "N/A")</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">@(obstacle.ProcessedBy ?? "N/A")</td>
@@ -43,7 +53,7 @@
                                 @(obstacle.ProcessedDate?.ToString("dd.MM.yyyy HH:mm") ?? "N/A")
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a asp-action="ViewObstacle" asp-route-id="@obstacle.Id" 
+                                <a asp-action="ViewObstacle" asp-route-id="@obstacle.Id"
                                    class="text-indigo-600 hover:text-indigo-900">
                                     View Details →
                                 </a>
