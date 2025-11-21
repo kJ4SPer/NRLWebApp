@@ -68,8 +68,10 @@ namespace FirstWebApplication.Controllers
                 Name = o.Name ?? "Unnamed",
                 Type = o.ObstacleType?.Name,
                 Height = o.Height ?? 0,
+                Location = o.Location ?? string.Empty,
                 RegisteredBy = o.RegisteredByUser?.Email ?? "Unknown",
-                RegisteredDate = o.RegisteredDate
+                RegisteredDate = o.RegisteredDate,
+                IsPending = true
             }).ToList();
 
             return View(viewModels);
@@ -98,10 +100,12 @@ namespace FirstWebApplication.Controllers
                 Name = o.Name ?? "Unnamed",
                 Type = o.ObstacleType?.Name,
                 Height = o.Height ?? 0,
+                Location = o.Location ?? string.Empty,
                 RegisteredBy = o.RegisteredByUser?.Email ?? "Unknown",
                 RegisteredDate = o.RegisteredDate,
                 ProcessedBy = o.CurrentStatus?.ChangedByUser?.Email,
-                ProcessedDate = o.CurrentStatus?.ChangedDate
+                ProcessedDate = o.CurrentStatus?.ChangedDate,
+                IsApproved = true
             }).ToList();
 
             return View(viewModels);
@@ -130,11 +134,13 @@ namespace FirstWebApplication.Controllers
                 Name = o.Name ?? "Unnamed",
                 Type = o.ObstacleType?.Name,
                 Height = o.Height ?? 0,
+                Location = o.Location ?? string.Empty,
                 RegisteredBy = o.RegisteredByUser?.Email ?? "Unknown",
                 RegisteredDate = o.RegisteredDate,
                 ProcessedBy = o.CurrentStatus?.ChangedByUser?.Email,
                 ProcessedDate = o.CurrentStatus?.ChangedDate,
-                RejectionReason = o.CurrentStatus?.Comments
+                RejectionReason = o.CurrentStatus?.Comments,
+                IsRejected = true
             }).ToList();
 
             return View(viewModels);
@@ -399,6 +405,7 @@ namespace FirstWebApplication.Controllers
                     Name = o.Name ?? "Unnamed",
                     Type = o.ObstacleType?.Name,
                     Height = o.Height ?? 0,
+                    Location = o.Location ?? string.Empty,
                     RegisteredBy = o.RegisteredByUser?.Email ?? "Unknown",
                     RegisteredDate = o.RegisteredDate,
                     ProcessedBy = o.CurrentStatus?.ChangedByUser?.Email,
