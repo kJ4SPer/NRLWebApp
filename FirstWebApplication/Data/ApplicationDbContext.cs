@@ -18,7 +18,6 @@ namespace FirstWebApplication.Data
         public DbSet<StatusType> StatusTypes { get; set; } = null!;
         public DbSet<Obstacle> Obstacles { get; set; } = null!;
         public DbSet<ObstacleStatus> ObstacleStatuses { get; set; } = null!;
-        public DbSet<Behandling> Behandlinger { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -123,37 +122,6 @@ namespace FirstWebApplication.Data
                 .HasOne(os => os.ChangedByUser)
                 .WithMany()
                 .HasForeignKey(os => os.ChangedByUserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // ==========================================
-            // BEHANDLING
-            // ==========================================
-            modelBuilder.Entity<Behandling>()
-                .ToTable("Behandlinger");
-
-            modelBuilder.Entity<Behandling>()
-                .Property(b => b.ProcessedDate)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-            // FK: Behandling -> Obstacle
-            modelBuilder.Entity<Behandling>()
-                .HasOne(b => b.Obstacle)
-                .WithMany(o => o.Behandlinger)
-                .HasForeignKey(b => b.ObstacleId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // FK: Behandling -> RegisterforerUser
-            modelBuilder.Entity<Behandling>()
-                .HasOne(b => b.RegisterforerUser)
-                .WithMany()
-                .HasForeignKey(b => b.RegisterforerUserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // FK: Behandling -> Status
-            modelBuilder.Entity<Behandling>()
-                .HasOne(b => b.Status)
-                .WithMany(os => os.Behandlinger)
-                .HasForeignKey(b => b.StatusId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

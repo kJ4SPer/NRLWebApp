@@ -42,8 +42,5 @@ namespace FirstWebApplication.Entities
 
         // Navigation: Et obstacle har mange status-endringer
         public ICollection<ObstacleStatus>? StatusHistory { get; set; }
-
-        // Navigation: Et obstacle kan ha mange behandlinger
-        public ICollection<Behandling>? Behandlinger { get; set; }
     }
 }

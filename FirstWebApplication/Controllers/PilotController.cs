@@ -210,9 +210,8 @@ namespace FirstWebApplication.Controllers
                 .ToListAsync();
 
             var obstacleIds = obstacles.Select(o => o.Id).ToList();
-            var latestBehandlinger = await GetLatestBehandlingerAsync(obstacleIds);
 
-            var viewModel = BuildMyRegistrationsViewModel(obstacles, latestBehandlinger);
+            var viewModel = BuildMyRegistrationsViewModel(obstacles);
 
             return View(viewModel);
         }
@@ -239,13 +238,7 @@ namespace FirstWebApplication.Controllers
             if (obstacle == null)
                 return NotFound();
 
-            var latestBehandling = await _context.Behandlinger
-                .Include(b => b.RegisterforerUser)
-                .Where(b => b.ObstacleId == id)
-                .OrderByDescending(b => b.ProcessedDate)
-                .FirstOrDefaultAsync();
-
-            var viewModel = BuildObstacleDetailsViewModel(obstacle, latestBehandling);
+            var viewModel = BuildObstacleDetailsViewModel(obstacle);
 
             return View(viewModel);
         }
@@ -443,21 +436,8 @@ namespace FirstWebApplication.Controllers
             await _context.SaveChangesAsync();
         }
 
-        // Henter siste behandling for hver hindring
-        private async Task<Dictionary<long, Behandling>> GetLatestBehandlingerAsync(List<long> obstacleIds)
-        {
-            return await _context.Behandlinger
-                .Include(b => b.RegisterforerUser)
-                .Where(b => obstacleIds.Contains(b.ObstacleId))
-                .GroupBy(b => b.ObstacleId)
-                .Select(g => g.OrderByDescending(b => b.ProcessedDate).First())
-                .ToDictionaryAsync(b => b.ObstacleId);
-        }
-
         // Bygger ViewModel for MyRegistrations med gruppering per status
-        private MyRegistrationsViewModel BuildMyRegistrationsViewModel(
-            List<Obstacle> obstacles,
-            Dictionary<long, Behandling> behandlinger)
+        private MyRegistrationsViewModel BuildMyRegistrationsViewModel(List<Obstacle> obstacles)
         {
             var viewModel = new MyRegistrationsViewModel();
 
@@ -477,15 +457,15 @@ namespace FirstWebApplication.Controllers
                 }
                 else if (statusName == "Pending")
                 {
-                    viewModel.PendingObstacles.Add(MapToListItem(obstacle, behandlinger));
+                    viewModel.PendingObstacles.Add(MapToListItem(obstacle));
                 }
                 else if (statusName == "Approved")
                 {
-                    viewModel.ApprovedObstacles.Add(MapToListItem(obstacle, behandlinger));
+                    viewModel.ApprovedObstacles.Add(MapToListItem(obstacle));
                 }
                 else if (statusName == "Rejected")
                 {
-                    viewModel.RejectedObstacles.Add(MapToListItem(obstacle, behandlinger));
+                    viewModel.RejectedObstacles.Add(MapToListItem(obstacle));
                 }
             }
 
@@ -493,7 +473,7 @@ namespace FirstWebApplication.Controllers
         }
 
         // Mapper Obstacle til ObstacleListItemViewModel
-        private ObstacleListItemViewModel MapToListItem(Obstacle obstacle, Dictionary<long, Behandling> behandlinger)
+        private ObstacleListItemViewModel MapToListItem(Obstacle obstacle)
         {
             var statusName = obstacle.CurrentStatus?.StatusType?.Name ?? "Unknown";
 
@@ -514,18 +494,18 @@ namespace FirstWebApplication.Controllers
             };
 
             // Legg til behandlingsinformasjon hvis tilgjengelig
-            if (behandlinger.TryGetValue(obstacle.Id, out var behandling))
+            if (obstacle.CurrentStatus != null)
             {
-                item.ProcessedBy = behandling.RegisterforerUser?.Email;
-                item.ProcessedDate = behandling.ProcessedDate;
-                item.RejectionReason = behandling.RejectionReason;
+                item.ProcessedBy = obstacle.CurrentStatus.ChangedByUser?.Email;
+                item.ProcessedDate = obstacle.CurrentStatus.ChangedDate;
+                item.RejectionReason = obstacle.CurrentStatus.Comments;
             }
 
             return item;
         }
 
         // Bygger ObstacleDetailsViewModel med full hindringinformasjon
-        private ObstacleDetailsViewModel BuildObstacleDetailsViewModel(Obstacle obstacle, Behandling? behandling)
+        private ObstacleDetailsViewModel BuildObstacleDetailsViewModel(Obstacle obstacle)
         {
             var viewModel = new ObstacleDetailsViewModel
             {
@@ -543,12 +523,17 @@ namespace FirstWebApplication.Controllers
                 IsRejected = obstacle.CurrentStatus?.StatusType?.Name == "Rejected"
             };
 
-            if (behandling != null)
+            if (obstacle.CurrentStatus != null)
             {
-                viewModel.ProcessedBy = behandling.RegisterforerUser?.Email;
-                viewModel.ProcessedDate = behandling.ProcessedDate;
-                viewModel.ProcessComments = behandling.Comments;
-                viewModel.RejectionReason = behandling.RejectionReason;
+                viewModel.ProcessedBy = obstacle.CurrentStatus.ChangedByUser?.Email;
+                viewModel.ProcessedDate = obstacle.CurrentStatus.ChangedDate;
+                viewModel.ProcessComments = obstacle.CurrentStatus.Comments;
+
+                // Hvis status er Rejected (ID 4), er kommentaren avslagsårsaken
+                if (obstacle.CurrentStatus.StatusTypeId == 4)
+                {
+                    viewModel.RejectionReason = obstacle.CurrentStatus.Comments;
+                }
             }
 
             if (obstacle.StatusHistory != null)
@@ -582,12 +567,6 @@ namespace FirstWebApplication.Controllers
                 .ToListAsync();
             _context.ObstacleStatuses.RemoveRange(statuses);
 
-            // Slett relaterte behandlinger
-            var behandlinger = await _context.Behandlinger
-                .Where(b => b.ObstacleId == obstacle.Id)
-                .ToListAsync();
-            _context.Behandlinger.RemoveRange(behandlinger);
-
             await _context.SaveChangesAsync();
 
             // Slett obstacle
@@ -599,19 +578,19 @@ namespace FirstWebApplication.Controllers
         private async Task<PilotStatistics> GetPilotStatisticsAsync(string userId)
         {
             var incomplete = await _context.Obstacles
-                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatusId == 1)
+                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatus!.StatusTypeId == 1)
                 .CountAsync();
 
             var pending = await _context.Obstacles
-                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatusId == 2)
+                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatus!.StatusTypeId == 2)
                 .CountAsync();
 
             var approved = await _context.Obstacles
-                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatusId == 3)
+                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatus!.StatusTypeId == 3)
                 .CountAsync();
 
             var rejected = await _context.Obstacles
-                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatusId == 4)
+                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatus!.StatusTypeId == 4)
                 .CountAsync();
 
             return new PilotStatistics
