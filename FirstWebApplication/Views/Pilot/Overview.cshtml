@@ -131,6 +131,19 @@
                 </div>
 
                 <div class="detail-row">
+                    <div class="detail-label">Location:</div>
+                    <div class="detail-value">
+                        @{
+                            var coords = Model.Location?.Replace("POINT(", "").Replace(")", "").Split(' ');
+                            var displayCoords = coords?.Length == 2
+                                ? $"{double.Parse(coords[1]).ToString("F4")}, {double.Parse(coords[0]).ToString("F4")}"
+                                : "N/A";
+                        }
+                        📍 @displayCoords
+                    </div>
+                </div>
+
+                <div class="detail-row">
                     <div class="detail-label">Description:</div>
                     <div class="detail-value">@Model.Description</div>
                 </div>

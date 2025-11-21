@@ -579,8 +579,37 @@ namespace FirstWebApplication.Controllers
             return item;
         }
 
-        public IActionResult Dashboard()
+        public async Task<IActionResult> Dashboard()
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Unauthorized();
+
+            // Count pilot's obstacles by status
+            var incompleteCount = await _context.Obstacles
+                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatusId == 1) // Registered
+                .CountAsync();
+
+            var pendingCount = await _context.Obstacles
+                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatusId == 2) // Pending
+                .CountAsync();
+
+            var approvedCount = await _context.Obstacles
+                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatusId == 3) // Approved
+                .CountAsync();
+
+            var rejectedCount = await _context.Obstacles
+                .Where(o => o.RegisteredByUserId == userId && o.CurrentStatusId == 4) // Rejected
+                .CountAsync();
+
+            var totalCount = incompleteCount + pendingCount + approvedCount + rejectedCount;
+
+            ViewBag.IncompleteCount = incompleteCount;
+            ViewBag.PendingCount = pendingCount;
+            ViewBag.ApprovedCount = approvedCount;
+            ViewBag.RejectedCount = rejectedCount;
+            ViewBag.TotalCount = totalCount;
+
             return View();
         }
 
