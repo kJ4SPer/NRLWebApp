@@ -4,7 +4,7 @@ namespace FirstWebApplication.Helpers
 {
     public static class CspHelper
     {
-        // Gets the CSP nonce for the current request
+        /// Gets the CSP nonce for the current request
         public static string GetNonce(this IHtmlHelper htmlHelper)
         {
             var httpContext = htmlHelper.ViewContext.HttpContext;
