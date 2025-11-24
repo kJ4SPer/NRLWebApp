@@ -4,9 +4,7 @@ namespace FirstWebApplication.Helpers
 {
     public static class CspHelper
     {
-        /// <summary>
-        /// Gets the CSP nonce for the current request
-        /// </summary>
+        // Gets the CSP nonce for the current request
         public static string GetNonce(this IHtmlHelper htmlHelper)
         {
             var httpContext = htmlHelper.ViewContext.HttpContext;
@@ -17,9 +15,7 @@ namespace FirstWebApplication.Helpers
             return string.Empty;
         }
 
-        /// <summary>
-        /// Generates a nonce attribute for script/style tags
-        /// </summary>
+        // Generates a nonce attribute for script/style tags
         public static string NonceAttribute(this IHtmlHelper htmlHelper)
         {
             var nonce = htmlHelper.GetNonce();
