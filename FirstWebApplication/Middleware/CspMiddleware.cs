@@ -60,11 +60,11 @@ namespace FirstWebApplication.Middleware
                 // Default: only same origin
                 "default-src 'self'",
 
-                // Scripts: self + nonce for inline scripts + CDNs
-                $"script-src 'self' 'nonce-{nonce}' https://unpkg.com https://cdn.tailwindcss.com",
+                // Scripts: self + nonce for inline scripts + CDNs + unsafe-inline for legacy event handlers
+                $"script-src 'self' 'nonce-{nonce}' 'unsafe-inline' https://unpkg.com https://cdn.tailwindcss.com",
 
-                // Styles: self + nonce for inline styles + CDNs
-                $"style-src 'self' 'nonce-{nonce}' https://unpkg.com https://cdn.tailwindcss.com",
+                // Styles: self + nonce for inline styles + CDNs + unsafe-inline for style attributes
+                $"style-src 'self' 'nonce-{nonce}' 'unsafe-inline' https://unpkg.com https://cdn.tailwindcss.com",
 
                 // Images: self + data URIs for inline images + OpenStreetMap tiles
                 "img-src 'self' data: https://*.tile.openstreetmap.org",
@@ -72,8 +72,8 @@ namespace FirstWebApplication.Middleware
                 // Fonts: self only
                 "font-src 'self'",
 
-                // Connect (AJAX/fetch): self for API calls
-                "connect-src 'self'",
+                // Connect (AJAX/fetch): self for API calls + development tools
+                "connect-src 'self' ws://localhost:* wss://localhost:* http://localhost:*",
 
                 // Media: self only
                 "media-src 'self'",
