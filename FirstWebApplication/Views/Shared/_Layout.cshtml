@@ -6,132 +6,20 @@
     <title>@ViewData["Title"] - Obstacle Registration System</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
+
+    <!-- Tailwind CSS CDN (for development - use built CSS in production) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
+    <script @Html.Raw(Html.NonceAttribute())>
         tailwind.config = {
             darkMode: 'class',
         }
     </script>
 
     <!-- Leaflet CSS for maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-    <style>
-        /* Ensure content doesn't collide with fixed navbar */
-        .main-content {
-            padding-top: 1rem;
-        }
-
-        /* Mobile menu styles */
-        .mobile-menu {
-            display: none;
-        }
-
-        .mobile-menu.active {
-            display: block;
-        }
-
-        /* Ensure mobile menu is above other content */
-        .mobile-menu {
-            position: relative;
-            z-index: 100;
-        }
-
-        nav {
-            position: relative;
-            z-index: 50;
-        }
-
-        /* Hide desktop nav on smaller screens */
-        @@media (max-width: 1024px) {
-            .desktop-nav {
-                display: none;
-            }
-            .mobile-menu-button {
-                display: flex;
-            }
-        }
-
-        @@media (min-width: 1025px) {
-            .mobile-menu-button {
-                display: none;
-            }
-            .desktop-nav {
-                display: flex;
-            }
-        }
-
-        /* Dark mode styles */
-        .dark {
-            color-scheme: dark;
-        }
-
-        .dark .bg-gray-50 {
-            background-color: #111827 !important;
-        }
-
-        .dark .bg-white {
-            background-color: #1f2937 !important;
-        }
-
-        .dark .bg-gray-200 {
-            background-color: #374151 !important;
-        }
-
-        .dark .text-gray-900 {
-            color: #f9fafb !important;
-        }
-
-        .dark .text-gray-700 {
-            color: #d1d5db !important;
-        }
-
-        .dark .text-gray-600 {
-            color: #9ca3af !important;
-        }
-
-        .dark .border-gray-300 {
-            border-color: #4b5563 !important;
-        }
-
-        .dark .border-gray-200 {
-            border-color: #374151 !important;
-        }
-
-        .dark .shadow-gray-300 {
-            --tw-shadow-color: #1f2937 !important;
-        }
-
-        .dark input,
-        .dark textarea,
-        .dark select {
-            background-color: #374151 !important;
-            color: #f9fafb !important;
-            border-color: #4b5563 !important;
-        }
-
-        .dark .form-control {
-            background-color: #374151 !important;
-            color: #f9fafb !important;
-            border-color: #4b5563 !important;
-        }
-
-        /* Dark mode toggle button */
-        .dark-mode-toggle {
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .dark-mode-toggle:hover {
-            background-color: rgba(99, 102, 241, 0.1);
-        }
-
-        .dark .dark-mode-toggle:hover {
-            background-color: rgba(99, 102, 241, 0.2);
-        }
-    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin="anonymous" />
 
     @await RenderSectionAsync("Head", required: false)
 </head>
@@ -151,7 +39,7 @@
                 </div>
 
                 <!-- Mobile Menu Button -->
-                <button class="mobile-menu-button items-center justify-center p-2 rounded-md text-gray-600 hover:text-indigo-500 hover:bg-gray-300 focus:outline-none" onclick="toggleMobileMenu()">
+                <button id="mobile-menu-button" class="mobile-menu-button items-center justify-center p-2 rounded-md text-gray-600 hover:text-indigo-500 hover:bg-gray-300 focus:outline-none">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
@@ -160,7 +48,7 @@
                 <!-- Desktop Navigation -->
                 <div class="desktop-nav items-center gap-4">
                     <!-- Dark Mode Toggle -->
-                    <button class="dark-mode-toggle text-gray-600" onclick="toggleDarkMode()" title="Toggle dark mode">
+                    <button id="dark-mode-toggle" class="dark-mode-toggle text-gray-600" title="Toggle dark mode">
                         <svg id="sun-icon" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
@@ -246,7 +134,7 @@
             <div class="mobile-menu pb-4" id="mobile-menu">
                 <!-- Dark Mode Toggle for Mobile -->
                 <div class="border-t border-gray-300 pt-4 px-4 mb-2">
-                    <button class="flex items-center gap-2 text-gray-600 font-semibold" onclick="toggleDarkMode()">
+                    <button id="mobile-dark-mode-toggle" class="flex items-center gap-2 text-gray-600 font-semibold">
                         <svg id="mobile-sun-icon" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
@@ -337,86 +225,12 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/layout.js" asp-append-version="true"></script>
 
     <!-- Leaflet JS for maps -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <script>
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('active');
-        }
-
-        // Close mobile menu when clicking on links or outside
-        document.addEventListener('click', function(event) {
-            const menu = document.getElementById('mobile-menu');
-            const button = document.querySelector('.mobile-menu-button');
-            const nav = document.querySelector('nav');
-
-            // Only close if click is outside the entire nav area
-            if (menu.classList.contains('active') && !nav.contains(event.target)) {
-                menu.classList.remove('active');
-            }
-        });
-
-        // Close menu when clicking a link inside it
-        document.querySelectorAll('#mobile-menu a, #mobile-menu button[type="submit"]').forEach(function(link) {
-            link.addEventListener('click', function() {
-                document.getElementById('mobile-menu').classList.remove('active');
-            });
-        });
-
-        // Dark mode functionality
-        function toggleDarkMode() {
-            const html = document.documentElement;
-            const body = document.body;
-            const isDark = body.classList.toggle('dark');
-
-            // Update icons
-            updateDarkModeIcons(isDark);
-
-            // Save preference
-            localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
-        }
-
-        function updateDarkModeIcons(isDark) {
-            const sunIcon = document.getElementById('sun-icon');
-            const moonIcon = document.getElementById('moon-icon');
-            const mobileSunIcon = document.getElementById('mobile-sun-icon');
-            const mobileMoonIcon = document.getElementById('mobile-moon-icon');
-            const darkModeText = document.getElementById('dark-mode-text');
-
-            if (isDark) {
-                sunIcon?.classList.remove('hidden');
-                moonIcon?.classList.add('hidden');
-                mobileSunIcon?.classList.remove('hidden');
-                mobileMoonIcon?.classList.add('hidden');
-                if (darkModeText) darkModeText.textContent = 'Light Mode';
-            } else {
-                sunIcon?.classList.add('hidden');
-                moonIcon?.classList.remove('hidden');
-                mobileSunIcon?.classList.add('hidden');
-                mobileMoonIcon?.classList.remove('hidden');
-                if (darkModeText) darkModeText.textContent = 'Dark Mode';
-            }
-        }
-
-        // Check for saved dark mode preference on page load
-        (function() {
-            const darkMode = localStorage.getItem('darkMode');
-
-            if (darkMode === 'enabled') {
-                document.body.classList.add('dark');
-                updateDarkModeIcons(true);
-            } else if (darkMode === null) {
-                // Check system preference
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    document.body.classList.add('dark');
-                    updateDarkModeIcons(true);
-                }
-            }
-        })();
-    </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin="anonymous"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -76,7 +76,7 @@
                                 <td class="px-6 py-4 text-sm text-gray-600">@quickReg.RegisteredDate.ToString("dd.MM.yyyy HH:mm")</td>
                                 <td class="px-6 py-4 text-sm font-medium">
                                     <a asp-action="CompleteQuickRegister" asp-route-id="@quickReg.Id" class="text-blue-600 hover:text-blue-900 mr-4">✏️ Complete</a>
-                                    <form asp-action="DeleteRegistration" asp-route-id="@quickReg.Id" method="post" class="inline" onsubmit="return confirm('Delete this registration?');">
+                                    <form asp-action="DeleteRegistration" asp-route-id="@quickReg.Id" method="post" class="inline delete-form">
                                         <button type="submit" class="text-red-600 hover:text-red-900">🗑️ Delete</button>
                                     </form>
                                 </td>
@@ -125,7 +125,7 @@
                                 <td class="px-6 py-4 text-sm text-gray-600">@obstacle.RegisteredDate.ToString("dd.MM.yyyy")</td>
                                 <td class="px-6 py-4 text-sm font-medium">
                                     <a asp-action="Overview" asp-route-id="@obstacle.Id" class="text-blue-600 hover:text-blue-900 mr-4">👁️ View</a>
-                                    <form asp-action="DeleteRegistration" asp-route-id="@obstacle.Id" method="post" class="inline" onsubmit="return confirm('Delete this registration?');">
+                                    <form asp-action="DeleteRegistration" asp-route-id="@obstacle.Id" method="post" class="inline delete-form">
                                         <button type="submit" class="text-red-600 hover:text-red-900">🗑️ Delete</button>
                                     </form>
                                 </td>
@@ -237,3 +237,19 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script @Html.Raw(Html.NonceAttribute())>
+        // Handle delete confirmation (CSP-compliant)
+        document.addEventListener('DOMContentLoaded', function () {
+            const deleteForms = document.querySelectorAll('.delete-form');
+            deleteForms.forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!confirm('Delete this registration?')) {
+                        event.preventDefault();
+                    }
+                });
+            });
+        });
+    </script>
+}
