@@ -10,7 +10,7 @@ class ExpoTaskTracker {
             {
                 id: 'register',
                 title: 'Opprett ny brukerkonto',
-                description: 'Registrer deg som ny bruker',
+                description: 'Klikk "Sign Up" og registrer deg som ny bruker',
                 completed: false
             },
             {

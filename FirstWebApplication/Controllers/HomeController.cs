@@ -1,3 +1,4 @@
+using FirstWebApplication.Entities;
 using FirstWebApplication.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -9,9 +10,9 @@ namespace FirstWebApplication.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public HomeController(ILogger<HomeController> logger, SignInManager<IdentityUser> signInManager)
+        public HomeController(ILogger<HomeController> logger, SignInManager<ApplicationUser> signInManager)
         {
             _logger = logger;
             _signInManager = signInManager;
