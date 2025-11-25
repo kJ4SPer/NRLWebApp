@@ -260,23 +260,29 @@
 
     <!-- Expo Task Tracker Sidebar -->
     <div id="expo-task-tracker" data-role="pilot">
-        <button id="tracker-toggle-btn" title="Toggle task tracker">
-            <span id="tracker-toggle-icon">←</span>
+        <button class="expo-toggle-btn" id="tracker-toggle-btn" title="Toggle task tracker">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
         </button>
 
-        <div class="tracker-header">
-            <h2 class="tracker-title">🎯 Expo Test - Pilot</h2>
-            <p class="tracker-subtitle">Fullfør alle oppgavene nedenfor</p>
+        <div class="expo-tracker-header">
+            <div class="expo-tracker-title">
+                <span>🎯 Expo Test - Pilot</span>
+            </div>
+            <div class="expo-tracker-subtitle">
+                Fullfør alle oppgavene nedenfor
+            </div>
 
-            <div class="tracker-progress">
-                <div class="progress-bar-container">
-                    <div class="progress-bar-fill"></div>
+            <div class="expo-progress-container">
+                <div class="expo-progress-bar-bg">
+                    <div id="expo-progress-bar" class="expo-progress-bar-fill" style="width: 0%"></div>
                 </div>
-                <div class="progress-text">0% fullført</div>
+                <div id="expo-progress-text" class="expo-progress-text">0% fullført</div>
             </div>
         </div>
 
-        <div class="tracker-tasks" id="tracker-task-list">
+        <div id="expo-task-list" class="expo-task-list">
             <!-- Tasks will be populated by JavaScript -->
         </div>
     </div>
