@@ -53,6 +53,9 @@ class ExpoTaskTracker {
 
         this.loadProgress();
         this.initEventListeners();
+
+        // Check if all tasks are already completed (e.g., from previous session)
+        this.checkCompletion();
     }
 
     /**
