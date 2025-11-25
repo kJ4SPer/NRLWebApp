@@ -156,13 +156,6 @@
     height: 20px;
 }
 
-/* Dark mode st�tte */
-@media (prefers-color-scheme: dark) {
-    #expo-task-tracker {
-        background: linear-gradient(135deg, #4c5fd7 0%, #5e3a87 100%);
-    }
-}
-
 /* Mobil-tilpasning: Skjul helt eller vis mindre */
 @media (max-width: 768px) {
     #expo-task-tracker {

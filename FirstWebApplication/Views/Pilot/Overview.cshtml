@@ -1,4 +1,5 @@
 @model FirstWebApplication.Models.Obstacle.ObstacleDetailsViewModel
+@using System.Globalization
 
 @{
     ViewData["Title"] = "Obstacle Overview";
@@ -78,7 +79,7 @@
                         @{
                             var coords = Model.Location?.Replace("POINT(", "").Replace(")", "").Split(' ');
                             var displayCoords = coords?.Length == 2
-                                ? $"{double.Parse(coords[1]).ToString("F4")}, {double.Parse(coords[0]).ToString("F4")}"
+                                ? $"{double.Parse(coords[1], CultureInfo.InvariantCulture).ToString("F4")}, {double.Parse(coords[0], CultureInfo.InvariantCulture).ToString("F4")}"
                                 : "N/A";
                         }
                         📍 @displayCoords
