@@ -51,7 +51,7 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
             backdrop-filter: blur(3px); /* Blur effect */
-            z-index: 2; /* Above the map, below the modal */
+            z-index: 1002; /* Above task tracker (1001) so modal is clickable */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -65,7 +65,7 @@
             padding: 40px;
             width: 90%;
             max-width: 420px;
-            z-index: 1002; /* Above task tracker so it's still accessible */
+            z-index: 1; /* Relative to parent (map-overlay) */
             position: relative;
             transition: all 0.3s ease;
         }
@@ -185,9 +185,9 @@
             display: none;
         }
 
-        /* Task tracker should be above the map overlay */
+        /* Task tracker should be visible but below auth modal */
         #expo-task-tracker {
-            z-index: 1001; /* Above map overlay (z-index: 2) and auth modal (z-index: 3) but accessible */
+            z-index: 1001; /* Below map-overlay (z-index: 1002) so auth modal is always clickable */
         }
     </style>
 </head>
