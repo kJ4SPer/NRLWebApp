@@ -1,5 +1,6 @@
 using FirstWebApplication.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -8,27 +9,25 @@ namespace FirstWebApplication.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly SignInManager<IdentityUser> _signInManager;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, SignInManager<IdentityUser> signInManager)
         {
             _logger = logger;
+            _signInManager = signInManager;
         }
 
         // Viser forsiden med innloggings-/registreringsskjema
-        // Redirecter innloggede brukere til riktig dashboard basert på rolle
+        // Logger ut eksisterende brukere for clean slate ved hver demo
         [AllowAnonymous]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            // Redirect innloggede brukere til riktig dashboard
+            // For Expo demo: Logg ut automatisk for å starte fresh hver gang
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                if (User.IsInRole("Admin"))
-                    return RedirectToAction("AdminDashboard", "Admin");
-
-                if (User.IsInRole("Registerfører"))
-                    return RedirectToAction("RegisterforerDashboard", "Registerforer");
-
-                return RedirectToAction("RegisterType", "Pilot");
+                await _signInManager.SignOutAsync();
+                // Redirect tilbake til Index for å vise login-skjema
+                return RedirectToAction("Index");
             }
 
             // Vis registreringsform hvis registrering feilet
