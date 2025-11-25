@@ -3,7 +3,7 @@
 }
 
 @section Head {
-    <link rel="stylesheet" href="~/css/mapview.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/registerforer/mapview.css" asp-append-version="true" />
 }
 
 <div id="loading-overlay" class="loading-overlay">
@@ -72,7 +72,7 @@
         </div>
     </div>
 
-    <button class="reset-btn" onclick="resetFilters()">
+    <button class="reset-btn" id="reset-filters-btn">
         🔄 Reset All Filters
     </button>
 
@@ -89,5 +89,5 @@
             viewObstacleUrl: '@Url.Action("ViewObstacle", "Registerforer")'
         };
     </script>
-    <script src="~/js/mapview.js" asp-append-version="true"></script>
+    <script src="~/js/registerforer/mapview.js" asp-append-version="true"></script>
 }

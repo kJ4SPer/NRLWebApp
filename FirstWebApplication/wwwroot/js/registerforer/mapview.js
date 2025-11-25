@@ -44,14 +44,18 @@ async function loadObstacles() {
         console.log(`📍 ${allObstacles.length} obstacles lastet!`);
     } catch (error) {
         console.error('❌ Feil ved lasting av obstacles:', error);
-        document.getElementById('loading-overlay').innerHTML =
+        const loadingOverlay = document.getElementById('loading-overlay');
+        loadingOverlay.innerHTML =
             `<div style="text-align: center; color: #ef4444;">
                 <h3>⚠️ Failed to load obstacles</h3>
                 <p>${error.message}</p>
-                <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                <button id="retry-btn" style="margin-top: 20px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">
                     🔄 Retry
                 </button>
             </div>`;
+        document.getElementById('retry-btn').addEventListener('click', function() {
+            location.reload();
+        });
     }
 }
 
@@ -217,6 +221,12 @@ function setupInitialEventListeners() {
     document.getElementById('filter-status-approved').addEventListener('change', applyFilters);
     document.getElementById('filter-status-pending').addEventListener('change', applyFilters);
     document.getElementById('filter-status-rejected').addEventListener('change', applyFilters);
+
+    // Reset filters button
+    const resetBtn = document.getElementById('reset-filters-btn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetFilters);
+    }
 }
 
 function handleTypeFilterChange(event) {

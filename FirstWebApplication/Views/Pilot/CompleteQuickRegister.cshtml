@@ -4,12 +4,7 @@
     ViewData["Title"] = "Complete Your Registration";
 }
 
-<style>
-    #mapid {
-        height: 450px;
-        width: 100%;
-    }
-</style>
+<link rel="stylesheet" href="~/css/pilot/complete-quick-register.css" />
 
 <div class="max-w-4xl mx-auto px-4 py-8 bg-white rounded-lg shadow-lg">
     <h1 class="text-3xl font-bold mb-2 text-center text-gray-800">Complete Your Registration</h1>
@@ -30,13 +25,13 @@
     }
 
     <form asp-action="CompleteQuickRegister" method="post" class="space-y-6">
-        
+
         <input type="hidden" asp-for="ObstacleId" />
         <input type="hidden" asp-for="ObstacleGeometry" />
 
         <div>
             <label asp-for="ObstacleType" class="block text-sm font-medium mb-1 text-gray-700">Obstacle Type:</label>
-            <select asp-for="ObstacleType" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-600" id="obstacleTypeSelect" onchange="toggleCustomType()">
+            <select asp-for="ObstacleType" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-600" id="obstacleTypeSelect">
                 <option value="">-- Select Type --</option>
                 <option value="Mast">Mast</option>
                 <option value="Tower">Tower</option>
@@ -76,7 +71,7 @@
         <!-- Map showing saved location -->
         <div>
             <label class="block text-sm font-medium mb-1 text-gray-700">Location (Already Saved):</label>
-            <div id="mapid" class="rounded-lg border border-gray-300"></div>
+            <div id="mapid" class="rounded-lg border border-gray-300" data-geometry="@Model.ObstacleGeometry"></div>
             <p class="text-sm text-gray-600 mt-2">📍 The location you marked is shown on the map above.</p>
         </div>
 
@@ -94,84 +89,5 @@
 @section Scripts {
     <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
     <script src="~/lib/leaflet/leaflet.js"></script>
-
-    <script>
-        // Toggle custom type input field
-        function toggleCustomType() {
-            var select = document.getElementById('obstacleTypeSelect');
-            var customGroup = document.getElementById('customTypeGroup');
-            var customInput = document.getElementById('customTypeName');
-
-            if (select.value === 'Other') {
-                customGroup.style.display = 'block';
-                customInput.required = true;
-            } else {
-                customGroup.style.display = 'none';
-                customInput.required = false;
-                customInput.value = '';
-            }
-        }
-
-        // Update obstacle type with custom value before form submit
-        document.querySelector('form').addEventListener('submit', function(e) {
-            var select = document.getElementById('obstacleTypeSelect');
-            var customInput = document.getElementById('customTypeName');
-
-            if (select.value === 'Other' && customInput.value.trim()) {
-                var hiddenInput = document.createElement('input');
-                hiddenInput.type = 'hidden';
-                hiddenInput.name = 'CustomObstacleType';
-                hiddenInput.value = customInput.value.trim();
-                this.appendChild(hiddenInput);
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize map
-            var map = L.map('mapid').setView([60.4720, 8.4689], 6);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors',
-                maxZoom: 19
-            }).addTo(map);
-
-            // Get saved geometry from model
-            var geometryWKT = '@Model.ObstacleGeometry';
-            
-            if (geometryWKT) {
-                try {
-                    if (geometryWKT.startsWith('POINT')) {
-                        var coords = geometryWKT.replace('POINT(', '').replace(')', '').split(' ');
-                        var lat = parseFloat(coords[1]);
-                        var lng = parseFloat(coords[0]);
-                        
-                        var marker = L.marker([lat, lng]).addTo(map);
-                        map.setView([lat, lng], 13);
-                    } else if (geometryWKT.startsWith('LINESTRING')) {
-                        var coordsStr = geometryWKT.replace('LINESTRING(', '').replace(')', '');
-                        var coordPairs = coordsStr.split(',');
-                        var latlngs = coordPairs.map(pair => {
-                            var coords = pair.trim().split(' ');
-                            return [parseFloat(coords[1]), parseFloat(coords[0])];
-                        });
-                        
-                        var polyline = L.polyline(latlngs, {color: 'blue'}).addTo(map);
-                        map.fitBounds(polyline.getBounds());
-                    } else if (geometryWKT.startsWith('POLYGON')) {
-                        var coordsStr = geometryWKT.replace('POLYGON((', '').replace('))', '');
-                        var coordPairs = coordsStr.split(',');
-                        var latlngs = coordPairs.map(pair => {
-                            var coords = pair.trim().split(' ');
-                            return [parseFloat(coords[1]), parseFloat(coords[0])];
-                        });
-                        
-                        var polygon = L.polygon(latlngs, {color: 'blue'}).addTo(map);
-                        map.fitBounds(polygon.getBounds());
-                    }
-                } catch (e) {
-                    console.error('Error parsing geometry:', e);
-                }
-            }
-        });
-    </script>
+    <script src="~/js/pilot/complete-quick-register.js"></script>
 }

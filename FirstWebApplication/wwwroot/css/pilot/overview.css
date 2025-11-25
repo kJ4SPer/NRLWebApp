@@ -1,0 +1,57 @@
+#map {
+    height: 500px;
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.details-card {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.detail-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #374151;
+}
+
+.detail-value {
+    color: #1f2937;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.status-approved {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-pending {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.status-rejected {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
