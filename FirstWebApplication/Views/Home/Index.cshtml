@@ -185,9 +185,9 @@
             display: none;
         }
 
-        /* Task tracker should be visible but below auth modal */
+        /* Task tracker should be above the blur overlay */
         #expo-task-tracker {
-            z-index: 1001; /* Below map-overlay (z-index: 1002) so auth modal is always clickable */
+            z-index: 1003; /* Above map-overlay (z-index: 1002) so it's not blurred and is clickable */
         }
     </style>
 </head>
