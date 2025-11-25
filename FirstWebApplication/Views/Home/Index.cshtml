@@ -25,42 +25,29 @@
 
         body, html {
             height: 100%;
-            overflow: hidden;
+            overflow-x: hidden;
+            background: white;
         }
 
-        /* Full-screen map background */
-        #landing-map {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        /* Overlay for role selection */
-        .role-selection-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.65);
-            z-index: 2;
+        /* Main container */
+        .main-container {
+            min-height: 100vh;
+            background: white;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 40px 20px;
         }
 
         /* Role selection container */
         .role-selection-container {
             display: flex;
             gap: 40px;
-            max-width: 1200px;
+            max-width: 1000px;
             width: 100%;
             justify-content: center;
-            flex-wrap: wrap;
+            align-items: stretch;
         }
 
         /* Individual role box */
@@ -68,21 +55,23 @@
             background: white;
             border-radius: 24px;
             padding: 50px 40px;
-            width: 100%;
-            max-width: 450px;
+            flex: 1;
+            min-width: 400px;
+            max-width: 480px;
             text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
             text-decoration: none;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: space-between;
         }
 
         .role-box:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
         }
 
         .role-box.pilot {
@@ -156,37 +145,38 @@
 
         /* Header branding */
         .header-branding {
-            position: absolute;
-            top: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 3;
             text-align: center;
+            margin-bottom: 60px;
         }
 
         .header-title {
-            font-size: 36px;
+            font-size: 42px;
             font-weight: 800;
-            color: white;
-            margin-bottom: 8px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            color: #1f2937;
+            margin-bottom: 12px;
         }
 
         .header-subtitle {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.95);
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            font-size: 18px;
+            color: #6b7280;
         }
 
         /* Responsive design */
-        @@media (max-width: 768px) {
+        @@media (max-width: 968px) {
             .role-selection-container {
                 flex-direction: column;
-                gap: 20px;
+                gap: 30px;
+                align-items: center;
             }
 
             .role-box {
-                max-width: 100%;
+                max-width: 500px;
+                min-width: 0;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .role-box {
                 padding: 40px 30px;
             }
 
@@ -203,27 +193,25 @@
             }
 
             .header-title {
-                font-size: 28px;
+                font-size: 32px;
             }
 
             .header-subtitle {
-                font-size: 14px;
+                font-size: 16px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Full-screen map background -->
-    <div id="landing-map"></div>
+    <!-- Main container with white background -->
+    <div class="main-container">
+        <!-- Header branding -->
+        <div class="header-branding">
+            <h1 class="header-title">Expo Demo - Velg din rolle</h1>
+            <p class="header-subtitle">Test systemet som Pilot eller Registerfører</p>
+        </div>
 
-    <!-- Header branding -->
-    <div class="header-branding">
-        <h1 class="header-title">Expo Demo - Velg din rolle</h1>
-        <p class="header-subtitle">Test systemet som Pilot eller Registerfører</p>
-    </div>
-
-    <!-- Role selection overlay -->
-    <div class="role-selection-overlay">
+        <!-- Role selection container -->
         <div class="role-selection-container">
             <!-- Pilot Role Box -->
             <a href="@Url.Action("ExpoDemo", "Pilot", new { role = "pilot" })" class="role-box pilot">
@@ -246,29 +234,5 @@
             </a>
         </div>
     </div>
-
-    <!-- Leaflet JavaScript for the map -->
-    <script src="~/lib/leaflet/leaflet.js"></script>
-
-    <script @Html.Raw(Html.NonceAttribute())>
-        // Initialize the non-interactive background map
-        document.addEventListener('DOMContentLoaded', function () {
-            var map = L.map('landing-map', {
-                center: [60.4720, 8.4689], // Center of Norway
-                zoom: 5,
-                zoomControl: false,
-                dragging: false,
-                touchZoom: false,
-                scrollWheelZoom: false,
-                doubleClickZoom: false,
-                boxZoom: false,
-                keyboard: false
-            });
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-        });
-    </script>
 </body>
 </html>
