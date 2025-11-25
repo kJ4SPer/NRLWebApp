@@ -139,7 +139,7 @@ namespace FirstWebApplication.Controllers
             await UpdateObstacleStatusAsync(obstacle, 3, userId, model.Comments ?? "");
 
             TempData["SuccessMessage"] = $"Obstacle '{obstacle.Name}' has been approved.";
-            return RedirectToAction("AllObstacles");
+            return RedirectToAction("AllObstacles", new { obstacleApproved = "true" });
         }
 
         // Avviser en hindring og oppdaterer status til Rejected
@@ -168,7 +168,7 @@ namespace FirstWebApplication.Controllers
             await UpdateObstacleStatusAsync(obstacle, 4, userId, comments);
 
             TempData["SuccessMessage"] = $"Obstacle '{obstacle.Name}' has been rejected.";
-            return RedirectToAction("AllObstacles");
+            return RedirectToAction("AllObstacles", new { obstacleDenied = "true" });
         }
 
         // Viser detaljert informasjon om en hindring (read-only)

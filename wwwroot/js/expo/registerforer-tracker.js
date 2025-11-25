@@ -3,7 +3,7 @@
 window.registerforerTasks = [
     {
         id: 'register',
-        title: 'Opprett ny brukerkonto',
+        title: 'Register deg',
         description: 'Klikk "Sign Up" og registrer deg som Registerfører'
     },
     {
@@ -12,23 +12,23 @@ window.registerforerTasks = [
         description: 'Logg inn med din Registerfører-konto'
     },
     {
-        id: 'view-dashboard',
-        title: 'Se Dashboard',
-        description: 'Naviger til Registerfører Dashboard'
+        id: 'check-map-point',
+        title: 'Sjekk et punkt på Map View',
+        description: 'Åpne Map View og sjekk et hindringspunkt'
     },
     {
-        id: 'view-map',
-        title: 'Se Map View',
-        description: 'Åpne kartvisningen med alle hindringer'
+        id: 'go-to-all-obstacles',
+        title: 'Gå inn på All Obstacles',
+        description: 'Naviger til All Obstacles siden'
     },
     {
         id: 'approve-obstacle',
-        title: 'Godkjenn en hindering',
-        description: 'Godkjenn en pending hindering fra listen'
+        title: 'Approve en Obstacle',
+        description: 'Godkjenn en pending obstacle'
     },
     {
-        id: 'view-all-obstacles',
-        title: 'Se alle hindringer',
-        description: 'Gå til "All Obstacles" og sjekk godkjent hindering'
+        id: 'deny-obstacle',
+        title: 'Deny en Obstacle',
+        description: 'Avslå en pending obstacle'
     }
 ];

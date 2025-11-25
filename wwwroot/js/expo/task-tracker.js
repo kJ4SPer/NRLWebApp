@@ -191,6 +191,10 @@ class ExpoTaskTracker {
             this.completeTask('approve-obstacle');
         }
 
+        if (params.get('obstacleDenied') === 'true') {
+            this.completeTask('deny-obstacle');
+        }
+
         // Check if user is authenticated
         const isAuthenticated = document.querySelector('[data-user-authenticated="true"]');
         if (isAuthenticated) {
@@ -220,17 +224,12 @@ class ExpoTaskTracker {
     }
 
     detectRegisterforerPages(path) {
-        if (path.includes('/registerforer/registerforerdashboard')) {
-            this.completeTask('view-dashboard');
-        }
-
         if (path.includes('/registerforer/mapview')) {
-            this.completeTask('view-map');
+            this.completeTask('check-map-point');
         }
 
         if (path.includes('/registerforer/allobstacles')) {
-            // The final task will be completed by DOM detection
-            setTimeout(() => this.detectDOMElements(), 1000);
+            this.completeTask('go-to-all-obstacles');
         }
     }
 
@@ -240,12 +239,6 @@ class ExpoTaskTracker {
             const obstacles = document.querySelectorAll('[data-obstacle-id]');
             if (obstacles.length >= 2) {
                 this.completeTask('check-full-register');
-            }
-        } else if (this.role === 'registerforer') {
-            // Check for approved obstacles in AllObstacles
-            const approvedObstacles = document.querySelectorAll('[data-obstacle-status="approved"]');
-            if (approvedObstacles.length > 0) {
-                this.completeTask('view-all-obstacles');
             }
         }
     }
