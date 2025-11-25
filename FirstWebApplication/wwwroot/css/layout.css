@@ -3,26 +3,8 @@
 /* Ensure content doesn't collide with fixed navbar and task tracker */
 .main-content {
     padding-top: 1rem;
-    margin-left: 400px; /* Make space for 380px task tracker + 20px margin */
-}
-
-/* On smaller screens, reduce margin based on tracker width */
-@media (max-width: 1400px) {
-    .main-content {
-        margin-left: 360px;
-    }
-}
-
-@media (max-width: 1200px) {
-    .main-content {
-        margin-left: 320px;
-    }
-}
-
-@media (max-width: 768px) {
-    .main-content {
-        margin-left: 0; /* Tracker collapses on mobile */
-    }
+    margin-left: 0;
+    width: 100%;
 }
 
 /* Mobile menu styles */

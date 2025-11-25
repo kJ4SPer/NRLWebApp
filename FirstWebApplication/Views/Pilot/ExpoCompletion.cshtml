@@ -63,13 +63,6 @@
                     <img src="~/images/expo/feedback-qr.png" alt="Feedback QR Code" class="qr-code-img" />
                 </div>
             </div>
-
-            <p class="qr-url-text">
-                Eller gå direkte til:
-                <a href="#" class="feedback-link" id="feedback-url" target="_blank">
-                    forms.google.com
-                </a>
-            </p>
         </div>
 
         <!-- Action Buttons -->
@@ -77,7 +70,7 @@
             <a asp-controller="Pilot" asp-action="Dashboard" class="btn btn-primary">
                 Gå til Dashboard
             </a>
-            <button onclick="resetExpoTest()" class="btn btn-secondary">
+            <button id="btn-restart-expo" class="btn btn-secondary">
                 Start testen på nytt
             </button>
         </div>
@@ -86,10 +79,6 @@
         <div class="thank-you-note">
             <p>
                 <strong>Takk for din interesse i vårt prosjekt!</strong>
-            </p>
-            <p class="text-sm">
-                For spørsmål eller mer informasjon, kontakt oss på:
-                <a href="mailto:contact@example.com" class="contact-link">contact@example.com</a>
             </p>
         </div>
     </div>

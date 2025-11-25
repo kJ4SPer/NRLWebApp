@@ -2,7 +2,15 @@
  * Expo Completion Page Scripts
  */
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+    // --- FIKS START ---
+    // Koble "Start på nytt"-knappen til funksjonen (fikser CSP/Scope problemer)
+    const restartBtn = document.getElementById('btn-restart-expo');
+    if (restartBtn) {
+        restartBtn.addEventListener('click', resetExpoTest);
+    }
+    // --- FIKS SLUTT ---
+
     // Initialize QR code (if you add a QR library later)
     // For now, we'll just show the placeholder
 
@@ -38,29 +46,33 @@ function celebrateCompletion() {
  * Reset expo test
  */
 function resetExpoTest() {
-    const confirmed = confirm('Er du sikker på at du vil starte testen på nytt? Dette vil nullstille all fremgang.');
+    const confirmed = confirm('Er du sikker på at du vil starte testen på nytt? Dette vil nullstille all fremgang og logge deg ut.');
 
     if (confirmed) {
-        // Clear localStorage for expo test
-        if (window.expoTracker) {
-            window.expoTracker.reset();
-        } else {
-            localStorage.removeItem('expoTaskProgress');
-        }
+        // 1. Slett local storage data
+        localStorage.removeItem('expoTaskProgress');
+        localStorage.removeItem('expoStatus');
 
-        // Redirect to registration page or home
-        window.location.href = '/Account/Logout';
+        // 2. Finn utloggings-skjemaet i menyen og send det
+        // Dette sikrer at vi logger ut korrekt med riktig sikkerhetstoken
+        const logoutForm = document.querySelector('form[action*="/Account/Logout"]');
+
+        if (logoutForm) {
+            logoutForm.submit();
+        } else {
+            // Fallback: Hvis skjemaet ikke finnes, send til forsiden
+            console.error("Kunne ikke finne utloggingsskjema");
+            window.location.href = '/';
+        }
     }
 }
 
 /**
- * Generate QR code for feedback form
- * This is a placeholder - you can integrate a QR code library like qrcodejs
+ * Generate QR Code
  */
 function generateQRCode(url) {
-    // Check if QRCode library is loaded
     if (typeof QRCode !== 'undefined') {
-        const qrContainer = document.getElementById('qr-code-placeholder');
+        const qrContainer = document.getElementById('qr-code-image');
         if (qrContainer) {
             qrContainer.innerHTML = '';
             new QRCode(qrContainer, {
@@ -74,8 +86,6 @@ function generateQRCode(url) {
         }
     } else {
         console.info('QRCode library not loaded. Showing placeholder.');
-        // You can load the library dynamically or add it to the page
-        // For now, the placeholder CSS pattern will show
     }
 }
 
@@ -113,7 +123,7 @@ style.textContent = `
             transform: scale(1);
         }
         50% {
-            transform: scale(1.15);
+            transform: scale(1.2);
         }
         100% {
             transform: scale(1);

@@ -19,12 +19,7 @@ class ExpoTaskTracker {
                 description: 'Logg inn med din nye brukerkonto',
                 completed: false
             },
-            {
-                id: 'view-register-type',
-                title: 'Se RegisterType',
-                description: 'Naviger til registreringsvalg-siden',
-                completed: false
-            },
+            // FIKS 1: Fjernet "Se RegisterType" (Oppgave 3) herfra
             {
                 id: 'create-quick-register',
                 title: 'Opprett Quick Register',
@@ -46,7 +41,7 @@ class ExpoTaskTracker {
             {
                 id: 'view-full-register',
                 title: 'Sjekk Full Register',
-                description: 'Se din nye Full Register i My Registrations',
+                description: 'Klikk deg inn på det nye hinderet for å se detaljene', // Oppdatert beskrivelse
                 completed: false
             }
         ];
@@ -54,7 +49,7 @@ class ExpoTaskTracker {
         this.loadProgress();
         this.initEventListeners();
 
-        // Check if all tasks are already completed (e.g., from previous session)
+        // Check if all tasks are already completed
         this.checkCompletion();
     }
 
@@ -94,12 +89,15 @@ class ExpoTaskTracker {
         const task = this.tasks.find(t => t.id === taskId);
         if (!task || task.completed) return;
 
-        // Enforce sequential completion: check if all previous tasks are completed
+        // Enforce sequential completion
         const taskIndex = this.tasks.findIndex(t => t.id === taskId);
         for (let i = 0; i < taskIndex; i++) {
             if (!this.tasks[i].completed) {
+                // Tillater å fullføre login selv om register ikke er markert (hvis man logger rett inn)
+                if (taskId === 'login' && this.tasks[i].id === 'register') continue;
+
                 console.log(`Cannot complete task "${taskId}" - previous task "${this.tasks[i].id}" must be completed first`);
-                return; // Don't complete this task if previous tasks aren't done
+                return;
             }
         }
 
@@ -108,7 +106,6 @@ class ExpoTaskTracker {
         this.updateUI();
         this.checkCompletion();
 
-        // Dispatch custom event
         window.dispatchEvent(new CustomEvent('expoTaskCompleted', {
             detail: { taskId, task }
         }));
@@ -119,8 +116,10 @@ class ExpoTaskTracker {
      */
     checkCompletion() {
         const allCompleted = this.tasks.every(task => task.completed);
-        if (allCompleted) {
-            // Wait a bit to show the last checkmark
+        const currentPath = window.location.pathname.toLowerCase();
+        const isOnCompletionPage = currentPath.includes('/pilot/expocompletion');
+
+        if (allCompleted && !isOnCompletionPage) {
             setTimeout(() => {
                 window.location.href = '/Pilot/ExpoCompletion';
             }, 1500);
@@ -133,7 +132,7 @@ class ExpoTaskTracker {
     getProgress() {
         const completed = this.tasks.filter(t => t.completed).length;
         const total = this.tasks.length;
-        return Math.round((completed / total) * 100);
+        return total === 0 ? 0 : Math.round((completed / total) * 100);
     }
 
     /**
@@ -146,7 +145,6 @@ class ExpoTaskTracker {
 
         if (!taskList) return;
 
-        // Update task list
         taskList.innerHTML = this.tasks.map((task, index) => `
             <div class="expo-task-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}">
                 <div class="expo-task-number">${index + 1}</div>
@@ -160,29 +158,21 @@ class ExpoTaskTracker {
             </div>
         `).join('');
 
-        // Update progress bar
         const progress = this.getProgress();
-        if (progressBar) {
-            progressBar.style.width = `${progress}%`;
-        }
-        if (progressText) {
-            progressText.textContent = `${progress}% fullført`;
-        }
+        if (progressBar) progressBar.style.width = `${progress}%`;
+        if (progressText) progressText.textContent = `${progress}% fullført`;
     }
 
     /**
-     * Initialize event listeners for automatic task detection
+     * Initialize event listeners
      */
     initEventListeners() {
-        // Detect current page and mark relevant tasks
         this.detectCurrentPage();
 
-        // Listen for form submissions
         document.addEventListener('submit', (e) => {
             this.handleFormSubmit(e);
         });
 
-        // Listen for navigation
         window.addEventListener('popstate', () => {
             this.detectCurrentPage();
         });
@@ -193,93 +183,47 @@ class ExpoTaskTracker {
      */
     detectCurrentPage() {
         const path = window.location.pathname.toLowerCase();
+        const urlParams = new URLSearchParams(window.location.search);
 
-        // Check if user is logged in (has specific navigation elements)
+        // Login check
         const isLoggedIn = document.querySelector('[data-user-authenticated="true"]');
-
         if (isLoggedIn) {
             this.completeTask('login');
         }
 
         // Register Type page
         if (path.includes('/pilot/registertype')) {
-            // Check URL parameters for success messages
-            const urlParams = new URLSearchParams(window.location.search);
-
-            // New user just registered - mark register and login as complete
             if (urlParams.get('newUser') === 'true') {
                 this.completeTask('register');
                 this.completeTask('login');
             }
-
-            this.completeTask('view-register-type');
-
             if (urlParams.get('fullRegisterSuccess') === 'true') {
                 this.completeTask('create-full-register');
             }
         }
 
-        // Quick Register page - detect if opened
-        if (path.includes('/pilot/quickregister')) {
-            // This will be completed when form is submitted successfully
+        // My Registrations page
+        if (path.includes('/pilot/myregistrations')) {
+            // FIKS 2: Kun fullfør hvis vi har fått suksess-parameter fra CompleteQuickRegister-skjemaet
+            if (urlParams.get('quickRegisterCompleted') === 'true') {
+                this.completeTask('complete-quick-register');
+            }
+            // Vi har fjernet detectCompletedObstacles() kall herfra for å unngå "falsk" fullføring
         }
 
-        // Complete Quick Register page - detect when visiting
+        // Complete Quick Register page
         if (path.includes('/pilot/completequickregister')) {
             this.completeTask('create-quick-register');
         }
 
-        // Full Register page
-        if (path.includes('/pilot/fullregister')) {
-            // This will be completed when form is submitted successfully
-        }
-
-        // My Registrations page
-        if (path.includes('/pilot/myregistrations')) {
-            // Check if we just completed a quick register
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('quickRegisterCompleted') === 'true') {
-                this.completeTask('complete-quick-register');
-            }
-
-            // Check if we're viewing after full register
-            if (urlParams.get('viewingFullRegister') === 'true') {
+        // FIKS 3: Sjekk om brukeren er inne på selve hinderet (Overview/Details)
+        // Dette sikrer at oppgave 7 kun fullføres når de faktisk ser på hinderet
+        if (path.includes('/pilot/overview') || path.includes('/pilot/viewobstacle')) {
+            // Sjekk at vi faktisk har opprettet hinderet først
+            const hasCreatedRegister = this.tasks.find(t => t.id === 'create-full-register')?.completed;
+            if (hasCreatedRegister) {
                 this.completeTask('view-full-register');
             }
-
-            // Auto-detect if user has completed obstacles
-            setTimeout(() => {
-                this.detectCompletedObstacles();
-            }, 500);
-        }
-    }
-
-    /**
-     * Detect completed obstacles on My Registrations page
-     */
-    detectCompletedObstacles() {
-        const path = window.location.pathname.toLowerCase();
-        if (!path.includes('/pilot/myregistrations')) return;
-
-        // Check if there are no incomplete obstacles (yellow box empty or missing)
-        const incompleteSection = document.querySelector('.bg-yellow-100');
-        const incompleteCount = incompleteSection ?
-            incompleteSection.querySelectorAll('tbody tr').length : 0;
-
-        // Check if there are pending obstacles (completed quick register)
-        const pendingSection = document.querySelectorAll('.bg-blue-100, .bg-green-100');
-        const hasPendingOrApproved = pendingSection.length > 0;
-
-        // If quick register was created and now no incomplete items, mark as completed
-        if (this.tasks.find(t => t.id === 'create-quick-register')?.completed &&
-            incompleteCount === 0 && hasPendingOrApproved) {
-            this.completeTask('complete-quick-register');
-        }
-
-        // Check for full register by looking at pending/approved obstacles
-        const allObstacles = document.querySelectorAll('[data-obstacle-id]');
-        if (allObstacles.length >= 2) { // Has both quick and full register
-            this.completeTask('view-full-register');
         }
     }
 
@@ -290,9 +234,7 @@ class ExpoTaskTracker {
         const form = event.target;
         const action = form.action?.toLowerCase() || '';
 
-        // Registration form
         if (action.includes('/account/register')) {
-            // Mark as completed after successful registration
             setTimeout(() => {
                 if (!document.querySelector('.text-red-500')) {
                     this.completeTask('register');
@@ -300,19 +242,12 @@ class ExpoTaskTracker {
             }, 500);
         }
 
-        // Quick Register form
-        if (action.includes('/pilot/quickregister')) {
-            // Will be detected by success state on page
-        }
-
-        // Full Register form
-        if (action.includes('/pilot/fullregister')) {
-            // Will be detected by success state on page
-        }
+        // Her kan vi legge til mer spesifikk håndtering hvis nødvendig,
+        // men URL-parameter sjekk i detectCurrentPage er ofte tryggere.
     }
 
     /**
-     * Reset progress (for testing)
+     * Reset progress
      */
     reset() {
         localStorage.removeItem(this.storageKey);
@@ -336,7 +271,5 @@ let expoTracker;
 document.addEventListener('DOMContentLoaded', () => {
     expoTracker = new ExpoTaskTracker();
     expoTracker.updateUI();
-
-    // Make it globally accessible for manual task completion
     window.expoTracker = expoTracker;
 });
