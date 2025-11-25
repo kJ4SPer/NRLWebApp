@@ -16,6 +16,9 @@
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
+    <!-- Expo Task Tracker CSS -->
+    <link rel="stylesheet" href="~/css/expo/task-tracker.css" asp-append-version="true" />
+
     <style @Html.Raw(Html.NonceAttribute())>
         /* Remove all margins and make the page full height */
         * {
@@ -62,7 +65,8 @@
             padding: 40px;
             width: 90%;
             max-width: 420px;
-            z-index: 3; /* Above everything */
+            z-index: 1002; /* Above task tracker so it's still accessible */
+            position: relative;
             transition: all 0.3s ease;
         }
 
@@ -180,6 +184,11 @@
         .hidden {
             display: none;
         }
+
+        /* Task tracker should be above the map overlay */
+        #expo-task-tracker {
+            z-index: 1001; /* Above map overlay (z-index: 2) and auth modal (z-index: 3) but accessible */
+        }
     </style>
 </head>
 <body>
@@ -295,8 +304,41 @@
         </div>
     </div>
 
+    <!-- Expo Task Tracker Sidebar -->
+    <div id="expo-task-tracker">
+        <button class="expo-toggle-btn" onclick="expoTracker?.toggleTracker()" title="Toggle task tracker">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+
+        <div class="expo-tracker-header">
+            <div class="expo-tracker-title">
+                <span>🎯 Expo Test</span>
+            </div>
+            <div class="expo-tracker-subtitle">
+                Fullfør alle oppgavene nedenfor
+            </div>
+
+            <div class="expo-progress-container">
+                <div class="expo-progress-bar-bg">
+                    <div id="expo-progress-bar" class="expo-progress-bar-fill" style="width: 0%"></div>
+                </div>
+                <div id="expo-progress-text" class="expo-progress-text">0% fullført</div>
+            </div>
+        </div>
+
+        <div id="expo-task-list" class="expo-task-list">
+            <!-- Tasks will be populated by JavaScript -->
+            <div class="expo-tracker-loading">Loading tasks...</div>
+        </div>
+    </div>
+
     <!-- Leaflet JavaScript for the map -->
     <script src="~/lib/leaflet/leaflet.js"></script>
+
+    <!-- Expo Task Tracker JS -->
+    <script src="~/js/expo/task-tracker.js" asp-append-version="true"></script>
 
     <script @Html.Raw(Html.NonceAttribute())>
         // Initialize the map when the page loads
