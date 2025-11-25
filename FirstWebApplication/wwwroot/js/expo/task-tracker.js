@@ -86,7 +86,7 @@ class ExpoTaskTracker {
     }
 
     renderTasks() {
-        const container = document.getElementById('tracker-task-list');
+        const container = document.getElementById('expo-task-list');
         if (!container) return;
 
         container.innerHTML = '';
