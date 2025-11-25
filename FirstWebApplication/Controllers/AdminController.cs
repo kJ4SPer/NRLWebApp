@@ -284,7 +284,7 @@ namespace FirstWebApplication.Controllers
 
         // Hjelpe-metoder
 
-        // Henter samlet statistikk for dashboard
+        // Henter samlet statistikk for dashboard.
         private async Task<DashboardStatistics> GetDashboardStatisticsAsync()
         {
             var pilots = await _roleService.GetUsersInRoleAsync("Pilot");
