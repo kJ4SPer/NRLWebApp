@@ -1,0 +1,236 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.quick-register-container {
+    position: absolute;
+    top: 64px;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 64px);
+    z-index: 1;
+}
+
+#quick-register-map {
+    width: 100%;
+    height: 100%;
+}
+
+.status-overlay {
+    position: absolute;
+    top: 64px;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 64px);
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.status-box {
+    background: white;
+    border-radius: 15px;
+    padding: 40px;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.success-icon {
+    color: #10b981;
+    animation: scaleIn 0.5s ease-in-out;
+}
+
+.error-icon {
+    color: #ef4444;
+}
+
+.warning-icon {
+    color: #f59e0b;
+}
+
+.spinner {
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes scaleIn {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.hidden {
+    display: none !important;
+}
+
+.action-btn {
+    display: inline-block;
+    padding: 12px 30px;
+    margin: 10px 5px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.action-btn.secondary {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+}
+
+.duplicate-popup {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    text-align: left;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.duplicate-popup h2 {
+    color: #f59e0b;
+    font-size: 24px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.duplicate-item {
+    background: #f3f4f6;
+    border-left: 4px solid #f59e0b;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 8px;
+}
+
+.duplicate-item h3 {
+    color: #1f2937;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.duplicate-item p {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+.duplicate-item .distance {
+    color: #ef4444;
+    font-weight: bold;
+}
+
+.popup-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.popup-buttons button {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-cancel:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+}
+
+.btn-continue {
+    background: #10b981;
+    color: white;
+}
+
+.btn-continue:hover {
+    background: #059669;
+    transform: translateY(-2px);
+}
+
+.help-text {
+    background: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #1e40af;
+    text-align: left;
+}
+
+.help-text strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #1e3a8a;
+}
+
+.help-text ul {
+    margin: 8px 0 0 20px;
+}
+
+.help-text li {
+    margin: 4px 0;
+}
+
+.redirect-timer {
+    font-size: 14px;
+    color: #6b7280;
+    margin-top: 1rem;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .quick-register-container {
+        top: 56px;
+    }
+
+    .status-overlay {
+        top: 56px;
+    }
+
+    .status-box, .duplicate-popup {
+        margin: 20px;
+        padding: 25px;
+    }
+}

@@ -5,13 +5,7 @@
     var formattedHeight = Model.Height.ToString("F2");
 }
 
-<style>
-    #map {
-        height: 500px;
-        width: 100%;
-        border-radius: 8px;
-    }
-</style>
+<link rel="stylesheet" href="~/css/registerforer/review-obstacle.css" />
 
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
@@ -97,7 +91,10 @@
             <!-- Map -->
             <div class="bg-white rounded-lg shadow-md p-6">
                 <h2 class="text-2xl font-bold text-gray-900 mb-4">Location</h2>
-                <div id="map"></div>
+                <div id="map"
+                     data-geometry="@Model.Location"
+                     data-name="@Model.Name"
+                     data-height="@formattedHeight"></div>
             </div>
 
             <!-- Status History -->
@@ -142,7 +139,7 @@
                             <textarea name="Comments" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Add any comments about this approval..."></textarea>
                         </div>
 
-                        <button type="submit" class="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition" onclick="return confirm('Are you sure you want to approve this obstacle?');">
+                        <button type="submit" class="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition" id="btn-approve-obstacle">
                             Approve This Obstacle
                         </button>
                     </form>
@@ -168,7 +165,7 @@
                             <textarea name="Comments" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Any additional information..."></textarea>
                         </div>
 
-                        <button type="submit" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition" onclick="return confirm('Are you sure you want to reject this obstacle?');">
+                        <button type="submit" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition" id="btn-reject-obstacle">
                             Reject This Obstacle
                         </button>
                     </form>
@@ -189,55 +186,5 @@
 @section Scripts {
     <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
     <script src="~/lib/leaflet/leaflet.js"></script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var map = L.map('map').setView([60.4720, 8.4689], 6);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors',
-                maxZoom: 19
-            }).addTo(map);
-
-            var geometryWKT = '@Model.Location';
-            
-            if (geometryWKT) {
-                try {
-                    if (geometryWKT.startsWith('POINT')) {
-                        var coords = geometryWKT.replace('POINT(', '').replace(')', '').split(' ');
-                        var lat = parseFloat(coords[1]);
-                        var lng = parseFloat(coords[0]);
-                        
-                        var marker = L.marker([lat, lng]).addTo(map);
-                        marker.bindPopup('<b>@Model.Name</b><br>@formattedHeight m').openPopup();
-                        map.setView([lat, lng], 13);
-                    } else if (geometryWKT.startsWith('LINESTRING')) {
-                        var coordsStr = geometryWKT.replace('LINESTRING(', '').replace(')', '');
-                        var coordPairs = coordsStr.split(',');
-                        var latlngs = coordPairs.map(pair => {
-                            var coords = pair.trim().split(' ');
-                            return [parseFloat(coords[1]), parseFloat(coords[0])];
-                        });
-                        
-                        var polyline = L.polyline(latlngs, {color: 'blue'}).addTo(map);
-                        polyline.bindPopup('<b>@Model.Name</b><br>@formattedHeight m');
-                        map.fitBounds(polyline.getBounds());
-                    } else if (geometryWKT.startsWith('POLYGON')) {
-                        var coordsStr = geometryWKT.replace('POLYGON((', '').replace('))', '');
-                        var coordPairs = coordsStr.split(',');
-                        var latlngs = coordPairs.map(pair => {
-                            var coords = pair.trim().split(' ');
-                            return [parseFloat(coords[1]), parseFloat(coords[0])];
-                        });
-                        
-                        var polygon = L.polygon(latlngs, {color: 'blue'}).addTo(map);
-                        polygon.bindPopup('<b>@Model.Name</b><br>@formattedHeight m');
-                        map.fitBounds(polygon.getBounds());
-                    }
-                } catch (e) {
-                    console.error('Error parsing geometry:', e);
-                }
-            }
-        });
-    </script>
+    <script src="~/js/registerforer/review-obstacle.js"></script>
 }

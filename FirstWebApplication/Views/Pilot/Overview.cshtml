@@ -5,65 +5,7 @@
     var formattedHeight = Model.Height.ToString("F2");
 }
 
-<style>
-    #map {
-        height: 500px;
-        width: 100%;
-        border-radius: 8px;
-        margin-top: 20px;
-    }
-
-    .details-card {
-        background: white;
-        border-radius: 8px;
-        padding: 24px;
-        margin-bottom: 24px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    .detail-row {
-        display: grid;
-        grid-template-columns: 200px 1fr;
-        padding: 12px 0;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .detail-row:last-child {
-        border-bottom: none;
-    }
-
-    .detail-label {
-        font-weight: 600;
-        color: #374151;
-    }
-
-    .detail-value {
-        color: #1f2937;
-    }
-
-    .status-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 9999px;
-        font-weight: 600;
-        font-size: 14px;
-    }
-
-    .status-approved {
-        background-color: #d1fae5;
-        color: #065f46;
-    }
-
-    .status-pending {
-        background-color: #dbeafe;
-        color: #1e40af;
-    }
-
-    .status-rejected {
-        background-color: #fee2e2;
-        color: #991b1b;
-    }
-</style>
+<link rel="stylesheet" href="~/css/pilot/overview.css" />
 
 <div class="container mx-auto px-4 py-8">
     @if (TempData["IsNewRegistration"] != null && (bool)TempData["IsNewRegistration"])
@@ -206,7 +148,10 @@
             <!-- Map -->
             <div class="details-card">
                 <h2 class="text-2xl font-bold text-gray-900 mb-4">Location</h2>
-                <div id="map"></div>
+                <div id="map"
+                     data-geometry="@Model.Location"
+                     data-name="@Model.Name"
+                     data-height="@formattedHeight"></div>
             </div>
 
             <!-- Action Buttons -->
@@ -225,55 +170,5 @@
 @section Scripts {
     <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
     <script src="~/lib/leaflet/leaflet.js"></script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var map = L.map('map').setView([60.4720, 8.4689], 6);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors',
-                maxZoom: 19
-            }).addTo(map);
-
-            var geometryWKT = '@Model.Location';
-            
-            if (geometryWKT) {
-                try {
-                    if (geometryWKT.startsWith('POINT')) {
-                        var coords = geometryWKT.replace('POINT(', '').replace(')', '').split(' ');
-                        var lat = parseFloat(coords[1]);
-                        var lng = parseFloat(coords[0]);
-                        
-                        var marker = L.marker([lat, lng]).addTo(map);
-                        marker.bindPopup('<b>@Model.Name</b><br>@formattedHeight m').openPopup();
-                        map.setView([lat, lng], 13);
-                    } else if (geometryWKT.startsWith('LINESTRING')) {
-                        var coordsStr = geometryWKT.replace('LINESTRING(', '').replace(')', '');
-                        var coordPairs = coordsStr.split(',');
-                        var latlngs = coordPairs.map(pair => {
-                            var coords = pair.trim().split(' ');
-                            return [parseFloat(coords[1]), parseFloat(coords[0])];
-                        });
-
-                        var polyline = L.polyline(latlngs, {color: 'blue'}).addTo(map);
-                        polyline.bindPopup('<b>@Model.Name</b><br>@formattedHeight m');
-                        map.fitBounds(polyline.getBounds());
-                    } else if (geometryWKT.startsWith('POLYGON')) {
-                        var coordsStr = geometryWKT.replace('POLYGON((', '').replace('))', '');
-                        var coordPairs = coordsStr.split(',');
-                        var latlngs = coordPairs.map(pair => {
-                            var coords = pair.trim().split(' ');
-                            return [parseFloat(coords[1]), parseFloat(coords[0])];
-                        });
-
-                        var polygon = L.polygon(latlngs, {color: 'blue'}).addTo(map);
-                        polygon.bindPopup('<b>@Model.Name</b><br>@formattedHeight m');
-                        map.fitBounds(polygon.getBounds());
-                    }
-                } catch (e) {
-                    console.error('Error parsing geometry:', e);
-                }
-            }
-        });
-    </script>
+    <script src="~/js/pilot/overview.js"></script>
 }
