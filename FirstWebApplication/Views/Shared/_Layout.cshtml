@@ -26,7 +26,14 @@
 
     @await RenderSectionAsync("Head", required: false)
 </head>
-<body class="bg-gray-50" @(User.Identity?.IsAuthenticated == true ? "data-user-authenticated=\"true\"" : "")>
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <body class="bg-gray-50" data-user-authenticated="true">
+}
+else
+{
+    <body class="bg-gray-50">
+}
     <header>
         <nav class="bg-gray-200 shadow shadow-gray-300 w-100 px-4 lg:px-8">
             <div class="h-16 mx-auto container flex items-center justify-between">
