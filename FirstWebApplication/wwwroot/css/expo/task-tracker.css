@@ -35,7 +35,7 @@
 
     /* En tydelig "Fane" som viser brukeren at noe ligger der */
     #expo-task-tracker::after {
-        content: "DINE OPPGAVER";
+        content: "Mine Oppgaver";
         position: absolute;
         right: 0;
         top: 50%;
@@ -177,21 +177,8 @@
 
 /* Toggle Button */
 .expo-toggle-btn {
-    position: absolute;
-    right: -45px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 45px;
-    height: 80px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    border-radius: 0 12px 12px 0;
-    color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+    /* Hidden - using ::after tab instead */
+    display: none;
     transition: all 0.3s ease;
     z-index: 1;
 }

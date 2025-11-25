@@ -12,41 +12,38 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Completion CSS -->
-    <link rel="stylesheet" href="~/css/expo/completion.css" asp-append-version="true" />
 </head>
-<body>
-    <div class="completion-container">
-        <div class="completion-card">
-            <!-- Success Icon -->
-            <div class="completion-icon">✨</div>
+<body class="bg-gradient-to-br from-indigo-500 to-purple-600 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-center animate-fadeIn">
+        <!-- Success Icon -->
+        <div class="text-7xl mb-6">✨</div>
 
-            <!-- Title -->
-            <h1 class="completion-title">Gratulerer!</h1>
+        <!-- Title -->
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Gratulerer!</h1>
 
-            <!-- Summary -->
-            <p class="completion-summary">
-                Du har fullført alle 6 oppgavene i Registerfører-testen!
-            </p>
+        <!-- Summary -->
+        <p class="text-lg text-gray-600 bg-gray-100 rounded-xl p-6 mb-8">
+            Du har fullført alle 6 oppgavene i Registerfører-testen!
+        </p>
 
-            <!-- QR Code Section -->
-            <div class="qr-section">
-                <div class="qr-code-container">
-                    <img src="~/images/expo/feedback-qr.png" alt="Feedback QR Code" class="qr-code-image" />
+        <!-- QR Code Section -->
+        <div class="bg-indigo-50 border-2 border-indigo-300 rounded-2xl p-8 mb-8">
+            <div class="flex justify-center mb-4">
+                <div class="bg-white p-4 rounded-xl shadow-lg">
+                    <img src="~/images/expo/feedback-qr.png" alt="Feedback QR Code" class="w-48 h-48" />
                 </div>
-                <p class="qr-text">Scan QR-koden for å gi feedback</p>
             </div>
+            <p class="text-indigo-700 font-medium">Scan QR-koden for å gi feedback</p>
+        </div>
 
-            <!-- Buttons -->
-            <div class="completion-buttons">
-                <a href="@Url.Action("RegisterforerDashboard", "Registerforer")" class="completion-btn completion-btn-primary">
-                    Tilbake til Dashboard
-                </a>
-                <button id="reset-btn" class="completion-btn completion-btn-secondary">
-                    Start på nytt
-                </button>
-            </div>
+        <!-- Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4">
+            <a href="@Url.Action("RegisterforerDashboard", "Registerforer")" class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200">
+                Tilbake til Dashboard
+            </a>
+            <button id="reset-btn" class="flex-1 px-6 py-3 bg-white text-indigo-600 font-semibold rounded-xl border-2 border-indigo-500 hover:bg-gray-50 hover:scale-105 transition-all duration-200">
+                Start på nytt
+            </button>
         </div>
     </div>
 
