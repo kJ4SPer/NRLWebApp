@@ -29,16 +29,24 @@ class ExpoTaskTracker {
     loadTaskDefinitions(role) {
         // This will be overridden by role-specific scripts
         // that define window.pilotTasks or window.registerforerTasks
+        console.log('[Task Tracker] Loading tasks for role:', role);
+        console.log('[Task Tracker] window.pilotTasks:', window.pilotTasks ? 'defined' : 'undefined');
+        console.log('[Task Tracker] window.registerforerTasks:', window.registerforerTasks ? 'defined' : 'undefined');
+
         if (role === 'pilot' && window.pilotTasks) {
             this.tasks = window.pilotTasks.map((task, index) => ({
                 ...task,
                 completed: false
             }));
+            console.log('[Task Tracker] Loaded', this.tasks.length, 'pilot tasks');
         } else if (role === 'registerforer' && window.registerforerTasks) {
             this.tasks = window.registerforerTasks.map((task, index) => ({
                 ...task,
                 completed: false
             }));
+            console.log('[Task Tracker] Loaded', this.tasks.length, 'registerforer tasks');
+        } else {
+            console.warn('[Task Tracker] No tasks loaded! Role:', role);
         }
     }
 
@@ -271,16 +279,25 @@ class ExpoTaskTracker {
 document.addEventListener('DOMContentLoaded', function() {
     // Check if we're on a page that should have the tracker
     const tracker = document.getElementById('expo-task-tracker');
-    if (!tracker) return;
+    if (!tracker) {
+        console.log('[Task Tracker] No tracker element found');
+        return;
+    }
 
     // Get role from URL parameter or data attribute
     const params = new URLSearchParams(window.location.search);
     const role = params.get('role') || tracker.getAttribute('data-role');
+
+    console.log('[Task Tracker] Detected role:', role);
+    console.log('[Task Tracker] URL params role:', params.get('role'));
+    console.log('[Task Tracker] data-role attribute:', tracker.getAttribute('data-role'));
 
     if (role) {
         // Wait for role-specific task definitions to load
         setTimeout(() => {
             window.expoTracker = new ExpoTaskTracker(role);
         }, 100);
+    } else {
+        console.warn('[Task Tracker] No role detected!');
     }
 });
