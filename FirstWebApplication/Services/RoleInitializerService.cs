@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace FirstWebApplication.Services
 {
@@ -17,13 +20,27 @@ namespace FirstWebApplication.Services
         {
             string[] roleNames = { "Admin", "Pilot", "Registerfører" };
 
+            // Fetch existing role names in a single query to avoid multiple store lookups
+            var existingRoleNames = await _roleManager.Roles
+                .Select(r => r.Name)
+                .ToListAsync();
+
+            var existingSet = new HashSet<string>(existingRoleNames ?? new List<string>(), StringComparer.OrdinalIgnoreCase);
+
             foreach (var roleName in roleNames)
             {
-                var roleExist = await _roleManager.RoleExistsAsync(roleName);
-                if (!roleExist)
+                if (!existingSet.Contains(roleName))
                 {
-                    await _roleManager.CreateAsync(new IdentityRole(roleName));
-                    _logger.LogInformation($"Role '{roleName}' created successfully.");
+                    var result = await _roleManager.CreateAsync(new IdentityRole(roleName));
+                    if (result.Succeeded)
+                    {
+                        _logger.LogInformation($"Role '{roleName}' created successfully.");
+                        existingSet.Add(roleName);
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Failed to create role '{roleName}': {string.Join(';', result.Errors.Select(e => e.Description))}");
+                    }
                 }
             }
         }
