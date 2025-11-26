@@ -93,17 +93,17 @@ class ExpoTaskTracker {
 
         this.tasks.forEach((task, index) => {
             const taskElement = document.createElement('div');
-            taskElement.className = `task-item ${task.completed ? 'completed' : ''}`;
+            taskElement.className = `expo-task-item ${task.completed ? 'completed' : ''}`;
             taskElement.setAttribute('data-task-id', task.id);
 
             taskElement.innerHTML = `
-                <div class="task-number">${index + 1}</div>
-                <div class="task-content">
-                    <h4 class="task-title">${task.title}</h4>
-                    <p class="task-description">${task.description}</p>
+                <div class="expo-task-number">${index + 1}</div>
+                <div class="expo-task-content">
+                    <h4 class="expo-task-title">${task.title}</h4>
+                    <p class="expo-task-description">${task.description}</p>
                 </div>
-                <div class="task-status">
-                    <div class="status-icon ${task.completed ? 'completed' : 'pending'}">
+                <div class="expo-task-status">
+                    <div class="expo-status-icon ${task.completed ? 'completed' : 'pending'}">
                         ${task.completed ? '✓' : ''}
                     </div>
                 </div>
