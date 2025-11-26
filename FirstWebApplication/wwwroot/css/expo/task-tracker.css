@@ -35,7 +35,7 @@
 
     /* En tydelig "Fane" som viser brukeren at noe ligger der */
     #expo-task-tracker::after {
-        content: "Mine Oppgaver";
+        content: "MINE OPPGAVER";
         position: absolute;
         right: 0;
         top: 50%;

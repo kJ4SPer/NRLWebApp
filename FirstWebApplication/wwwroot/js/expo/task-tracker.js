@@ -251,16 +251,26 @@ class ExpoTaskTracker {
     }
 
     checkCompletion() {
+        // Ensure we have tasks to check
+        if (this.tasks.length === 0) {
+            console.log('[Task Tracker] No tasks loaded yet, skipping completion check');
+            return;
+        }
+
         const allCompleted = this.tasks.every(task => task.completed);
+        const completedCount = this.tasks.filter(t => t.completed).length;
+
+        console.log(`[Task Tracker] Completion check: ${completedCount}/${this.tasks.length} tasks completed`);
 
         if (allCompleted && this.initialized) {
-            console.log('All tasks completed! Redirecting to completion page...');
+            console.log('[Task Tracker] All tasks completed! Redirecting to completion page...');
 
             // Redirect to completion page after a short delay
             setTimeout(() => {
                 const completionUrl = this.role === 'pilot'
                     ? '/Pilot/ExpoCompletion'
                     : '/Registerforer/ExpoCompletion';
+                console.log('[Task Tracker] Redirecting to:', completionUrl);
                 window.location.href = completionUrl;
             }, 1500);
         }

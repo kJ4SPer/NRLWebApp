@@ -47,6 +47,10 @@
         </div>
     </div>
 
+    <!-- Hidden logout form -->
+    <form id="logout-form" asp-controller="Account" asp-action="Logout" method="post" style="display: none;">
+    </form>
+
     <script @Html.Raw(Html.NonceAttribute())>
         document.addEventListener('DOMContentLoaded', function () {
             var resetBtn = document.getElementById('reset-btn');
@@ -56,8 +60,14 @@
                     // Clear task progress
                     localStorage.removeItem('expoTaskProgress_pilot');
 
-                    // Redirect to role selection page
-                    window.location.href = '@Url.Action("Index", "Home")';
+                    // Submit logout form to logout user
+                    var logoutForm = document.getElementById('logout-form');
+                    if (logoutForm) {
+                        logoutForm.submit();
+                    } else {
+                        // Fallback to home page
+                        window.location.href = '@Url.Action("Index", "Home")';
+                    }
                 });
             }
         });
