@@ -30,15 +30,5 @@ window.pilotTasks = [
         id: 'check-full-register',
         title: 'Sjekk Full Register',
         description: 'Se din nye Full Register i My Registrations'
-    },
-    {
-        id: 'check-pending-status',
-        title: 'Sjekk Pending Review status',
-        description: 'Se at hindringen venter på godkjenning'
-    },
-    {
-        id: 'view-pending-review',
-        title: 'Åpne Pending Review',
-        description: 'Klikk på View under Pending Review'
     }
 ];

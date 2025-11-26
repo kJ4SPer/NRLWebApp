@@ -248,27 +248,17 @@ class ExpoTaskTracker {
 
     detectDOMElements() {
         if (this.role === 'pilot') {
-            // Check for 2+ obstacles in MyRegistrations
-            const obstacles = document.querySelectorAll('[data-obstacle-id]');
-            if (obstacles.length >= 2) {
-                this.completeTask('check-full-register');
-            }
-
-            // Check for pending obstacles (task 7)
-            const pendingObstacles = document.querySelectorAll('[data-obstacle-status="pending"]');
-            if (pendingObstacles.length > 0) {
-                this.completeTask('check-pending-status');
-            }
+            // Don't complete task here - wait until user views the obstacle
         }
     }
 
     detectOverviewPage() {
         if (this.role === 'pilot') {
-            // Check if we're viewing a pending obstacle's overview
-            const pendingBadge = document.querySelector('.status-badge.status-pending');
-            if (pendingBadge) {
-                // Complete task 8
-                this.completeTask('view-pending-review');
+            // When viewing obstacle overview, complete the final task
+            const obstacleDetails = document.querySelector('.obstacle-details, [data-obstacle-id]');
+            if (obstacleDetails) {
+                // Complete final task (check-full-register)
+                this.completeTask('check-full-register');
             }
         }
     }
