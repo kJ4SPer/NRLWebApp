@@ -11,9 +11,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 // Configure database connection
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection"); //Gjør at man kan prøve på nytt om man skriver feil i innlogging
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connectionString, new MariaDbServerVersion(new Version(10, 11, 0))));
+    options.UseMySql(
+        connectionString,
+        new MariaDbServerVersion(new Version(10, 11, 0)),
+        mySqlOptions =>
+        {
+            mySqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null);
+        }
+    ));
 
 // Register DatabaseSeeder
 builder.Services.AddScoped<DatabaseSeeder>();
