@@ -13,10 +13,6 @@ class ExpoTaskTracker {
         // Load saved progress
         this.loadProgress();
 
-        // Mark as initialized before detecting pages/checking completion
-        // This ensures redirect logic works when last task is completed
-        this.initialized = true;
-
         // Initialize UI and event listeners
         this.initUI();
         this.initEventListeners();
@@ -26,6 +22,8 @@ class ExpoTaskTracker {
 
         // Check if all tasks are complete
         this.checkCompletion();
+
+        this.initialized = true;
     }
 
     loadTaskDefinitions(role) {
@@ -88,24 +86,26 @@ class ExpoTaskTracker {
     }
 
     renderTasks() {
-        const container = document.getElementById('expo-task-list');
+        const container = document.getElementById('tracker-task-list');
         if (!container) return;
 
         container.innerHTML = '';
 
         this.tasks.forEach((task, index) => {
             const taskElement = document.createElement('div');
-            taskElement.className = `expo-task-item ${task.completed ? 'completed' : ''}`;
+            taskElement.className = `task-item ${task.completed ? 'completed' : ''}`;
             taskElement.setAttribute('data-task-id', task.id);
 
             taskElement.innerHTML = `
-                <div class="expo-task-number">${index + 1}</div>
-                <div class="expo-task-content">
-                    <h4 class="expo-task-title">${task.title}</h4>
-                    <p class="expo-task-description">${task.description}</p>
+                <div class="task-number">${index + 1}</div>
+                <div class="task-content">
+                    <h4 class="task-title">${task.title}</h4>
+                    <p class="task-description">${task.description}</p>
                 </div>
-                <div class="expo-task-check">
-                    ${task.completed ? '✓' : ''}
+                <div class="task-status">
+                    <div class="status-icon ${task.completed ? 'completed' : 'pending'}">
+                        ${task.completed ? '✓' : ''}
+                    </div>
                 </div>
             `;
 
@@ -118,8 +118,8 @@ class ExpoTaskTracker {
         const totalCount = this.tasks.length;
         const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
-        const progressBar = document.querySelector('.expo-progress-bar-fill');
-        const progressText = document.querySelector('.expo-progress-text');
+        const progressBar = document.querySelector('.progress-bar-fill');
+        const progressText = document.querySelector('.progress-text');
 
         if (progressBar) {
             progressBar.style.width = `${percentage}%`;
@@ -185,7 +185,6 @@ class ExpoTaskTracker {
         // Check for URL parameters that indicate task completion
         if (params.get('newUser') === 'true') {
             this.completeTask('register');
-            this.completeTask('login'); // Registration automatically logs in the user
         }
 
         if (params.get('quickRegisterCompleted') === 'true') {
@@ -227,8 +226,13 @@ class ExpoTaskTracker {
         }
 
         if (path.includes('/pilot/myregistrations')) {
-            // The final task will be completed by DOM detection
+            // Check for Full Register and Pending status
             setTimeout(() => this.detectDOMElements(), 1000);
+        }
+
+        if (path.includes('/pilot/overview')) {
+            // Check if viewing a pending review obstacle
+            setTimeout(() => this.detectOverviewPage(), 1000);
         }
     }
 
@@ -249,32 +253,45 @@ class ExpoTaskTracker {
             if (obstacles.length >= 2) {
                 this.completeTask('check-full-register');
             }
+
+            // Check for pending obstacles (task 7)
+            const pendingObstacles = document.querySelectorAll('[data-obstacle-status="pending"]');
+            if (pendingObstacles.length > 0) {
+                this.completeTask('check-pending-status');
+            }
+        }
+    }
+
+    detectOverviewPage() {
+        if (this.role === 'pilot') {
+            // Check if we're viewing a pending obstacle's overview
+            const pendingBadge = document.querySelector('.status-badge.status-pending');
+            if (pendingBadge) {
+                // Complete task 8
+                this.completeTask('view-pending-review');
+            }
         }
     }
 
     checkCompletion() {
-        // Ensure we have tasks to check
-        if (this.tasks.length === 0) {
-            console.log('[Task Tracker] No tasks loaded yet, skipping completion check');
-            return;
-        }
-
         const allCompleted = this.tasks.every(task => task.completed);
-        const completedCount = this.tasks.filter(t => t.completed).length;
-
-        console.log(`[Task Tracker] Completion check: ${completedCount}/${this.tasks.length} tasks completed`);
 
         if (allCompleted && this.initialized) {
-            console.log('[Task Tracker] All tasks completed! Redirecting to completion page...');
+            console.log('All tasks completed! Redirecting to completion page...');
 
-            // Redirect to completion page after a short delay
+            // For pilot: if on Overview page, wait 5 seconds before redirect
+            // Otherwise use shorter delay
+            const path = window.location.pathname.toLowerCase();
+            const isOnOverview = path.includes('/pilot/overview');
+            const delay = (this.role === 'pilot' && isOnOverview) ? 5000 : 1500;
+
+            // Redirect to completion page after delay
             setTimeout(() => {
                 const completionUrl = this.role === 'pilot'
                     ? '/Pilot/ExpoCompletion'
                     : '/Registerforer/ExpoCompletion';
-                console.log('[Task Tracker] Redirecting to:', completionUrl);
                 window.location.href = completionUrl;
-            }, 1500);
+            }, delay);
         }
     }
 

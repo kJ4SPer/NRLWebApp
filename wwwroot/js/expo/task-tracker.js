@@ -226,8 +226,13 @@ class ExpoTaskTracker {
         }
 
         if (path.includes('/pilot/myregistrations')) {
-            // The final task will be completed by DOM detection
+            // Check for Full Register and Pending status
             setTimeout(() => this.detectDOMElements(), 1000);
+        }
+
+        if (path.includes('/pilot/overview')) {
+            // Check if viewing a pending review obstacle
+            setTimeout(() => this.detectOverviewPage(), 1000);
         }
     }
 
@@ -248,6 +253,23 @@ class ExpoTaskTracker {
             if (obstacles.length >= 2) {
                 this.completeTask('check-full-register');
             }
+
+            // Check for pending obstacles (task 7)
+            const pendingObstacles = document.querySelectorAll('[data-obstacle-status="pending"]');
+            if (pendingObstacles.length > 0) {
+                this.completeTask('check-pending-status');
+            }
+        }
+    }
+
+    detectOverviewPage() {
+        if (this.role === 'pilot') {
+            // Check if we're viewing a pending obstacle's overview
+            const pendingBadge = document.querySelector('.status-badge.status-pending');
+            if (pendingBadge) {
+                // Complete task 8
+                this.completeTask('view-pending-review');
+            }
         }
     }
 
@@ -257,13 +279,19 @@ class ExpoTaskTracker {
         if (allCompleted && this.initialized) {
             console.log('All tasks completed! Redirecting to completion page...');
 
-            // Redirect to completion page after a short delay
+            // For pilot: if on Overview page, wait 5 seconds before redirect
+            // Otherwise use shorter delay
+            const path = window.location.pathname.toLowerCase();
+            const isOnOverview = path.includes('/pilot/overview');
+            const delay = (this.role === 'pilot' && isOnOverview) ? 5000 : 1500;
+
+            // Redirect to completion page after delay
             setTimeout(() => {
                 const completionUrl = this.role === 'pilot'
                     ? '/Pilot/ExpoCompletion'
                     : '/Registerforer/ExpoCompletion';
                 window.location.href = completionUrl;
-            }, 1500);
+            }, delay);
         }
     }
 

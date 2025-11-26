@@ -427,7 +427,38 @@ namespace FirstWebApplication.Controllers
                     .FirstOrDefaultAsync(ot => ot.Name == obstacleType);
 
                 if (type != null)
+                {
                     obstacle.ObstacleTypeId = type.Id;
+                }
+                else
+                {
+                    // Create standard type if it doesn't exist
+                    var standardTypes = new Dictionary<string, (string Description, decimal MinHeight, decimal MaxHeight)>
+                    {
+                        ["Mast"] = ("Radio/TV mast", 10, 500),
+                        ["Tower"] = ("Tower structure", 20, 300),
+                        ["Power Line"] = ("Power line/cables", 5, 100),
+                        ["Wind Turbine"] = ("Wind turbine", 50, 250),
+                        ["Building"] = ("Building", 10, 200),
+                        ["Crane"] = ("Construction crane", 20, 150),
+                        ["Bridge"] = ("Bridge", 10, 100)
+                    };
+
+                    if (standardTypes.ContainsKey(obstacleType))
+                    {
+                        var typeInfo = standardTypes[obstacleType];
+                        var newType = new ObstacleType
+                        {
+                            Name = obstacleType,
+                            Description = typeInfo.Description,
+                            MinHeight = typeInfo.MinHeight,
+                            MaxHeight = typeInfo.MaxHeight
+                        };
+                        _context.ObstacleTypes.Add(newType);
+                        await _context.SaveChangesAsync();
+                        obstacle.ObstacleTypeId = newType.Id;
+                    }
+                }
             }
         }
 
