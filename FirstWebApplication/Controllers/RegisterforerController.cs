@@ -138,7 +138,10 @@ namespace FirstWebApplication.Controllers
 
             await UpdateObstacleStatusAsync(obstacle, 3, userId, model.Comments ?? "");
 
-            TempData["SuccessMessage"] = $"Obstacle '{obstacle.Name}' has been approved.";
+            if (TempData != null)
+            {
+                TempData["SuccessMessage"] = $"Obstacle '{obstacle.Name}' has been approved.";
+            }
             return RedirectToAction("AllObstacles");
         }
 
@@ -167,7 +170,10 @@ namespace FirstWebApplication.Controllers
 
             await UpdateObstacleStatusAsync(obstacle, 4, userId, comments);
 
-            TempData["SuccessMessage"] = $"Obstacle '{obstacle.Name}' has been rejected.";
+            if (TempData != null)
+            {
+                TempData["SuccessMessage"] = $"Obstacle '{obstacle.Name}' has been rejected.";
+            }
             return RedirectToAction("AllObstacles");
         }
 

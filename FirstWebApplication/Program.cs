@@ -35,6 +35,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.AddScoped<UserRoleService>();
 builder.Services.AddScoped<RoleInitializerService>();
 builder.Services.AddScoped<UserSeederService>();
+builder.Services.AddScoped<GeometryService>();
 
 // Configure cookie settings
 builder.Services.ConfigureApplicationCookie(options =>

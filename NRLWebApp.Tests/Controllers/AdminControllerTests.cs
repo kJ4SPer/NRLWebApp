@@ -41,6 +41,15 @@ namespace NRLWebApp.Tests.Controllers
                 }
             };
 
+            // Initialize TempData to prevent NullReferenceException
+            if (controller.TempData == null)
+            {
+                controller.TempData = new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(
+                    controller.ControllerContext.HttpContext,
+                    Mock.Of<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider>()
+                );
+            }
+
             return controller;
         }
 
@@ -50,12 +59,12 @@ namespace NRLWebApp.Tests.Controllers
             // Arrange
             var userToDelete = new ApplicationUser { Id = "admin-to-delete", Email = "admin@user.com" };
             var mockUserManager = MockUserManager.Create();
+            var mockRoleManager = MockRoleManager.Create();
 
             // Mock RoleService til å kun returnere ÉN admin (Siste Admin)
             var mockRoleService = new Mock<UserRoleService>(
-                new Mock<RoleManager<IdentityRole>>().Object,
                 mockUserManager.Object,
-                new Mock<IUserStore<ApplicationUser>>().Object
+                mockRoleManager.Object
             );
             mockRoleService.Setup(s => s.GetUsersInRoleAsync("Admin")).ReturnsAsync(new List<ApplicationUser> { userToDelete });
 

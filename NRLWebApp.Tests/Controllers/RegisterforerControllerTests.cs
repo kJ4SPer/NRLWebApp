@@ -36,6 +36,15 @@ namespace NRLWebApp.Tests.Controllers
                 }
             };
 
+            // Initialize TempData to prevent NullReferenceException
+            if (controller.TempData == null)
+            {
+                controller.TempData = new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(
+                    controller.ControllerContext.HttpContext,
+                    Mock.Of<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider>()
+                );
+            }
+
             return controller;
         }
 

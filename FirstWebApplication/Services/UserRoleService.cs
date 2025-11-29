@@ -96,7 +96,7 @@ namespace FirstWebApplication.Services
         /// <summary>
         /// Gets all roles in the system
         /// </summary>
-        public async Task<List<string>> GetAllRolesAsync()
+        public virtual async Task<List<string>> GetAllRolesAsync()
         {
             var roles = await Task.Run(() => _roleManager.Roles.Select(r => r.Name).ToList());
             return roles.Where(r => r != null).Cast<string>().ToList();
@@ -105,7 +105,7 @@ namespace FirstWebApplication.Services
         /// <summary>
         /// Gets all users with a specific role
         /// </summary>
-        public async Task<IList<ApplicationUser>> GetUsersInRoleAsync(string roleName)
+        public virtual async Task<IList<ApplicationUser>> GetUsersInRoleAsync(string roleName)
         {
             return await _userManager.GetUsersInRoleAsync(roleName);
         }

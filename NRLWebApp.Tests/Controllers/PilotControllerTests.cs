@@ -1,6 +1,7 @@
 ﻿using FirstWebApplication.Controllers;
 using FirstWebApplication.Data;
 using FirstWebApplication.Entities;
+using FirstWebApplication.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -27,7 +28,7 @@ namespace NRLWebApp.Tests.Controllers
                 new Claim(ClaimTypes.Role, "Pilot")
             }, "mock"));
 
-            var controller = new PilotController(context, _mockLogger.Object)
+            var controller = new PilotController(context, _mockLogger.Object, new GeometryService())
             {
                 ControllerContext = new ControllerContext()
                 {
@@ -67,6 +68,10 @@ namespace NRLWebApp.Tests.Controllers
             { ObstacleId = 102, StatusTypeId = 3, ChangedByUserId = "admin-id", IsActive = true, StatusType = context.StatusTypes.Find(3) };
             context.ObstacleStatuses.Add(approvedStatus);
 
+            // Save to generate IDs
+            await context.SaveChangesAsync();
+
+            // Now set CurrentStatusId after approvedStatus has its ID
             obstacle.CurrentStatusId = approvedStatus.Id;
             context.Obstacles.Update(obstacle);
             await context.SaveChangesAsync();
