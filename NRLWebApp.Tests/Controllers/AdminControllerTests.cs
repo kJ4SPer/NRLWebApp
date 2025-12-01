@@ -10,22 +10,23 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
+using FirstWebApplication.Data; // Kreves for TestDbContext
 
 namespace NRLWebApp.Tests.Controllers
 {
     public class AdminControllerTests
     {
         // Hjelpefunksjon for å sette opp Controlleren med nødvendige mocks og kontekst
-        private AdminController CreateController(string loggedInUserId, List<ApplicationUser> adminUsers, Mock<UserManager<ApplicationUser>> mockUserManager, Mock<UserRoleService> mockRoleService)
+        private FirstWebApplication.Controllers.AdminController CreateController(string loggedInUserId, List<ApplicationUser> adminUsers, Mock<UserManager<ApplicationUser>> mockUserManager, Mock<IUserRoleService> mockRoleService)
         {
             var dbContext = TestDbContext.Create();
 
-            // Simuler at UserRoleService returnerer ønsket antall Admin-brukere
+            // Simuler at IUserRoleService returnerer ønsket antall Admin-brukere
             mockRoleService
                 .Setup(s => s.GetUsersInRoleAsync("Admin"))
                 .ReturnsAsync(adminUsers);
 
-            // Simuler den innloggede brukeren som en Admin
+            // Simuler den innloggede brukeren som en Admin. Dette er kritisk for å sette ClaimTypes.NameIdentifier.
             var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
             {
                 new Claim(ClaimTypes.NameIdentifier, loggedInUserId),
@@ -33,7 +34,7 @@ namespace NRLWebApp.Tests.Controllers
                 new Claim(ClaimTypes.Role, "Admin")
             }, "mock"));
 
-            var controller = new AdminController(mockUserManager.Object, mockRoleService.Object, dbContext)
+            var controller = new FirstWebApplication.Controllers.AdminController(mockUserManager.Object, mockRoleService.Object, dbContext)
             {
                 ControllerContext = new ControllerContext()
                 {
@@ -51,19 +52,15 @@ namespace NRLWebApp.Tests.Controllers
             var userToDelete = new ApplicationUser { Id = "admin-to-delete", Email = "admin@user.com" };
             var mockUserManager = MockUserManager.Create();
 
-            // Mock RoleService til å kun returnere ÉN admin (Siste Admin)
-            var mockRoleService = new Mock<UserRoleService>(
-                new Mock<RoleManager<IdentityRole>>().Object,
-                mockUserManager.Object,
-                new Mock<IUserStore<ApplicationUser>>().Object
-            );
+            // FIKS: Bruk Mock av grensesnittet IUserRoleService
+            var mockRoleService = new Mock<IUserRoleService>();
             mockRoleService.Setup(s => s.GetUsersInRoleAsync("Admin")).ReturnsAsync(new List<ApplicationUser> { userToDelete });
 
             // Simuler at brukeren som slettes er Admin
             mockUserManager.Setup(m => m.FindByIdAsync(userToDelete.Id)).ReturnsAsync(userToDelete);
             mockUserManager.Setup(m => m.GetRolesAsync(userToDelete)).ReturnsAsync(new List<string> { "Admin" });
 
-            // Simuler en annen Admin som er innlogget (må ha en annen ID enn den som slettes)
+            // Simuler en annen Admin som er innlogget (ID må være forskjellig fra userToDelete.Id)
             var controller = CreateController("other-admin-id", new List<ApplicationUser> { userToDelete }, mockUserManager, mockRoleService);
 
             // Act

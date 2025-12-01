@@ -67,8 +67,13 @@ namespace NRLWebApp.Tests.Controllers
             { ObstacleId = 102, StatusTypeId = 3, ChangedByUserId = "admin-id", IsActive = true, StatusType = context.StatusTypes.Find(3) };
             context.ObstacleStatuses.Add(approvedStatus);
 
+            // Lagre endringene for å sikre at statusen og hindringen eksisterer i DB og har en ID
+            await context.SaveChangesAsync();
+
+            // Sett CurrentStatusId og lagre endringen på den sporet entiteten.
+            // **FIKS:** Fjerner den overflødige .Update() kallet for å unngå DbUpdateConcurrencyException.
             obstacle.CurrentStatusId = approvedStatus.Id;
-            context.Obstacles.Update(obstacle);
+            // context.Obstacles.Update(obstacle); <-- Fjernet
             await context.SaveChangesAsync();
 
             var controller = CreateController(context, userId);

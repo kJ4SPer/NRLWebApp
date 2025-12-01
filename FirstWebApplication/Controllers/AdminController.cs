@@ -7,6 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ClosedXML.Excel;
 using NetTopologySuite.IO;
+using System.Security.Claims;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System;
+using System.IO;
 
 namespace FirstWebApplication.Controllers
 {
@@ -14,12 +20,12 @@ namespace FirstWebApplication.Controllers
     public class AdminController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly UserRoleService _roleService;
+        private readonly IUserRoleService _roleService;
         private readonly ApplicationDbContext _context;
 
         public AdminController(
             UserManager<ApplicationUser> userManager,
-            UserRoleService roleService,
+            IUserRoleService roleService,
             ApplicationDbContext context)
         {
             _userManager = userManager;
@@ -159,8 +165,9 @@ namespace FirstWebApplication.Controllers
             if (user == null)
                 return NotFound();
 
-            // Kan ikke slette seg selv
-            if (user.Email == User.Identity?.Name)
+            // FIKS: Bruk ClaimTypes.NameIdentifier (UserID) for robust sjekk
+            var currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (currentUserId != null && user.Id == currentUserId)
             {
                 TempData["Error"] = "You cannot delete your own account!";
                 return RedirectToAction("AdminUsers");
@@ -269,7 +276,7 @@ namespace FirstWebApplication.Controllers
                 worksheet.SheetView.FreezeRows(1);
 
                 // Legg til filtre
-                worksheet.RangeUsed().SetAutoFilter();
+                var usedRange = worksheet.RangeUsed(); if (usedRange != null) { usedRange.SetAutoFilter(); }
 
                 // Lagre til fil
                 using (var stream = new MemoryStream())
