@@ -60,9 +60,9 @@ namespace FirstWebApplication.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-
+        // ============================================================
         // LOGIN - Logg inn bruker
-
+        // ============================================================
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {

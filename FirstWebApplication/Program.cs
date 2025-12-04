@@ -32,7 +32,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 // Register services
-builder.Services.AddScoped<UserRoleService>();
+builder.Services.AddScoped<IUserRoleService, UserRoleService>();
 builder.Services.AddScoped<RoleInitializerService>();
 builder.Services.AddScoped<UserSeederService>();
 
