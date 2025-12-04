@@ -8,10 +8,17 @@ namespace FirstWebApplication.Entities
     /// </summary>
     public class ApplicationUser : IdentityUser
     {
-        // FK til Organisasjon
+        [PersonalData]
+        [StringLength(50)]
+        public string Fornavn { get; set; } = string.Empty;
+
+        [PersonalData]
+        [StringLength(50)]
+        public string Etternavn { get; set; } = string.Empty;
+
+        // FK til Organisasjon (Endret til long for å matche din database)
         public long? OrganisasjonId { get; set; }
 
-        // Navigation property
         public Organisasjon? Organisasjon { get; set; }
     }
 }

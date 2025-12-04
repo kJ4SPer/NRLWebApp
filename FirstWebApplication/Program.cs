@@ -9,11 +9,19 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 
 // Configure database connection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connectionString, new MariaDbServerVersion(new Version(10, 11, 0))));
+    options.UseMySql(connectionString,
+        new MariaDbServerVersion(new Version(10, 11, 0)), 
+                                                          
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,                     
+            maxRetryDelay: TimeSpan.FromSeconds(5), 
+            errorNumbersToAdd: null)
+    ));
 
 // Register DatabaseSeeder
 builder.Services.AddScoped<DatabaseSeeder>();
@@ -29,6 +37,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequiredLength = 6;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultUI()
 .AddDefaultTokenProviders();
 
 // Register services
@@ -108,6 +117,8 @@ app.UseRouting();
 // Authentication must come before Authorization
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapRazorPages();
 
 app.MapControllerRoute(
     name: "default",
