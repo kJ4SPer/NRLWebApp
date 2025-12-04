@@ -4,6 +4,12 @@ using FirstWebApplication.Models.Obstacle;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims; // Nødvendig for GetCurrentUserId
+using System.Linq;
+using System.Collections.Generic;
+using System;
+using System.Threading.Tasks;
 
 namespace FirstWebApplication.Controllers
 {
@@ -67,7 +73,7 @@ namespace FirstWebApplication.Controllers
                 .Include(o => o.ObstacleType)
                 .Include(o => o.RegisteredByUser)
                 .Include(o => o.CurrentStatus)
-                    .ThenInclude(s => s.ChangedByUser)
+                    .ThenInclude(s => s!.ChangedByUser)
                 .Where(o => approvedObstacleIds.Contains(o.Id))
                 .ToListAsync();
 
@@ -90,7 +96,7 @@ namespace FirstWebApplication.Controllers
                 .Include(o => o.ObstacleType)
                 .Include(o => o.RegisteredByUser)
                 .Include(o => o.CurrentStatus)
-                    .ThenInclude(s => s.ChangedByUser)
+                    .ThenInclude(s => s!.ChangedByUser)
                 .Where(o => rejectedObstacleIds.Contains(o.Id))
                 .ToListAsync();
 
@@ -126,7 +132,7 @@ namespace FirstWebApplication.Controllers
                 return RedirectToAction("ReviewObstacle", new { id = model.ObstacleId });
 
             var obstacle = await _context.Obstacles
-                .Include(o => o.CurrentStatus)
+                .Include(o => o.CurrentStatus) // FIKS: Sikrer at CurrentStatus hentes for UpdateObstacleStatusAsync
                 .FirstOrDefaultAsync(o => o.Id == model.ObstacleId);
 
             if (obstacle == null)
@@ -151,7 +157,7 @@ namespace FirstWebApplication.Controllers
                 return RedirectToAction("ReviewObstacle", new { id = model.ObstacleId });
 
             var obstacle = await _context.Obstacles
-                .Include(o => o.CurrentStatus)
+                .Include(o => o.CurrentStatus) // FIKS: Sikrer at CurrentStatus hentes for UpdateObstacleStatusAsync
                 .FirstOrDefaultAsync(o => o.Id == model.ObstacleId);
 
             if (obstacle == null)
@@ -240,7 +246,7 @@ namespace FirstWebApplication.Controllers
                 var query = _context.Obstacles
                     .Include(o => o.ObstacleType)
                     .Include(o => o.CurrentStatus)
-                        .ThenInclude(s => s.StatusType)
+                        .ThenInclude(s => s!.StatusType)
                     .Include(o => o.RegisteredByUser)
                     .Where(o => o.CurrentStatusId != null)
                     .AsQueryable();
@@ -404,9 +410,9 @@ namespace FirstWebApplication.Controllers
                 .Include(o => o.ObstacleType)
                 .Include(o => o.RegisteredByUser)
                 .Include(o => o.CurrentStatus)
-                    .ThenInclude(s => s.StatusType)
+                    .ThenInclude(s => s!.StatusType)
                 .Include(o => o.CurrentStatus)
-                    .ThenInclude(s => s.ChangedByUser)
+                    .ThenInclude(s => s!.ChangedByUser)
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
@@ -492,9 +498,9 @@ namespace FirstWebApplication.Controllers
                 .Include(o => o.ObstacleType)
                 .Include(o => o.RegisteredByUser)
                 .Include(o => o.CurrentStatus)
-                    .ThenInclude(s => s.StatusType)
+                    .ThenInclude(s => s!.StatusType)
                 .Include(o => o.CurrentStatus)
-                    .ThenInclude(s => s.ChangedByUser)
+                    .ThenInclude(s => s!.ChangedByUser)
                 .Where(o => o.CurrentStatusId != null)
                 .Where(o => o.CurrentStatus != null && o.CurrentStatus.StatusTypeId != 1)
                 .AsQueryable();

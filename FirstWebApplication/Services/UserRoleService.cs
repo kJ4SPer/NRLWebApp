@@ -1,12 +1,15 @@
 using FirstWebApplication.Entities;
 using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace FirstWebApplication.Services
 {
     /// <summary>
-    /// Service to manage user roles using ASP.NET Core Identity
+    /// Service to manage user roles using ASP.NET Core Identity. Implementerer IUserRoleService.
     /// </summary>
-    public class UserRoleService
+    public class UserRoleService : IUserRoleService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
