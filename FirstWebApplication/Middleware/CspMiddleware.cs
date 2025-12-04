@@ -17,7 +17,8 @@ namespace FirstWebApplication.Middleware
         public async Task InvokeAsync(HttpContext context)
         {
             // Generate unique nonce for this request
-            var nonce = GenerateNonce();
+            var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+            context.Items["csp-nonce"] = nonce;
 
             // Store nonce in HttpContext for use in views
             context.Items["csp-nonce"] = nonce;
@@ -67,7 +68,7 @@ namespace FirstWebApplication.Middleware
                 $"style-src 'self' 'unsafe-inline' 'unsafe-hashes' https://unpkg.com https://cdn.tailwindcss.com",
 
                 // Images: self + data URIs for inline images + OpenStreetMap tiles
-                "img-src 'self' data: https://*.tile.openstreetmap.org",
+                "img-src 'self' data: https://*.tile.openstreetmap.org https://cache.kartverket.no;",
 
                 // Fonts: self only
                 "font-src 'self'",

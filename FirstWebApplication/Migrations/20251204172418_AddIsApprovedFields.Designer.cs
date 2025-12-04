@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstWebApplication.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251204131229_LagtTilIdentityFiler")]
-    partial class LagtTilIdentityFiler
+    [Migration("20251204172418_AddIsApprovedFields")]
+    partial class AddIsApprovedFields
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,6 +54,9 @@ namespace FirstWebApplication.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("tinyint(1)");
 
@@ -79,6 +82,9 @@ namespace FirstWebApplication.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("RegisteredDate")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("longtext");

@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -12,54 +9,37 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
-
-// ENDRING: Endret namespace til ditt prosjekt
+using Microsoft.EntityFrameworkCore;
 using FirstWebApplication.Data;
 using FirstWebApplication.Entities;
 
 namespace FirstWebApplication.Areas.Identity.Pages.Account
 {
-    [AllowAnonymous]
     public class RegisterModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IUserStore<ApplicationUser> _userStore;
-        private readonly IUserEmailStore<ApplicationUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
-        private readonly IEmailSender _emailSender;
         private readonly ApplicationDbContext _context;
-        private readonly RoleManager<IdentityRole> _roleManager;
 
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
-            IUserStore<ApplicationUser> userStore,
             SignInManager<ApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender,
-            ApplicationDbContext context,
-            RoleManager<IdentityRole> roleManager)
+            ApplicationDbContext context)
         {
             _userManager = userManager;
-            _userStore = userStore;
-            _emailStore = GetEmailStore();
             _signInManager = signInManager;
             _logger = logger;
-            _emailSender = emailSender;
             _context = context;
-            _roleManager = roleManager;
         }
 
         [BindProperty]
         public InputModel Input { get; set; }
 
         public string ReturnUrl { get; set; }
-
-        public IList<AuthenticationScheme> ExternalLogins { get; set; }
-
         public IEnumerable<SelectListItem> Organisasjoner { get; set; }
 
         public class InputModel
@@ -70,146 +50,111 @@ namespace FirstWebApplication.Areas.Identity.Pages.Account
             public string Email { get; set; }
 
             [Required]
-            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+            [StringLength(100, ErrorMessage = "{0} må være minst {2} tegn.", MinimumLength = 6)]
             [DataType(DataType.Password)]
-            [Display(Name = "Password")]
+            [Display(Name = "Passord")]
             public string Password { get; set; }
 
             [DataType(DataType.Password)]
-            [Display(Name = "Confirm password")]
-            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+            [Display(Name = "Bekreft passord")]
+            [Compare("Password", ErrorMessage = "Passordene er ikke like.")]
             public string ConfirmPassword { get; set; }
 
-            
             [Required]
-            [StringLength(50)]
             [Display(Name = "Fornavn")]
             public string Fornavn { get; set; }
 
             [Required]
-            [StringLength(50)]
             [Display(Name = "Etternavn")]
             public string Etternavn { get; set; }
-            
+
+            // Denne settes via JavaScript i Wizard-en
             [Required]
-            [Display(Name = "Organisasjon")]
-            // ENDRING: Endret fra int til long for å matche din database
-            public long OrganisasjonId { get; set; }
+            public string SelectedRole { get; set; }
+
+            // Kan være null hvis det er Registerfører (vi setter det automatisk)
+            public long? OrganisasjonId { get; set; }
         }
 
-        public async Task OnGetAsync(string returnUrl = null)
+        public void OnGet(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
-            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-
-            // ENDRING: Tilpasset spørring mot Organisasjon-tabellen (Name vs Navn, Id vs OrganisasjonID)
-            Organisasjoner = _context.Organisasjoner.Select(o =>
-                new SelectListItem
-                {
-                    Value = o.Id.ToString(),
-                    Text = o.Name
-                }).ToList();
+            // Last inn organisasjoner, men ekskluder "Kartverket" fra listen pilotene ser
+            Organisasjoner = _context.Organisasjoner
+                .Where(o => o.Name != "Kartverket")
+                .Select(o => new SelectListItem { Value = o.Id.ToString(), Text = o.Name })
+                .ToList();
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
-            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+            // 1. Manuell validering av Organisasjon basert på rolle
+            if (Input.SelectedRole == "Pilot" && Input.OrganisasjonId == null)
+            {
+                ModelState.AddModelError("Input.OrganisasjonId", "Piloter må velge en organisasjon.");
+            }
 
             if (ModelState.IsValid)
             {
-                var user = CreateUser();
+                var user = new ApplicationUser
+                {
+                    UserName = Input.Email,
+                    Email = Input.Email,
+                    Fornavn = Input.Fornavn,
+                    Etternavn = Input.Etternavn,
+                    IsApproved = false, // MÅ GODKJENNES AV ADMIN
+                    RegisteredDate = DateTime.Now
+                };
 
-                // ENDRING: Kommentert ut til du legger feltene til i ApplicationUser.cs
-                // user.Fornavn = Input.Fornavn;
-                // user.Etternavn = Input.Etternavn;
+                // 2. Håndter Organisasjon basert på rolle
+                if (Input.SelectedRole == "Registerfører")
+                {
+                    var kartverket = await _context.Organisasjoner.FirstOrDefaultAsync(o => o.Name == "Kartverket");
+                    if (kartverket != null)
+                    {
+                        user.OrganisasjonId = kartverket.Id;
+                    }
+                }
+                else
+                {
+                    user.OrganisasjonId = Input.OrganisasjonId;
+                }
 
-                // ENDRING: Bruker OrganisasjonId (long)
-                user.OrganisasjonId = Input.OrganisasjonId;
-
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User created a new account with password.");
+                    _logger.LogInformation("User created a new account.");
 
-                    // ENDRING: Henter organisasjon basert på long Id
-                    var organisasjon = await _context.Organisasjoner.FindAsync(Input.OrganisasjonId);
-
-                    // ENDRING: Sjekker mot "Name" i stedet for "Navn"
-                    if (organisasjon != null && organisasjon.Name == "Kartverket")
+                    // 3. Tildel rolle
+                    if (Input.SelectedRole == "Registerfører")
                     {
-                        _logger.LogInformation("Bruker registrert med Kartverket. Venter på admin-godkjenning for rolle.");
-                        // Her kan du legge inn logikk for hva som skjer hvis det er Kartverket
+                        await _userManager.AddToRoleAsync(user, "Registerfører");
                     }
                     else
                     {
-                        // Automatisk tildeling av Pilot-rolle
                         await _userManager.AddToRoleAsync(user, "Pilot");
-                        _logger.LogInformation("Bruker tildelt 'Pilot'-rollen.");
                     }
 
-                    var userId = await _userManager.GetUserIdAsync(user);
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                    var callbackUrl = Url.Page(
-                        "/Account/ConfirmEmail",
-                        pageHandler: null,
-                        values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                        protocol: Request.Scheme);
-
-                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                    {
-                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
-                    }
-                    else
-                    {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
-                        return LocalRedirect(returnUrl);
-                    }
+                    // Sender brukeren til en infoside i stedet for å logge inn
+                    return RedirectToPage("RegisterConfirmation", new { email = Input.Email });
                 }
+
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
 
-            // Hvis noe feilet, last inn organisasjoner på nytt for dropdown
-            Organisasjoner = _context.Organisasjoner.Select(o =>
-                new SelectListItem
-                {
-                    Value = o.Id.ToString(),
-                    Text = o.Name
-                }).ToList();
+            // Hvis feil, last inn listen igjen
+            Organisasjoner = _context.Organisasjoner
+                .Where(o => o.Name != "Kartverket")
+                .Select(o => new SelectListItem { Value = o.Id.ToString(), Text = o.Name })
+                .ToList();
 
             return Page();
-        }
-
-        private ApplicationUser CreateUser()
-        {
-            try
-            {
-                return Activator.CreateInstance<ApplicationUser>();
-            }
-            catch
-            {
-                throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
-                    $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor.");
-            }
-        }
-
-        private IUserEmailStore<ApplicationUser> GetEmailStore()
-        {
-            if (!_userManager.SupportsUserEmail)
-            {
-                throw new NotSupportedException("The default UI requires a user store with email support.");
-            }
-            return (IUserEmailStore<ApplicationUser>)_userStore;
         }
     }
 }

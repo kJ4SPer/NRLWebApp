@@ -6,9 +6,8 @@
 
 <div class="quick-register-container">
     <div id="quick-register-map"
-         data-check-duplicates-url="@Url.Action("CheckDuplicates", "Pilot")"
-         data-quick-register-url="@Url.Action("QuickRegister", "Pilot")"
-         data-register-type-url="@Url.Action("RegisterType", "Pilot")"></div>
+         data-quick-register-url="@Url.Action("QuickRegisterApi", "Pilot")"
+         data-register-type-url="@Url.Action("MyRegistrations", "Pilot")"></div>
 </div>
 
 <div class="status-overlay" id="status-overlay">
@@ -19,29 +18,6 @@
             <p>Please allow location access to quickly register this obstacle.</p>
             <div class="spinner"></div>
             <p style="font-size: 14px; color: #9ca3af;">This may take a few seconds...</p>
-        </div>
-
-        <div id="duplicate-state" class="hidden duplicate-popup">
-            <h2>⚠️ Existing Obstacles Found!</h2>
-            <p style="color: #6b7280; margin-bottom: 20px;">
-                We found one or more obstacles already registered near this location.
-                Please review them before continuing:
-            </p>
-
-            <div id="duplicate-list"></div>
-
-            <p style="color: #374151; font-weight: 500; margin-top: 20px;">
-                Are you sure you want to register a new obstacle here?
-            </p>
-
-            <div class="popup-buttons">
-                <button class="btn-cancel" id="btn-cancel-registration">
-                    ❌ Cancel
-                </button>
-                <button class="btn-continue" id="btn-continue-registration">
-                    ✓ Continue Anyway
-                </button>
-            </div>
         </div>
 
         <div id="success-state" class="hidden">

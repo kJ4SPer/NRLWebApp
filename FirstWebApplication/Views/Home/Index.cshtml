@@ -1,345 +1,225 @@
-﻿@using FirstWebApplication.Helpers
+﻿@using Microsoft.AspNetCore.Identity
+@using FirstWebApplication.Entities
+@using FirstWebApplication.Helpers
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
 @{
-    ViewData["Title"] = "Welcome";
-    Layout = null; // No layout - this is a standalone landing page
+    ViewData["Title"] = "Velkommen";
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Aviation Obstacle Registration</title>
+@* --- CSS: KART, LAYOUT OG DESIGN --- *@
+<style nonce="@Html.GetNonce()">
+    /* 1. Skjul standard navbar og footer */
+    header, footer, .border-top.footer {
+        display: none !important;
+    }
 
-    <!-- Leaflet CSS for the map -->
-    <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
+    /* Forhindre scrolling på selve body */
+    body {
+        overflow: hidden;
+    }
 
-    <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    /* 2. Bakgrunnskart */
+    #map-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -2;
+        filter: grayscale(20%);
+    }
 
-    <style @Html.Raw(Html.NonceAttribute())>
-        /* Remove all margins and make the page full height */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+    /* 3. Mørk overlay */
+    #map-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background-color: rgba(33, 37, 41, 0.75);
+        pointer-events: none;
+    }
+
+    /* 4. Hovedcontainer */
+    .landing-container {
+        height: 100vh;
+        width: 100%;
+        overflow-y: auto; /* Tillat scroll hvis skjermen er liten */
+        padding-top: 5vh;
+        padding-bottom: 50px;
+    }
+
+    /* 5. HERO TEKST */
+    .hero-section {
+        margin-bottom: 3rem;
+        text-align: center;
+        color: white;
+    }
+
+    .hero-title {
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .hero-subtitle {
+        font-weight: 400;
+        opacity: 0.9;
+        margin-top: 10px;
+    }
+
+    .hero-divider {
+        width: 100px;
+        height: 5px;
+        background-color: #fff;
+        margin: 20px auto;
+        border-radius: 2px;
+    }
+
+    /* 6. Kort-design - HØYERE OG SMALERE */
+    .action-card {
+        border: none;
+        border-radius: 15px;
+        transition: transform 0.2s;
+        min-height: 350px; 
+        display: flex;
+        flex-direction: column;
+        justify-content: center; 
+    }
+
+        .action-card:hover {
+            transform: scale(1.02);
         }
 
-        body, html {
-            height: 100%;
-            overflow: hidden; /* Prevent scrolling */
+    /* 7. Privacy link */
+    .privacy-link-container {
+        margin-top: auto;
+        padding-top: 30px;
+        text-align: center;
+        width: 100%;
+        padding-bottom: 20px;
+    }
+
+    .privacy-link {
+        color: rgba(255, 255, 255, 0.6);
+        text-decoration: none;
+    }
+
+        .privacy-link:hover {
+            color: white;
+            text-decoration: underline;
         }
+</style>
 
-        /* Full-screen map container */
-        #landing-map {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1; /* Behind the overlay */
-        }
+@* --- HTML STRUKTUR --- *@
 
-        /* Dark overlay that covers the map - this makes it clear you can't use the map yet */
-        .map-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
-            backdrop-filter: blur(3px); /* Blur effect */
-            z-index: 2; /* Above the map, below the modal */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+<div id="map-background"></div>
+<div id="map-overlay"></div>
 
-        /* The auth modal box - used for both login and register */
-        .auth-modal {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            padding: 40px;
-            width: 90%;
-            max-width: 420px;
-            z-index: 3; /* Above everything */
-            transition: all 0.3s ease;
-        }
+<div class="landing-container">
 
-            /* Style for the auth forms */
-            .auth-modal h1 {
-                font-size: 28px;
-                font-weight: bold;
-                color: #1f2937;
-                margin-bottom: 10px;
-                text-align: center;
-            }
-
-            .auth-modal p {
-                color: #6b7280;
-                text-align: center;
-                margin-bottom: 30px;
-                font-size: 14px;
-            }
-
-            .auth-modal input {
-                width: 100%;
-                padding: 12px 15px;
-                margin-bottom: 15px;
-                border: 1px solid #d1d5db;
-                border-radius: 8px;
-                font-size: 14px;
-                transition: border-color 0.3s ease;
-            }
-
-                .auth-modal input:focus {
-                    outline: none;
-                    border-color: #667eea;
-                    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-                }
-
-            .auth-modal button {
-                width: 100%;
-                padding: 12px;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                border: none;
-                border-radius: 8px;
-                font-size: 16px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
-            }
-
-                .auth-modal button:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-                }
-
-                .auth-modal button:active {
-                    transform: translateY(0);
-                }
-
-        /* Checkbox styling */
-        .remember-me {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            font-size: 14px;
-            color: #4b5563;
-        }
-
-            .remember-me input {
-                width: auto;
-                margin-right: 8px;
-                margin-bottom: 0;
-            }
-
-        /* Link to toggle between login and register */
-        .toggle-link {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #6b7280;
-        }
-
-            .toggle-link a {
-                color: #667eea;
-                text-decoration: none;
-                font-weight: 600;
-                cursor: pointer;
-            }
-
-                .toggle-link a:hover {
-                    text-decoration: underline;
-                }
-
-        /* Error message styling */
-        .error-message {
-            background-color: #fee;
-            color: #c00;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-size: 13px;
-            text-align: center;
-        }
-
-        /* Logo/branding area */
-        .branding {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-            .branding .icon {
-                font-size: 48px;
-                margin-bottom: 10px;
-            }
-
-        /* Hide/show forms based on mode */
-        .hidden {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-    <!-- Full-screen map in the background -->
-    <div id="landing-map"></div>
-
-    <!-- Dark overlay with auth modal -->
-    <div class="map-overlay">
-        <div class="auth-modal">
-            <!-- Branding/Icon -->
-            <div class="branding">
-                <div class="icon">✈️</div>
-            </div>
-
-            <!-- LOGIN FORM -->
-            <div id="login-form" class="auth-form">
-                <h1>Welcome</h1>
-                <p>Sign in to access the Aviation Obstacle Registration System</p>
-
-                <!-- Show error messages if login fails -->
-                @if (ViewData.ModelState.ErrorCount > 0 && ViewBag.ShowRegister != true)
-                {
-                    <div class="error-message">
-                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                        {
-                            <div>@error.ErrorMessage</div>
-                        }
-                    </div>
-                }
-
-                <!-- Login Form -->
-                <form asp-controller="Account" asp-action="Login" method="post">
-                    <!-- Email input -->
-                    <input type="email"
-                           name="Email"
-                           placeholder="Email address"
-                           required
-                           autocomplete="email" />
-
-                    <!-- Password input -->
-                    <input type="password"
-                           name="Password"
-                           placeholder="Password"
-                           required
-                           autocomplete="current-password" />
-
-                    <!-- Remember Me checkbox -->
-                    <label class="remember-me">
-                        <input type="checkbox" name="RememberMe" />
-                        <span>Remember me</span>
-                    </label>
-
-                    <!-- Login button -->
-                    <button type="submit">Sign In</button>
-                </form>
-
-                <!-- Link to toggle to registration -->
-                <div class="toggle-link">
-                    Don't have an account?
-                    <a onclick="toggleForms()">Create one here</a>
-                </div>
-            </div>
-
-            <!-- REGISTER FORM -->
-            <div id="register-form" class="auth-form hidden">
-                <h1>Create Account</h1>
-                <p>Register to start reporting aviation obstacles</p>
-
-                <!-- Show error messages if registration fails -->
-                @if (ViewData.ModelState.ErrorCount > 0 && ViewBag.ShowRegister == true)
-                {
-                    <div class="error-message">
-                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                        {
-                            <div>@error.ErrorMessage</div>
-                        }
-                    </div>
-                }
-
-                <!-- Register Form -->
-                <form asp-controller="Account" asp-action="Register" method="post">
-                    <!-- Email input -->
-                    <input type="email"
-                           name="Email"
-                           placeholder="Email address"
-                           required
-                           autocomplete="email" />
-
-                    <!-- Password input -->
-                    <input type="password"
-                           name="Password"
-                           placeholder="Password (min 6 characters)"
-                           required
-                           autocomplete="new-password" />
-
-                    <!-- Confirm Password input -->
-                    <input type="password"
-                           name="ConfirmPassword"
-                           placeholder="Confirm Password"
-                           required
-                           autocomplete="new-password" />
-
-                    <!-- Register button -->
-                    <button type="submit">Create Account</button>
-                </form>
-
-                <!-- Link to toggle back to login -->
-                <div class="toggle-link">
-                    Already have an account?
-                    <a onclick="toggleForms()">Sign in here</a>
-                </div>
-            </div>
-        </div>
+    @* OVERSKRIFT *@
+    <div class="hero-section container">
+        <h1 class="display-3 hero-title">Nasjonalt Register<br />for Luftfartshindre</h1>
+        <div class="hero-divider"></div>
+        <h2 class="h2 hero-subtitle">Sikker rapportering og forvaltning</h2>
     </div>
 
-    <!-- Leaflet JavaScript for the map -->
+    @* HOVEDINNHOLD *@
+    <div class="container d-flex flex-column align-items-center">
+
+        @if (SignInManager.IsSignedIn(User))
+        {
+            /* --- VISNING FOR INNLOGGET BRUKER --- */
+            /* Endret fra col-lg-7 til col-lg-5 for å gjøre den smalere */
+            <div class="col-12 col-md-8 col-lg-5 mb-4">
+                <div class="card action-card shadow-lg p-4">
+                    <div class="card-body text-center">
+                        <h2 class="text-success mb-3 fw-bold">Velkommen tilbake!</h2>
+                        <p class="fs-4 mb-4 text-muted">Innlogget som <strong>@UserManager.GetUserName(User)</strong></p>
+
+                        <div class="d-grid gap-3">
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a asp-controller="Admin" asp-action="AdminDashboard" class="btn btn-primary btn-lg py-4 fs-3 fw-bold">Gå til Admin Dashboard</a>
+                            }
+                            else if (User.IsInRole("Registerfører"))
+                            {
+                                <a asp-controller="Registerforer" asp-action="RegisterforerDashboard" class="btn btn-primary btn-lg py-4 fs-3 fw-bold">Gå til Registerfører Dashboard</a>
+                            }
+                            else
+                            {
+                                <a asp-controller="Pilot" asp-action="RegisterType" class="btn btn-primary btn-lg py-4 fs-3 fw-bold">Registrer nytt hinder</a>
+                                <a asp-controller="Pilot" asp-action="MyRegistrations" class="btn btn-outline-secondary btn-lg py-3 fs-4">Mine registreringer</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            /* --- VISNING FOR GJEST --- */
+
+            @* LOGG INN BOKS *@
+            /* Endret fra col-lg-7 til col-lg-5 for å gjøre den smalere */
+            <div class="col-12 col-md-8 col-lg-5 mb-4">
+                <div class="card action-card shadow-lg">
+                    <div class="card-body p-5 text-center">
+                        <h2 class="card-title fw-bold mb-3 display-6">Logg inn</h2>
+                        <p class="text-muted fs-5 mb-5">Har du allerede en bruker?</p>
+
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary w-100 fw-bold py-4 fs-3 stretched-link">
+                            Logg inn
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            @* REGISTRER BOKS *@
+            <div class="col-12 col-md-8 col-lg-5">
+                <div class="card action-card shadow-lg" style="background-color: rgba(255, 255, 255, 0.95);">
+                    <div class="card-body p-5 text-center">
+                        <h2 class="card-title fw-bold mb-3 display-6">Ny bruker?</h2>
+                        <p class="text-muted fs-5 mb-5">Opprett tilgang til registeret</p>
+
+                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary w-100 fw-bold py-4 fs-3 stretched-link">
+                            Registrer deg
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @* FLYTENDE PRIVACY LINK *@
+        <div class="privacy-link-container">
+            <a asp-controller="Home" asp-action="Privacy" class="privacy-link">Personvernerklæring</a>
+        </div>
+
+    </div>
+</div>
+
+@* --- SCRIPT FOR KART --- *@
+@section Scripts {
+    <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
     <script src="~/lib/leaflet/leaflet.js"></script>
 
-    <script @Html.Raw(Html.NonceAttribute())>
-        // Initialize the map when the page loads
-        document.addEventListener('DOMContentLoaded', function () {
+    <script nonce="@Html.GetNonce()">
+        document.addEventListener("DOMContentLoaded", function () {
+            var map = L.map('map-background', {
+                zoomControl: false,
+                scrollWheelZoom: false,
+                doubleClickZoom: false,
+                dragging: false,
+                attributionControl: false,
+                keyboard: false
+            }).setView([59.9139, 10.7522], 12);
 
-            // Create the map centered on Norway
-            // The map is set to not be interactive (dragging: false, etc.)
-            var map = L.map('landing-map', {
-                center: [60.4720, 8.4689], // Center of Norway
-                zoom: 5,
-                zoomControl: false,      // No zoom buttons
-                dragging: false,          // Can't drag the map
-                touchZoom: false,         // Can't zoom with touch
-                scrollWheelZoom: false,   // Can't zoom with scroll wheel
-                doubleClickZoom: false,   // Can't zoom with double click
-                boxZoom: false,           // Can't zoom with box select
-                keyboard: false           // Can't use keyboard to navigate
-            });
-
-            // Add the OpenStreetMap tiles (the actual map images)
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                maxZoom: 19
             }).addTo(map);
-
-            // Check if we should show the register form (after failed registration)
-            @if (ViewBag.ShowRegister == true)
-            {
-                    <text>
-                    toggleForms();
-                    </text>
-            }
         });
-
-        // Function to toggle between login and register forms
-        function toggleForms() {
-            var loginForm = document.getElementById('login-form');
-            var registerForm = document.getElementById('register-form');
-
-            // Toggle visibility
-            loginForm.classList.toggle('hidden');
-            registerForm.classList.toggle('hidden');
-        }
     </script>
-</body>
-</html>
+}

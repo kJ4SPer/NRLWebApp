@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstWebApplication.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251119152926_InitialCreate")]
+    [Migration("20251204140642_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace FirstWebApplication.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.11")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
@@ -43,6 +43,16 @@ namespace FirstWebApplication.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Etternavn")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Fornavn")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("tinyint(1)");
@@ -92,54 +102,6 @@ namespace FirstWebApplication.Migrations
                     b.HasIndex("OrganisasjonId");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("FirstWebApplication.Entities.Behandling", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<string>("Comments")
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<long>("ObstacleId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("ProcessedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("RegisterforerUserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("varchar(450)");
-
-                    b.Property<string>("RejectionReason")
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<long>("StatusId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ObstacleId");
-
-                    b.HasIndex("RegisterforerUserId");
-
-                    b.HasIndex("StatusId");
-
-                    b.ToTable("Behandlinger", (string)null);
                 });
 
             modelBuilder.Entity("FirstWebApplication.Entities.Obstacle", b =>
@@ -490,33 +452,6 @@ namespace FirstWebApplication.Migrations
                     b.Navigation("Organisasjon");
                 });
 
-            modelBuilder.Entity("FirstWebApplication.Entities.Behandling", b =>
-                {
-                    b.HasOne("FirstWebApplication.Entities.Obstacle", "Obstacle")
-                        .WithMany("Behandlinger")
-                        .HasForeignKey("ObstacleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FirstWebApplication.Entities.ApplicationUser", "RegisterforerUser")
-                        .WithMany()
-                        .HasForeignKey("RegisterforerUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("FirstWebApplication.Entities.ObstacleStatus", "Status")
-                        .WithMany("Behandlinger")
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Obstacle");
-
-                    b.Navigation("RegisterforerUser");
-
-                    b.Navigation("Status");
-                });
-
             modelBuilder.Entity("FirstWebApplication.Entities.Obstacle", b =>
                 {
                     b.HasOne("FirstWebApplication.Entities.ObstacleStatus", "CurrentStatus")
@@ -622,14 +557,7 @@ namespace FirstWebApplication.Migrations
 
             modelBuilder.Entity("FirstWebApplication.Entities.Obstacle", b =>
                 {
-                    b.Navigation("Behandlinger");
-
                     b.Navigation("StatusHistory");
-                });
-
-            modelBuilder.Entity("FirstWebApplication.Entities.ObstacleStatus", b =>
-                {
-                    b.Navigation("Behandlinger");
                 });
 
             modelBuilder.Entity("FirstWebApplication.Entities.ObstacleType", b =>

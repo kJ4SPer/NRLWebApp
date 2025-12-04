@@ -41,6 +41,7 @@ namespace FirstWebApplication.Entities
         public DateTime RegisteredDate { get; set; } = DateTime.Now;
 
         // Navigation: Et obstacle har mange status-endringer
-        public ICollection<ObstacleStatus>? StatusHistory { get; set; }
+        // Fjern ? og initialiser listen
+        public virtual ICollection<ObstacleStatus> StatusHistory { get; set; } = new List<ObstacleStatus>();
     }
 }

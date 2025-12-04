@@ -31,7 +31,7 @@ function useMyLocation() {
     btn.textContent = 'Getting location...';
 
     navigator.geolocation.getCurrentPosition(
-        function(position) {
+        function (position) {
             var lat = position.coords.latitude;
             var lng = position.coords.longitude;
 
@@ -43,35 +43,17 @@ function useMyLocation() {
             btn.disabled = false;
             btn.textContent = 'Use My Location';
         },
-        function(error) {
+        function (error) {
             btn.disabled = false;
             btn.textContent = 'Use My Location';
-
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    alert('Location access denied. Please enable location permissions.');
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    alert('Location information is unavailable.');
-                    break;
-                case error.TIMEOUT:
-                    alert('Location request timed out.');
-                    break;
-                default:
-                    alert('An unknown error occurred getting your location.');
-                    break;
-            }
+            alert('Could not get location. Ensure permissions are granted.');
         },
-        {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-        }
+        { enableHighAccuracy: true }
     );
 }
 
 // Initialize map after DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Initialize Leaflet map
     map = L.map('map').setView([60.4720, 8.4689], 6);
 
@@ -83,21 +65,26 @@ document.addEventListener('DOMContentLoaded', function() {
     drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
-    var currentMarker = null;
-
-    // Add draw control with only marker tool
+    // Add draw control with Marker AND Polyline (Line)
     var drawControl = new L.Control.Draw({
         edit: {
             featureGroup: drawnItems,
-            edit: false,
-            remove: false
+            edit: false, // Forenkling: Tegn på nytt hvis feil, i stedet for edit
+            remove: true
         },
         draw: {
             polygon: false,
-            polyline: false,
             rectangle: false,
             circle: false,
             circlemarker: false,
+
+            // AKTIVER LINJETEGNING HER:
+            polyline: {
+                shapeOptions: {
+                    color: '#2563eb', // Blue
+                    weight: 4
+                }
+            },
             marker: {
                 icon: new L.Icon.Default()
             }
@@ -105,78 +92,98 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     map.addControl(drawControl);
 
-    // Function to place or move marker
-    function placeMarker(latlng) {
-        if (currentMarker) {
-            // Move existing marker
-            currentMarker.setLatLng(latlng);
-        } else {
-            // Create new draggable marker
-            currentMarker = L.marker(latlng, { draggable: true }).addTo(drawnItems);
+    // Hjelpefunksjon: Lag WKT-streng basert på laget
+    function updateGeometryInput(layer, type) {
+        var wkt = "";
 
-            // Update coordinates when marker is dragged
-            currentMarker.on('dragend', function(e) {
-                var pos = e.target.getLatLng();
-                document.getElementById('obstacleGeometryInput').value = `POINT(${pos.lng} ${pos.lat})`;
+        if (type === 'marker') {
+            var pos = layer.getLatLng();
+            // WKT Format: POINT(lng lat)
+            wkt = `POINT(${pos.lng} ${pos.lat})`;
+        }
+        else if (type === 'polyline') {
+            var latlngs = layer.getLatLngs();
+            // WKT Format: LINESTRING(lng1 lat1, lng2 lat2, ...)
+            var coords = latlngs.map(function (ll) {
+                return `${ll.lng} ${ll.lat}`;
+            }).join(', ');
+            wkt = `LINESTRING(${coords})`;
+        }
+
+        console.log("Generated WKT:", wkt); // Debugging
+        document.getElementById('obstacleGeometryInput').value = wkt;
+    }
+
+    // Handle items created from toolbar (Marker or Line)
+    map.on(L.Draw.Event.CREATED, function (event) {
+        var layer = event.layer;
+        var type = event.layerType;
+
+        // Clear existing items (vi tillater bare én figur om gangen)
+        drawnItems.clearLayers();
+        drawnItems.addLayer(layer);
+
+        // Hvis det er en markør, gjør den flyttbar
+        if (type === 'marker') {
+            layer.dragging.enable();
+            layer.on('dragend', function (e) {
+                updateGeometryInput(e.target, 'marker');
             });
         }
 
-        // Update geometry input
-        document.getElementById('obstacleGeometryInput').value = `POINT(${latlng.lng} ${latlng.lat})`;
-    }
+        // Oppdater input-feltet
+        updateGeometryInput(layer, type);
+    });
 
-    // Handle marker created from toolbar
-    map.on(L.Draw.Event.CREATED, function (event) {
-        var layer = event.layer;
+    // Handle deletion
+    map.on(L.Draw.Event.DELETED, function (e) {
+        document.getElementById('obstacleGeometryInput').value = '';
+    });
 
-        // Remove existing marker if any
-        if (currentMarker) {
-            drawnItems.removeLayer(currentMarker);
+    // Click on map short-cut: Only place marker if NOT drawing a line
+    map.on('click', function (e) {
+        // Sjekk om vi driver og tegner en linje (draw handler active)
+        // Dette hindrer at vi setter ut punkter mens vi tegner linjer
+        if (drawControl._toolbars.draw._modes.polyline && drawControl._toolbars.draw._modes.polyline.handler.enabled()) {
+            return;
         }
 
-        // Make the new marker draggable
-        layer.options.draggable = true;
-        if (layer.dragging) {
-            layer.dragging.enable();
-        }
+        // Ellers, plasser markør som før
+        drawnItems.clearLayers();
+        var marker = L.marker(e.latlng, { draggable: true }).addTo(drawnItems);
 
-        drawnItems.addLayer(layer);
-        currentMarker = layer;
-
-        // Update coordinates when marker is dragged
-        currentMarker.on('dragend', function(e) {
-            var pos = e.target.getLatLng();
-            document.getElementById('obstacleGeometryInput').value = `POINT(${pos.lng} ${pos.lat})`;
+        marker.on('dragend', function (ev) {
+            updateGeometryInput(ev.target, 'marker');
         });
 
-        // Set geometry input
-        var latlng = layer.getLatLng();
-        document.getElementById('obstacleGeometryInput').value = `POINT(${latlng.lng} ${latlng.lat})`;
+        updateGeometryInput(marker, 'marker');
     });
 
-    // Click on map to place/move marker
-    map.on('click', function(e) {
-        placeMarker(e.latlng);
-    });
-
-    // Make placeMarker available globally for useMyLocation
-    window.placeMarkerOnMap = function(lat, lng) {
+    // Global function for "Use My Location" button
+    window.placeMarkerOnMap = function (lat, lng) {
         var latlng = L.latLng(lat, lng);
-        placeMarker(latlng);
+        drawnItems.clearLayers();
+
+        var marker = L.marker(latlng, { draggable: true }).addTo(drawnItems);
         map.setView(latlng, 15);
+
+        marker.on('dragend', function (ev) {
+            updateGeometryInput(ev.target, 'marker');
+        });
+
+        updateGeometryInput(marker, 'marker');
     };
 
-    // Attach event listeners instead of inline handlers
+    // Attach event listeners
     document.getElementById('useLocationBtn').addEventListener('click', useMyLocation);
     document.getElementById('obstacleTypeSelect').addEventListener('change', toggleCustomType);
 
-    // Update obstacle type with custom value before form submit
-    document.querySelector('form').addEventListener('submit', function(e) {
+    // Form submit handler (Custom type logic)
+    document.querySelector('form').addEventListener('submit', function (e) {
         var select = document.getElementById('obstacleTypeSelect');
         var customInput = document.getElementById('customTypeName');
 
         if (select.value === 'Other' && customInput.value.trim()) {
-            // Create a hidden input with the custom type value
             var hiddenInput = document.createElement('input');
             hiddenInput.type = 'hidden';
             hiddenInput.name = 'CustomObstacleType';

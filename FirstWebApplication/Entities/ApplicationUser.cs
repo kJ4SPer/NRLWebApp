@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System; 
 using System.ComponentModel.DataAnnotations;
 
 namespace FirstWebApplication.Entities
 {
-    /// <summary>
-    /// Utvider IdentityUser med tilleggsfelt for organisasjon
-    /// </summary>
     public class ApplicationUser : IdentityUser
     {
         [PersonalData]
@@ -16,9 +14,13 @@ namespace FirstWebApplication.Entities
         [StringLength(50)]
         public string Etternavn { get; set; } = string.Empty;
 
-        // FK til Organisasjon (Endret til long for å matche din database)
-        public long? OrganisasjonId { get; set; }
+        // NYTT: Sjekk om bruker er godkjent av admin
+        public bool IsApproved { get; set; } = false;
 
+        // NYTT: Dato for registrering (kjekt for admin å se)
+        public DateTime RegisteredDate { get; set; } = DateTime.Now;
+
+        public long? OrganisasjonId { get; set; }
         public Organisasjon? Organisasjon { get; set; }
     }
 }

@@ -1,0 +1,168 @@
+﻿@page
+@using FirstWebApplication.Helpers
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Logg inn";
+}
+
+@* --- CSS: KART OG LAYOUT --- *@
+<style nonce="@Html.GetNonce()">
+    /* Skjul standard layout-elementer */
+    header, footer, .border-top.footer {
+        display: none !important;
+    }
+
+    body {
+        overflow: hidden; /* Lås scrolling */
+    }
+
+    /* Bakgrunnskart */
+    #map-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -2;
+        filter: grayscale(20%);
+    }
+
+    /* Overlay */
+    #map-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background-color: rgba(33, 37, 41, 0.65);
+        pointer-events: none;
+    }
+
+    /* Sentrert container */
+    .auth-container {
+        height: 100vh;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow-y: auto;
+    }
+
+    /* Kort-design */
+    .auth-card {
+        border: none;
+        border-radius: 15px;
+        background-color: rgba(255, 255, 255, 0.98);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.25);
+        width: 100%;
+        max-width: 500px; /* Litt bredere for å matche den store teksten */
+    }
+
+    .form-floating > label {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+
+    .form-control {
+        font-size: 1.1rem;
+        height: calc(3.5rem + 2px);
+    }
+
+    /* KNAPP OG OVERSKRIFT STILER */
+    .btn-login {
+        font-weight: 800;
+        font-size: 2.0rem; /* Mye større tekst på knappen */
+        padding: 15px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .back-link {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        margin-top: 20px;
+        display: inline-block;
+        font-size: 1rem;
+    }
+
+        .back-link:hover {
+            color: white;
+            text-decoration: underline;
+        }
+</style>
+
+@* --- HTML STRUKTUR --- *@
+<div id="map-background"></div>
+<div id="map-overlay"></div>
+
+<div class="auth-container">
+    <div class="container d-flex flex-column align-items-center">
+
+        <div class="card auth-card p-4 p-md-5">
+            <div class="card-body">
+                <div class="text-center mb-5">
+                    @* ENDRET: display-4 for stor og fet overskrift *@
+                    <h1 class="fw-bold text-dark display-5 mb-2">Logg inn</h1>
+                    <p class="text-muted fs-5">Velkommen tilbake</p>
+                </div>
+
+                <form id="account" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                        <label asp-for="Input.Email">E-postadresse</label>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+                        <label asp-for="Input.Password">Passord</label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" asp-for="Input.RememberMe" style="transform: scale(1.3); margin-right: 10px;" />
+                        <label class="form-check-label text-muted fs-6 pt-1" asp-for="Input.RememberMe">
+                            Husk meg
+                        </label>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button id="login-submit" type="submit" class="btn btn-primary btn-login shadow-sm">Logg inn</button>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <p class="mb-0 fs-6">
+                            Har du ikke bruker?
+                            <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="fw-bold text-primary text-decoration-none">Registrer deg</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <a href="/" class="back-link">
+            <i class="bi bi-arrow-left"></i> Tilbake til forsiden
+        </a>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
+    <script src="~/lib/leaflet/leaflet.js"></script>
+
+    <script nonce="@Html.GetNonce()">
+        document.addEventListener("DOMContentLoaded", function () {
+            var map = L.map('map-background', {
+                zoomControl: false, scrollWheelZoom: false, doubleClickZoom: false,
+                dragging: false, attributionControl: false, keyboard: false
+            }).setView([59.9139, 10.7522], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+        });
+    </script>
+}

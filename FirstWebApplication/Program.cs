@@ -1,70 +1,62 @@
 using FirstWebApplication.Data;
 using FirstWebApplication.Entities;
-using FirstWebApplication.Services;
-using FirstWebApplication.Middleware;
+using FirstWebApplication.Middleware; // For CSP (Kart-sikkerhet)
+using FirstWebApplication.Services;   // For DatabaseSeeder
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
+// ==============================================================================
+// 1. KONFIGURASJON AV TJENESTER (DEPENDENCY INJECTION)
+// ==============================================================================
+
+// Legg til støtte for MVC (Controllers) og Razor Pages (Identity)
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-// Configure database connection
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Konfigurer Databasekobling (MariaDB/MySQL)
+// Henter connection string fra appsettings.json eller User Secrets
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString,
-        new MariaDbServerVersion(new Version(10, 11, 0)), 
-                                                          
+        new MariaDbServerVersion(new Version(10, 11, 0)), // Passer til MariaDB i Docker
         mySqlOptions => mySqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 5,                     
-            maxRetryDelay: TimeSpan.FromSeconds(5), 
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
             errorNumbersToAdd: null)
     ));
 
-// Register DatabaseSeeder
-builder.Services.AddScoped<DatabaseSeeder>();
-
-// Configure ASP.NET Identity with ApplicationUser and roles
+// Konfigurer Identity (Brukere og Roller)
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    // Password settings
+    // Passord-innstillinger (Kan justeres etter behov)
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 6;
+
+    // Krav om bekreftet konto før innlogging
+    options.SignIn.RequireConfirmedAccount = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultUI()
+.AddDefaultUI() // Nødvendig for å bruke Login/Register sidene vi la til
 .AddDefaultTokenProviders();
 
-// Register services
-builder.Services.AddScoped<UserRoleService>();
-builder.Services.AddScoped<RoleInitializerService>();
-builder.Services.AddScoped<UserSeederService>();
+// Registrer egne tjenester
+builder.Services.AddScoped<DatabaseSeeder>(); // Vår nye seeder som fikser alt data
 
-// Configure cookie settings
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = "/Home/Index";
-    options.LogoutPath = "/Account/Logout";
-    options.AccessDeniedPath = "/Home/Index";
-    options.ExpireTimeSpan = TimeSpan.FromHours(24);
-    options.SlidingExpiration = true;
-    options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-    options.Cookie.SameSite = SameSiteMode.Lax;
-});
-
+// ==============================================================================
+// 2. BYGG APPLIKASJONEN
+// ==============================================================================
 var app = builder.Build();
 
-// Use CSP middleware (must be early in the pipeline)
-app.UseCspMiddleware();
-
-
-// Initialize database, roles, and seed users
+// ==============================================================================
+// 3. DATABASE INITIALISERING & SEEDING
+// ==============================================================================
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -72,56 +64,58 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        // Step 1: Get database context
         var context = services.GetRequiredService<ApplicationDbContext>();
 
-        // Step 2: Apply migrations (creates database if it doesn't exist)
-        logger.LogInformation("Applying database migrations...");
-        context.Database.Migrate();
-        logger.LogInformation("Database migrations applied successfully");
+        // Kjør migrasjoner automatisk (oppretter databasen hvis den mangler)
+        logger.LogInformation("Kjører database-migrasjoner...");
+        await context.Database.MigrateAsync();
+        logger.LogInformation("Database-migrasjoner fullført.");
 
-        // Step 3: Initialize roles (database exists now!)
-        logger.LogInformation("Initializing roles...");
-        var roleInitializer = services.GetRequiredService<RoleInitializerService>();
-        await roleInitializer.InitializeAsync();
-        logger.LogInformation("Roles initialized successfully");
-
-        // Step 4: Seed test users (only in Development)
+        // Seed data kun i utviklingsmodus (Development)
         if (app.Environment.IsDevelopment())
         {
-            logger.LogInformation("Seeding test users...");
-            var userSeeder = services.GetRequiredService<UserSeederService>();
-            await userSeeder.SeedAsync();
-            logger.LogInformation("Test users seeded successfully");
+            logger.LogInformation("Starter seeding av testdata...");
+            var seeder = services.GetRequiredService<DatabaseSeeder>();
+            await seeder.SeedAsync(); // Denne metoden oppretter Roller, Org, Brukere og Hindre
+            logger.LogInformation("Seeding fullført!");
         }
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "An error occurred during database initialization");
-        // Don't crash the app, just log the error
+        logger.LogError(ex, "En feil oppstod under initialisering av databasen.");
     }
 }
 
-// Configure the HTTP request pipeline
+// ==============================================================================
+// 4. HTTP REQUEST PIPELINE (MIDDLEWARE)
+// ==============================================================================
+
+// Content Security Policy (CSP) - Viktig for sikkerhet og kartvisning
+app.UseCspMiddleware();
+
+// Feilhåndtering
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(); // Lar oss servere CSS, JS og bilder fra wwwroot
 
 app.UseRouting();
 
-// Authentication must come before Authorization
-app.UseAuthentication();
-app.UseAuthorization();
+// Autentisering MÅ komme før Autorisering
+app.UseAuthentication(); // Hvem er du?
+app.UseAuthorization();  // Hva har du lov til?
 
-app.MapRazorPages();
+// Konfigurer ruter (URL-er)
+app.MapRazorPages(); // For Identity (Login/Register)
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+// Start applikasjonen
 app.Run();

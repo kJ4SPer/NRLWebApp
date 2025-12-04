@@ -1,0 +1,142 @@
+﻿@model IEnumerable<FirstWebApplication.Entities.ApplicationUser>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<FirstWebApplication.Entities.ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "Ventende Godkjenninger";
+}
+
+<div class="container mx-auto px-4 py-8">
+    @* --- HEADER --- *@
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Ventende Godkjenninger</h1>
+            <p class="text-gray-600 mt-1">Oversikt over nye brukere som venter på tilgang.</p>
+        </div>
+        <a asp-action="AdminDashboard" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded inline-flex items-center transition">
+            <span>&larr; Tilbake til Dashboard</span>
+        </a>
+    </div>
+
+    @* --- MELDINGER (Success/Error) --- *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-sm" role="alert">
+            <p class="font-bold">Suksess</p>
+            <p>@TempData["SuccessMessage"]</p>
+        </div>
+    }
+
+    @* --- INNHOLD: LISTE ELLER TOM --- *@
+    @if (!Model.Any())
+    {
+        <div class="bg-white rounded-lg shadow-md p-12 text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-medium text-gray-900">Alt er à jour!</h3>
+            <p class="text-gray-500 mt-2">Det er ingen ventende søknader akkurat nå.</p>
+        </div>
+    }
+    else
+    {
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full leading-normal">
+                    <thead>
+                        <tr>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Bruker / E-post
+                            </th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Rolle & Org
+                            </th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Registrert
+                            </th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Handling
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            var roles = await UserManager.GetRolesAsync(user);
+                            var roleName = roles.FirstOrDefault() ?? "Ingen rolle";
+
+                            <tr class="hover:bg-gray-50 transition duration-150">
+                                @* NAVN OG E-POST *@
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 w-10 h-10">
+                                            <div class="w-full h-full rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 font-bold">
+                                                @(string.IsNullOrEmpty(user.Fornavn) ? "?" : user.Fornavn.Substring(0, 1))
+                                            </div>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-gray-900 whitespace-no-wrap font-semibold">
+                                                @user.Fornavn @user.Etternavn
+                                            </p>
+                                            <p class="text-gray-600 whitespace-no-wrap text-xs">
+                                                @user.Email
+                                            </p>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                @* ROLLE OG ORGANISASJON *@
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                    <div class="flex flex-col">
+                                        <span class="inline-block px-2 py-1 font-semibold text-blue-900 leading-tight bg-blue-100 rounded-full w-max text-xs mb-1">
+                                            @roleName
+                                        </span>
+                                        <span class="text-gray-500 text-xs">
+                                            @if (user.Organisasjon != null)
+                                            {
+                                                @user.Organisasjon.Name
+                                            }
+                                            else
+                                            {
+                                                <span class="italic">Ingen org</span>
+                                            }
+                                        </span>
+                                    </div>
+                                </td>
+
+                                @* REGISTRERT DATO *@
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                    <p class="text-gray-900 whitespace-no-wrap">@user.RegisteredDate.ToString("dd.MM.yyyy")</p>
+                                    <p class="text-gray-500 text-xs">@user.RegisteredDate.ToString("HH:mm")</p>
+                                </td>
+
+                                @* HANDLINGSKNAPPER *@
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right">
+                                    <div class="flex justify-end space-x-2">
+                                        <form asp-action="ApproveUser" method="post">
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded text-xs transition flex items-center">
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                Godkjenn
+                                            </button>
+                                        </form>
+
+                                        <form asp-action="RejectUser" method="post" onsubmit="return confirm('Er du sikker på at du vil slette denne forespørselen?');">
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <button type="submit" class="bg-red-100 hover:bg-red-200 text-red-600 font-bold py-1 px-3 rounded text-xs transition border border-red-200 flex items-center">
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                Avvis
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

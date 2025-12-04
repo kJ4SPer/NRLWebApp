@@ -1,4 +1,5 @@
 @using FirstWebApplication.Helpers
+@using System.Globalization
 @model FirstWebApplication.Models.Obstacle.MyRegistrationsViewModel
 
 @{
@@ -49,7 +50,7 @@
         <div class="mb-8">
             <h2 class="text-2xl font-bold text-gray-900 mb-4">⚠️ Incomplete Quick Registrations</h2>
             <p class="text-gray-600 mb-4">You have <strong>@Model.IncompleteCount</strong> incomplete quick registration(s).</p>
-            
+
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-yellow-50">
@@ -67,12 +68,24 @@
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900">#@quickReg.Id</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     @{
-                                        var coords = quickReg.Location.Replace("POINT(", "").Replace(")", "").Split(' ');
-                                        var displayCoords = coords.Length == 2
-                                            ? $"{double.Parse(coords[1]).ToString("F4")}, {double.Parse(coords[0]).ToString("F4")}"
-                                            : "Unknown";
+                                        string displayLoc = "Ukjent";
+                                        if (!string.IsNullOrEmpty(quickReg.Location))
+                                        {
+                                            if (quickReg.Location.Contains("POINT"))
+                                            {
+                                                var coords = quickReg.Location.Replace("POINT(", "").Replace(")", "").Split(' ');
+                                                if (coords.Length == 2)
+                                                {
+                                                    displayLoc = $"📍 {double.Parse(coords[1], CultureInfo.InvariantCulture):F4}, {double.Parse(coords[0], CultureInfo.InvariantCulture):F4}";
+                                                }
+                                            }
+                                            else if (quickReg.Location.Contains("LINESTRING"))
+                                            {
+                                                displayLoc = "📏 Linjeobjekt";
+                                            }
+                                        }
                                     }
-                                    📍 @displayCoords
+                                    @displayLoc
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-600">@quickReg.RegisteredDate.ToString("dd.MM.yyyy HH:mm")</td>
                                 <td class="px-6 py-4 text-sm font-medium">
@@ -115,12 +128,24 @@
                                 <td class="px-6 py-4 text-sm text-gray-900">@obstacle.Name</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     @{
-                                        var pendingCoords = obstacle.Location?.Replace("POINT(", "").Replace(")", "").Split(' ');
-                                        var pendingDisplay = pendingCoords?.Length == 2
-                                            ? $"{double.Parse(pendingCoords[1]).ToString("F4")}, {double.Parse(pendingCoords[0]).ToString("F4")}"
-                                            : "N/A";
+                                        string displayLoc = "N/A";
+                                        if (!string.IsNullOrEmpty(obstacle.Location))
+                                        {
+                                            if (obstacle.Location.Contains("POINT"))
+                                            {
+                                                var coords = obstacle.Location.Replace("POINT(", "").Replace(")", "").Split(' ');
+                                                if (coords.Length == 2)
+                                                {
+                                                    displayLoc = $"📍 {double.Parse(coords[1], CultureInfo.InvariantCulture):F4}, {double.Parse(coords[0], CultureInfo.InvariantCulture):F4}";
+                                                }
+                                            }
+                                            else if (obstacle.Location.Contains("LINESTRING"))
+                                            {
+                                                displayLoc = "📏 Linjeobjekt";
+                                            }
+                                        }
                                     }
-                                    📍 @pendingDisplay
+                                    @displayLoc
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-600">@obstacle.Height.ToString("F2") m</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">@obstacle.RegisteredDate.ToString("dd.MM.yyyy")</td>
@@ -164,12 +189,24 @@
                                 <td class="px-6 py-4 text-sm text-gray-900">@obstacle.Name</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     @{
-                                        var approvedCoords = obstacle.Location?.Replace("POINT(", "").Replace(")", "").Split(' ');
-                                        var approvedDisplay = approvedCoords?.Length == 2
-                                            ? $"{double.Parse(approvedCoords[1]).ToString("F4")}, {double.Parse(approvedCoords[0]).ToString("F4")}"
-                                            : "N/A";
+                                        string displayLoc = "N/A";
+                                        if (!string.IsNullOrEmpty(obstacle.Location))
+                                        {
+                                            if (obstacle.Location.Contains("POINT"))
+                                            {
+                                                var coords = obstacle.Location.Replace("POINT(", "").Replace(")", "").Split(' ');
+                                                if (coords.Length == 2)
+                                                {
+                                                    displayLoc = $"📍 {double.Parse(coords[1], CultureInfo.InvariantCulture):F4}, {double.Parse(coords[0], CultureInfo.InvariantCulture):F4}";
+                                                }
+                                            }
+                                            else if (obstacle.Location.Contains("LINESTRING"))
+                                            {
+                                                displayLoc = "📏 Linjeobjekt";
+                                            }
+                                        }
                                     }
-                                    📍 @approvedDisplay
+                                    @displayLoc
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-600">@obstacle.Height.ToString("F2") m</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">@(obstacle.ProcessedBy ?? "N/A")</td>
@@ -203,24 +240,39 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach (var obstacle in Model.RejectedObstacles)
                         {
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 text-sm font-medium text-gray-900">#@obstacle.Id</td>
-                                <td class="px-6 py-4 text-sm text-gray-900">@obstacle.Name</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">
-                                    @{
-                                        var rejectedCoords = obstacle.Location?.Replace("POINT(", "").Replace(")", "").Split(' ');
-                                        var rejectedDisplay = rejectedCoords?.Length == 2
-                                            ? $"{double.Parse(rejectedCoords[1]).ToString("F4")}, {double.Parse(rejectedCoords[0]).ToString("F4")}"
-                                            : "N/A";
+                        <td class="px-6 py-4 text-sm text-gray-600">
+                            @{
+                                string displayLoc = "Ukjent";
+                                if (!string.IsNullOrEmpty(obstacle.Location))
+                                {
+                                    if (obstacle.Location.Contains("POINT"))
+                                    {
+                                        var coords = obstacle.Location.Replace("POINT(", "").Replace(")", "").Split(' ');
+                                        if (coords.Length == 2)
+                                        {
+                                            displayLoc = $"📍 {double.Parse(coords[1], CultureInfo.InvariantCulture):F4}, {double.Parse(coords[0], CultureInfo.InvariantCulture):F4}";
+                                        }
                                     }
-                                    📍 @rejectedDisplay
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-600">@(obstacle.ProcessedBy ?? "N/A")</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">@(obstacle.RejectionReason ?? "No reason provided")</td>
-                                <td class="px-6 py-4 text-sm font-medium">
-                                    <a asp-action="Overview" asp-route-id="@obstacle.Id" class="text-blue-600 hover:text-blue-900">👁️ View</a>
-                                </td>
-                            </tr>
+                                    else if (obstacle.Location.Contains("LINESTRING"))
+                                    {
+                                        // Hent første punkt i linjen for å vise "Start: ..."
+                                        var raw = obstacle.Location.Replace("LINESTRING(", "").Replace(")", "");
+                                        var firstPair = raw.Split(',')[0].Trim().Split(' ');
+                                        if (firstPair.Length == 2)
+                                        {
+                                            var lat = double.Parse(firstPair[1], CultureInfo.InvariantCulture);
+                                            var lon = double.Parse(firstPair[0], CultureInfo.InvariantCulture);
+                                            displayLoc = $"📏 Linje (Start: {lat:F3}, {lon:F3})";
+                                        }
+                                        else
+                                        {
+                                            displayLoc = "📏 Linjeobjekt";
+                                        }
+                                    }
+                                }
+                            }
+                            @displayLoc
+                        </td>
                         }
                     </tbody>
                 </table>

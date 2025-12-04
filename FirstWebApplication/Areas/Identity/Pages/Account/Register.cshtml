@@ -1,57 +1,277 @@
 ﻿@page
-@model FirstWebApplication.Areas.Identity.Pages.Account.RegisterModel
+@model RegisterModel
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Registrering";
 }
 
-<h1>@ViewData["Title"]</h1>
+@* --- CSS: Samme stil som før --- *@
+<style nonce="@FirstWebApplication.Helpers.CspHelper.GetNonce(Html)">
+    header, footer, .border-top.footer { display: none !important; }
+    body { overflow: hidden; }
+    
+    #map-background {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        z-index: -2; filter: grayscale(20%);
+    }
+    #map-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        z-index: -1; background-color: rgba(33, 37, 41, 0.75); pointer-events: none;
+    }
+    .auth-container {
+        height: 100vh; width: 100%; display: flex; justify-content: center; align-items: center;
+    }
+    .auth-card {
+        border: none; border-radius: 15px; background-color: rgba(255, 255, 255, 0.98);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.25); width: 100%; max-width: 600px;
+        transition: all 0.3s ease;
+    }
+    
+    /* Wizard Steps Styles */
+    .step-content { display: none; animation: fadeIn 0.4s; }
+    .step-content.active { display: block; }
+    
+    @Html.Raw("@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }")
 
-<div class="row">
-    <div class="col-md-4">
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Create a new account.</h2>
-            <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+    .role-btn {
+        border: 2px solid #dee2e6;
+        border-radius: 12px;
+        padding: 25px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .role-btn:hover {
+        border-color: #0d6efd;
+        background-color: #f0f8ff;
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .role-icon { font-size: 3rem; color: #0d6efd; margin-bottom: 15px; display: block; }
+    .role-title { font-weight: 800; font-size: 1.4rem; display: block; margin-bottom: 5px; color: #333; }
+    .role-desc { font-size: 0.9rem; color: #6c757d; }
+</style>
 
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Fornavn" class="form-control" autocomplete="given-name" aria-required="true" placeholder="Ola" />
-                <label asp-for="Input.Fornavn"></label>
-                <span asp-validation-for="Input.Fornavn" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Etternavn" class="form-control" autocomplete="family-name" aria-required="true" placeholder="Nordmann" />
-                <label asp-for="Input.Etternavn"></label>
-                <span asp-validation-for="Input.Etternavn" class="text-danger"></span>
-            </div>
+<div id="map-background"></div>
+<div id="map-overlay"></div>
 
-            <div class="form-floating mb-3">
-                <select asp-for="Input.OrganisasjonId" class="form-select" aria-required="true" asp-items="@Model.Organisasjoner">
-                    <option value="">Velg organisasjon...</option>
-                </select>
-                <label asp-for="Input.OrganisasjonId"></label>
-                <span asp-validation-for="Input.OrganisasjonId" class="text-danger"></span>
-            </div>
+<div class="auth-container">
+    <div class="card auth-card p-4 p-md-5">
+        <div class="card-body">
+            
+            <form id="registerForm" method="post">
+                @* Skjulte felter for å lagre valgene fra wizard *@
+                <input type="hidden" asp-for="Input.SelectedRole" id="selectedRoleInput" />
+                
+                @* --- STEG 1: VELG ROLLE --- *@
+                <div id="step1" class="step-content active">
+                    <div class="text-center mb-5">
+                        <h1 class="fw-bold display-5">Velg din rolle</h1>
+                        <p class="text-muted fs-5">Hva skal du bruke registeret til?</p>
+                    </div>
+                    
+                    <div class="row g-4">
+                        <div class="col-6">
+                            @* ENDRET: Fjernet onclick, la til ID *@
+                            <div class="role-btn" id="btnRolePilot">
+                                <i class="bi bi-airplane-engines role-icon"></i>
+                                <span class="role-title">Pilot</span>
+                                <span class="role-desc">Rapportere hindre</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            @* ENDRET: Fjernet onclick, la til ID *@
+                            <div class="role-btn" id="btnRoleRegisterforer">
+                                <i class="bi bi-building-gear role-icon"></i>
+                                <span class="role-title">Registerfører</span>
+                                <span class="role-desc">Behandle data (Kartverket)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-5 text-center">
+                        <a href="/" class="text-muted text-decoration-none"><i class="bi bi-arrow-left"></i> Avbryt og gå til forsiden</a>
+                    </div>
+                </div>
 
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label asp-for="Input.Email"></label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.Password"></label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.ConfirmPassword"></label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </form>
+                @* --- STEG 2: VELG ORGANISASJON (Kun for Pilot) --- *@
+                <div id="step2" class="step-content">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">Tilhørighet</h2>
+                        <p class="text-muted">Hvilken organisasjon flyr du for?</p>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <select asp-for="Input.OrganisasjonId" asp-items="Model.Organisasjoner" class="form-select" id="orgSelect" style="height: 60px; font-size: 1.1rem;">
+                            <option value="" disabled selected>-- Velg organisasjon --</option>
+                        </select>
+                        <label>Organisasjon</label>
+                        <span asp-validation-for="Input.OrganisasjonId" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-5">
+                        @* ENDRET: Fjernet onclick, la til ID *@
+                        <button type="button" id="btnStep2Next" class="btn btn-primary btn-lg fw-bold py-3">Neste steg <i class="bi bi-arrow-right"></i></button>
+                        <button type="button" id="btnStep2Back" class="btn btn-outline-secondary py-2">Tilbake</button>
+                    </div>
+                </div>
+
+                @* --- STEG 3: PERSONLIG INFO (Siste steg) --- *@
+                <div id="step3" class="step-content">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">Opprett bruker</h2>
+                        <p class="text-muted" id="summaryText">Fyll ut detaljene dine</p>
+                    </div>
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="form-floating">
+                                <input asp-for="Input.Fornavn" class="form-control" placeholder="Fornavn" required />
+                                <label>Fornavn</label>
+                                <span asp-validation-for="Input.Fornavn" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-floating">
+                                <input asp-for="Input.Etternavn" class="form-control" placeholder="Etternavn" required />
+                                <label>Etternavn</label>
+                                <span asp-validation-for="Input.Etternavn" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Email" class="form-control" placeholder="name@example.com" required />
+                        <label>E-postadresse</label>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Password" class="form-control" placeholder="Password" required />
+                        <label>Passord</label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-floating mb-4">
+                        <input asp-for="Input.ConfirmPassword" class="form-control" placeholder="Password" required />
+                        <label>Bekreft passord</label>
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold py-3">Fullfør registrering</button>
+                        @* ENDRET: Fjernet onclick, la til ID *@
+                        <button type="button" id="btnStep3Back" class="btn btn-outline-secondary py-2">Tilbake</button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
+    <script src="~/lib/leaflet/leaflet.js"></script>
+
+    @* --- OPPDATERT JAVASCRIPT: Bruker Event Listeners (CSP Safe) --- *@
+    <script nonce="@FirstWebApplication.Helpers.CspHelper.GetNonce(Html)">
+        
+        document.addEventListener("DOMContentLoaded", function () {
+            // 1. Last inn bakgrunnskartet
+            var map = L.map('map-background', { 
+                zoomControl: false, 
+                dragging: false, 
+                scrollWheelZoom: false, 
+                attributionControl: false,
+                keyboard: false
+            }).setView([59.91, 10.75], 12);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+            // 2. KOBLE TIL KNAPPER (Event Listeners)
+            // Dette erstatter onclick i HTMLen
+            
+            // Rolle-knapper (Steg 1)
+            document.getElementById('btnRolePilot').addEventListener('click', function() {
+                selectRole('Pilot');
+            });
+            
+            document.getElementById('btnRoleRegisterforer').addEventListener('click', function() {
+                selectRole('Registerfører');
+            });
+
+            // Navigasjon (Steg 2)
+            var btnStep2Next = document.getElementById('btnStep2Next');
+            if(btnStep2Next) {
+                btnStep2Next.addEventListener('click', function() { goToStep(3); });
+            }
+
+            var btnStep2Back = document.getElementById('btnStep2Back');
+            if(btnStep2Back) {
+                btnStep2Back.addEventListener('click', function() { goToStep(1); });
+            }
+
+            // Navigasjon (Steg 3)
+            var btnStep3Back = document.getElementById('btnStep3Back');
+            if(btnStep3Back) {
+                btnStep3Back.addEventListener('click', goBackFromStep3);
+            }
+        });
+
+        // --- HJELPEFUNKSJONER ---
+
+        function selectRole(role) {
+            console.log("Valgt rolle: " + role);
+            
+            // Lagre valgt rolle i det skjulte input-feltet
+            var hiddenInput = document.getElementById('selectedRoleInput');
+            if(hiddenInput) {
+                hiddenInput.value = role;
+            }
+            
+            if (role === 'Pilot') {
+                // Pilot -> Steg 2
+                goToStep(2);
+            } else {
+                // Registerfører -> Steg 3 (Kartverket settes auto)
+                var summary = document.getElementById('summaryText');
+                if(summary) summary.innerText = "Du registreres under Kartverket";
+                
+                goToStep(3);
+            }
+        }
+
+        function goToStep(stepNumber) {
+            // Skjul alle steg
+            var steps = document.querySelectorAll('.step-content');
+            steps.forEach(function(el) {
+                el.classList.remove('active');
+            });
+
+            // Vis valgt steg
+            var currentStep = document.getElementById('step' + stepNumber);
+            if(currentStep) {
+                currentStep.classList.add('active');
+            }
+        }
+
+        function goBackFromStep3() {
+            var roleInput = document.getElementById('selectedRoleInput');
+            var role = roleInput ? roleInput.value : '';
+
+            if (role === 'Pilot') {
+                goToStep(2); // Tilbake til org valg
+            } else {
+                goToStep(1); // Tilbake til rollevalg
+            }
+        }
+    </script>
 }
