@@ -149,7 +149,7 @@ namespace FirstWebApplication.Services
             }
         }
 
-        // --- HER ER FIKSEN ---
+        
         private async Task CreateSpecificUser(string email, string password, string role, string fornavn, string etternavn, long? orgId)
         {
             var user = await _userManager.FindByEmailAsync(email);
