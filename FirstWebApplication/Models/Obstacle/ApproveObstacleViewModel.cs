@@ -2,9 +2,9 @@
 
 namespace FirstWebApplication.Models.Obstacle
 {
-    /// <summary>
-    /// ViewModel for godkjenning av obstacle
-    /// </summary>
+
+    // ViewModel for godkjenning av obstacle
+
     public class ApproveObstacleViewModel
     {
         [Required]

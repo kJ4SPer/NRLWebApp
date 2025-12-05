@@ -1,8 +1,8 @@
 ﻿namespace FirstWebApplication.Models.Obstacle
 {
-    /// <summary>
-    /// ViewModel for detaljert visning av et obstacle
-    /// </summary>
+
+    // ViewModel for detaljert visning av et obstacle
+
     public class ObstacleDetailsViewModel
     {
         public long Id { get; set; }

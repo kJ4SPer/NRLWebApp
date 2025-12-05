@@ -1,8 +1,8 @@
 ﻿namespace FirstWebApplication.Models.Obstacle
 {
-    /// <summary>
-    /// ViewModel for obstacles i lister
-    /// </summary>
+
+    // ViewModel for obstacles i lister
+
     public class ObstacleListItemViewModel
     {
         public long Id { get; set; }

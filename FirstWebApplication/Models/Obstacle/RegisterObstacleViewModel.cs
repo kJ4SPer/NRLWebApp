@@ -2,12 +2,11 @@
 
 namespace FirstWebApplication.Models.Obstacle
 {
-    /// <summary>
-    /// ViewModel for registrering av nye obstacles
-    /// </summary>
+
+    // ViewModel for registrering av nye obstacles
+
     public class RegisterObstacleViewModel
     {
-        // REMOVED: ObstacleName - Generated automatically by the controller
 
         [Range(0.1, 10000, ErrorMessage = "Height must be between 0.1 and 10000 meters")]
         [Display(Name = "Height (meters)")]

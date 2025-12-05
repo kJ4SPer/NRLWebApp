@@ -2,13 +2,12 @@
 
 namespace FirstWebApplication.Entities
 {
-    /// <summary>
-    /// Lookup-tabell for status-typer
-    /// 1 = Registered (Quick Register lagret)
-    /// 2 = Pending (Venter på godkjenning)
-    /// 3 = Approved (Godkjent)
-    /// 4 = Rejected (Avvist)
-    /// </summary>
+
+    // Lookup-tabell for status-typer
+    // 1 = Registered (Quick Register lagret)
+    // 2 = Pending (Venter på godkjenning)
+    // 3 = Approved (Godkjent)
+    // 4 = Rejected (Avvist)
     public class StatusType
     {
         [Key]
