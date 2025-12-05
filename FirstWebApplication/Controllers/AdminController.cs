@@ -26,9 +26,8 @@ namespace FirstWebApplication.Controllers
             _context = context;
         }
 
-        // =========================================================
+        
         // 1. DASHBOARD
-        // =========================================================
         public async Task<IActionResult> AdminDashboard()
         {
             // Vi henter kun tallene vi trenger for de to boksene
@@ -37,9 +36,7 @@ namespace FirstWebApplication.Controllers
             return View();
         }
 
-        // =========================================================
         // 2. OPPGAVE: GODKJENNE NYE BRUKERE (Pending)
-        // =========================================================
         [HttpGet]
         public async Task<IActionResult> AdminPendingUsers()
         {
@@ -79,9 +76,7 @@ namespace FirstWebApplication.Controllers
             return RedirectToAction(nameof(AdminPendingUsers));
         }
 
-        // =========================================================
         // 3. OPPGAVE: ADMINISTRERE EKSISTERENDE BRUKERE
-        // =========================================================
 
         // Liste over alle brukere
         public async Task<IActionResult> AdminUsers()

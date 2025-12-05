@@ -164,7 +164,7 @@ namespace FirstWebApplication.Services
                     Fornavn = fornavn,
                     Etternavn = etternavn,
                     EmailConfirmed = true,
-                    IsApproved = true, // <--- VIKTIG
+                    IsApproved = true, 
                     RegisteredDate = DateTime.Now,
                     OrganisasjonId = orgId
                 };

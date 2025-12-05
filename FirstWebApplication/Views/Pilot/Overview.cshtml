@@ -86,7 +86,6 @@
         var mapElement = document.getElementById('map');
         if (!mapElement) { console.error("Fant ikke kart-div"); return; }
 
-        // Tøm "Laster kart..." teksten
         mapElement.innerHTML = "";
 
         var geometry = mapElement.getAttribute('data-geometry');
@@ -99,7 +98,6 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Fiks for visningsfeil
         setTimeout(function() { map.invalidateSize(); }, 200);
 
         if (geometry) {

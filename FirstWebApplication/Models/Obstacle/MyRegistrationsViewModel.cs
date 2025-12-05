@@ -1,8 +1,7 @@
 ﻿namespace FirstWebApplication.Models.Obstacle
 {
-    /// <summary>
-    /// ViewModel for "My Registrations" siden
-    /// </summary>
+
+    // ViewModel for "My Registrations" siden
     public class MyRegistrationsViewModel
     {
         public List<IncompleteQuickRegItem> IncompleteQuickRegs { get; set; } = new();

@@ -11,7 +11,7 @@
 @* --- CSS: KART, LAYOUT OG DESIGN --- *@
 <style nonce="@Html.GetNonce()">
 
-    /* 1. Skjul standard navbar og footer */
+    /*  Skjul standard navbar og footer */
         header, footer, .border-top.footer {
                 display: none !important;
 
@@ -30,7 +30,7 @@
     }
 
 
-    /* 2. Bakgrunnskart */
+    /* Bakgrunnskart */
         #map-background {
                 position: fixed;
                 top: 0;
@@ -43,7 +43,7 @@
     }
 
 
-    /* 3. Mørk overlay */
+    /* Mørk overlay */
         #map-overlay {
                 position: fixed;
                 top: 0;
@@ -57,7 +57,7 @@
     }
 
 
-    /* 4. Hovedcontainer */
+    /* Hovedcontainer */
         .landing-container {
                 height: 100vh;
                 width: 100%;
@@ -68,7 +68,7 @@
     }
 
 
-    /* 5. HERO TEKST - JUSTERT FOR LYS BAKGRUNN */
+    /* JUSTERT FOR LYS BAKGRUNN */
         .hero-section {
                 margin-bottom: 3rem;
                 text-align: center;
@@ -103,7 +103,7 @@
     }
 
 
-    /* 6. Kort-design - HØYERE OG SMALERE */
+    /* Kort-design - HØYERE OG SMALERE */
         .action-card {
                 border: none;
                 border-radius: 15px;
@@ -121,7 +121,7 @@
         }
 
 
-    /* 7. Privacy link */
+    /* Privacy link */
         .privacy-link-container {
                 margin-top: auto;
                 padding-top: 30px;
@@ -164,7 +164,6 @@
         @if (SignInManager.IsSignedIn(User))
         {
             /* --- VISNING FOR INNLOGGET BRUKER --- */
-            /* Endret fra col-lg-7 til col-lg-5 for å gjøre den smalere */
             <div class="col-12 col-md-8 col-lg-5 mb-4">
                 <div class="card action-card shadow-lg p-4">
                     <div class="card-body text-center">
@@ -195,7 +194,6 @@
             /* --- VISNING FOR GJEST --- */
 
             @* LOGG INN BOKS *@
-            /* Endret fra col-lg-7 til col-lg-5 for å gjøre den smalere */
             <div class="col-12 col-md-8 col-lg-5 mb-4">
                 <div class="card action-card shadow-lg">
                     <div class="card-body p-5 text-center">

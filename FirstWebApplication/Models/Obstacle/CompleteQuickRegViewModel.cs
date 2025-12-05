@@ -2,9 +2,9 @@
 
 namespace FirstWebApplication.Models.Obstacle
 {
-    /// <summary>
-    /// ViewModel for å fullføre en Quick Registration
-    /// </summary>
+
+    // ViewModel for å fullføre en Quick Registration
+
     public class CompleteQuickRegViewModel
     {
         public long ObstacleId { get; set; }

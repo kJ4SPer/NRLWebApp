@@ -27,12 +27,16 @@ namespace FirstWebApplication.Controllers
             _logger = logger;
         }
 
+        // Hjemmesiden til Pilot
+
         [HttpGet]
         public async Task<IActionResult> RegisterType()
         {
             if (!await IsUserApproved()) return RedirectToAction("AccountPending", "Account", new { area = "Identity" });
             return View();
         }
+
+        // Hurtigregistrering
 
         [HttpGet]
         public async Task<IActionResult> QuickRegister()
@@ -64,7 +68,6 @@ namespace FirstWebApplication.Controllers
                     Location = obstacleGeometry,
                     RegisteredByUserId = userId,
                     RegisteredDate = DateTime.Now
-                    // NAME ER FJERNET HERFRA
                 };
 
                 _context.Obstacles.Add(obstacle);
@@ -92,9 +95,7 @@ namespace FirstWebApplication.Controllers
             }
         }
 
-        // =============================================================
-        // 3. FULL REGISTRERING
-        // =============================================================
+        //  Full Registrering
 
         [HttpGet]
         public async Task<IActionResult> FullRegister()
@@ -130,11 +131,8 @@ namespace FirstWebApplication.Controllers
                         typeName = CustomObstacleType;
                     }
 
-                    // GENERERING AV NAVN ER FJERNET HER
-
                     var obstacle = new Obstacle
                     {
-                        // NAME ER FJERNET HERFRA
                         Height = model.ObstacleHeight,
                         Description = model.ObstacleDescription,
                         Location = model.ObstacleGeometry,
@@ -170,9 +168,7 @@ namespace FirstWebApplication.Controllers
             });
         }
 
-        // =============================================================
-        // 4. COMPLETE QUICK REGISTRATION
-        // =============================================================
+        // Complete Quick Register GET
 
         [HttpGet]
         public async Task<IActionResult> CompleteQuickRegister(long id)
@@ -201,6 +197,8 @@ namespace FirstWebApplication.Controllers
             return View(model);
         }
 
+        // Complete Quick Register POST
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CompleteQuickRegister(CompleteQuickRegViewModel model, string? CustomObstacleType)
@@ -214,7 +212,7 @@ namespace FirstWebApplication.Controllers
             var userId = _userManager.GetUserId(User);
             if (userId == null) return Unauthorized();
 
-            // FIKS: Implementer Execution Strategy for å støtte retrying execution strategy med transaksjoner.
+            
             var strategy = _context.Database.CreateExecutionStrategy();
 
             return await strategy.ExecuteAsync<IActionResult>(async () =>
@@ -222,18 +220,15 @@ namespace FirstWebApplication.Controllers
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
-                    // Linje 221 i din feilmelding peker hit:
                     var obstacle = await _context.Obstacles
                         .Include(o => o.CurrentStatus)
                         .FirstOrDefaultAsync(o => o.Id == model.ObstacleId && o.RegisteredByUserId == userId);
 
                     if (obstacle == null) return NotFound();
 
-                    // AUTOMATISK NAVN ER FJERNET HERFRA
 
                     obstacle.Height = model.ObstacleHeight;
                     obstacle.Description = model.ObstacleDescription;
-                    // Merk: SetObstacleTypeAsync er antatt fikset i forrige steg (fjerning av SaveChangesAsync)
                     await SetObstacleTypeAsync(obstacle, model.ObstacleType, CustomObstacleType);
 
                     if (obstacle.CurrentStatus != null)
@@ -265,7 +260,7 @@ namespace FirstWebApplication.Controllers
             }); 
         }
 
-
+        // Mine Registreringer
 
         [HttpGet]
         public async Task<IActionResult> MyRegistrations()
@@ -284,6 +279,8 @@ namespace FirstWebApplication.Controllers
             return View(viewModel);
         }
 
+        // Oversikt
+
         [HttpGet]
         public async Task<IActionResult> Overview(long id)
         {
@@ -300,6 +297,8 @@ namespace FirstWebApplication.Controllers
             var viewModel = BuildObstacleDetailsViewModel(obstacle);
             return View(viewModel);
         }
+
+        // Slett en registrering
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -355,7 +354,6 @@ namespace FirstWebApplication.Controllers
                     Location = obstacleGeometry,
                     RegisteredByUserId = userId,
                     RegisteredDate = DateTime.Now
-                    // NAME ER FJERNET HERFRA
                 };
                 _context.Obstacles.Add(obstacle);
                 await _context.SaveChangesAsync();
@@ -453,8 +451,6 @@ namespace FirstWebApplication.Controllers
             return new ObstacleDetailsViewModel
             {
                 Id = obstacle.Id,
-
-                // NAME ER FJERNET HER
 
                 Height = obstacle.Height ?? 0,
                 Description = obstacle.Description ?? string.Empty,

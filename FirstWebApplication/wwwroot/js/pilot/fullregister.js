@@ -147,8 +147,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (drawControl._toolbars.draw._modes.polyline && drawControl._toolbars.draw._modes.polyline.handler.enabled()) {
             return;
         }
-
-        // Ellers, plasser markør som før
         drawnItems.clearLayers();
         var marker = L.marker(e.latlng, { draggable: true }).addTo(drawnItems);
 

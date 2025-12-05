@@ -4,7 +4,6 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     // Create the map centered on Norway
-    // The map is set to not be interactive
     var map = L.map('register-type-map', {
         center: [60.4720, 8.4689],
         zoom: 5,
