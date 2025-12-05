@@ -120,9 +120,15 @@ namespace FirstWebApplication.Controllers
         // LOGOUT - Logg ut bruker
         // ============================================================
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            // Sign out Identity (clears the auth cookie)
             await _signInManager.SignOutAsync();
+
+            // If you use explicit schemes or external sign-out, you can use:
+            // await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+
             return RedirectToAction("Index", "Home");
         }
     }
