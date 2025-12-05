@@ -52,9 +52,9 @@ namespace FirstWebApplication.Middleware
                 "default-src 'self'",
                 $"script-src 'self' 'nonce-{nonce}' 'unsafe-inline' 'unsafe-hashes' https://unpkg.com https://cdn.tailwindcss.com",
                 $"style-src 'self' 'unsafe-inline' 'unsafe-hashes' https://unpkg.com https://cdn.tailwindcss.com",
-                "img-src 'self' data: https://*.tile.openstreetmap.org https://cache.kartverket.no",
+                "img-src 'self' data: https://*.tile.openstreetmap.org https://cache.kartverket.no https://unpkg.com",
                 "font-src 'self'",
-                "connect-src 'self' ws: wss: http: https:", // Åpner for alt av connect i dev
+                "connect-src 'self' ws: wss: http: https:", 
                 "frame-ancestors 'none'",
                 "form-action 'self'"
             };
