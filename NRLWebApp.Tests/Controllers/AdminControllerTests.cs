@@ -77,7 +77,7 @@ namespace NRLWebApp.Tests.Controllers
             var controller = new AdminController(mockUserManager.Object, mockRoleService.Object, TestDbContext.Create());
             controller.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
-            // FIX 2: Sett opp ControllerContext med en "falsk" innlogget bruker
+            // FIX 2: Sett opp ControllerContext med en "falsk" innlogget bruker hilsen kristian
             // Dette hindrer NullReferenceException når koden sjekker User?.FindFirstValue
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, "logged-in-admin-id") };
             var identity = new ClaimsIdentity(claims, "TestAuth");
@@ -90,7 +90,7 @@ namespace NRLWebApp.Tests.Controllers
 
             // Act
             var result = await controller.DeleteUser("delete-me");
-
+            // her
             // Assert
             mockUserManager.Verify(x => x.DeleteAsync(user), Times.Once);
 

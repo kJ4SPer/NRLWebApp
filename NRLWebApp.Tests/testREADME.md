@@ -76,7 +76,7 @@ dotnet test
 dotnet test --logger "console;verbosity=detailed"
 ✅ Dekningsområder
 AdminController
-Verifiserer at dashboard-tall (statistikk) er korrekte.
+Verifiserer at dashboard-tall (statistikk) er korrekte. jepp
 
 Tester at brukere kan godkjennes (statusendring).
 
