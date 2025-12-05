@@ -3,30 +3,30 @@
 @model FirstWebApplication.Models.Obstacle.MyRegistrationsViewModel
 
 @{
-    ViewData["Title"] = "My Registrations";
+    ViewData["Title"] = "Mine registreringer";
 }
 
 <div class="container mx-auto px-4 py-8 dark:bg-gray-900 dark:text-gray-100 min-h-screen">
     <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">My Registrations</h1>
-        <p class="text-gray-600 dark:text-gray-300 mt-2">Manage your obstacle registrations</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Mine registreringer</h1>
+        <p class="text-gray-600 dark:text-gray-300 mt-2">Administrer dine hinderregistreringer</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded dark:bg-yellow-900/30 dark:border-yellow-400">
-            <p class="text-yellow-800 font-semibold dark:text-yellow-400">Incomplete</p>
+            <p class="text-yellow-800 font-semibold dark:text-yellow-400">Ufullstendig</p>
             <p class="text-3xl font-bold text-yellow-900 dark:text-yellow-300">@Model.IncompleteCount</p>
         </div>
         <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded dark:bg-blue-900/30 dark:border-blue-400">
-            <p class="text-blue-800 font-semibold dark:text-blue-400">Pending Review</p>
+            <p class="text-blue-800 font-semibold dark:text-blue-400">Venter på behandling</p>
             <p class="text-3xl font-bold text-blue-900 dark:text-blue-300">@Model.PendingCount</p>
         </div>
         <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded dark:bg-green-900/30 dark:border-green-400">
-            <p class="text-green-800 font-semibold dark:text-green-400">Approved</p>
+            <p class="text-green-800 font-semibold dark:text-green-400">Godkjent</p>
             <p class="text-3xl font-bold text-green-900 dark:text-green-300">@Model.ApprovedCount</p>
         </div>
         <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded dark:bg-red-900/30 dark:border-red-400">
-            <p class="text-red-800 font-semibold dark:text-red-400">Rejected</p>
+            <p class="text-red-800 font-semibold dark:text-red-400">Avvist</p>
             <p class="text-3xl font-bold text-red-900 dark:text-red-300">@Model.RejectedCount</p>
         </div>
     </div>
@@ -48,17 +48,17 @@
     @if (Model.IncompleteQuickRegs.Any())
     {
         <div class="mb-8">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">⚠️ Incomplete Quick Registrations</h2>
-            <p class="text-gray-600 dark:text-gray-300 mb-4">You have <strong>@Model.IncompleteCount</strong> incomplete quick registration(s).</p>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">⚠️ Ufullstendige hurtigregistreringer</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">Du har <strong>@Model.IncompleteCount</strong> ufullstendig hurtigregistrering(er).</p>
 
             <div class="bg-white rounded-lg shadow-md overflow-hidden dark:bg-gray-800">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-yellow-50 dark:bg-yellow-900/50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Location</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Actions</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Lokasjon</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">dato</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Handlinger</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
@@ -89,9 +89,9 @@
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">@quickReg.RegisteredDate.ToString("dd.MM.yyyy HH:mm")</td>
                                 <td class="px-6 py-4 text-sm font-medium">
-                                    <a asp-action="CompleteQuickRegister" asp-route-id="@quickReg.Id" class="text-blue-600 hover:text-blue-900 mr-4 dark:text-blue-400 dark:hover:text-blue-200">✏️ Complete</a>
+                                    <a asp-action="CompleteQuickRegister" asp-route-id="@quickReg.Id" class="text-blue-600 hover:text-blue-900 mr-4 dark:text-blue-400 dark:hover:text-blue-200">✏️ Fullfør</a>
                                     <form asp-action="DeleteRegistration" asp-route-id="@quickReg.Id" method="post" class="inline delete-form">
-                                        <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200">🗑️ Delete</button>
+                                        <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200">🗑️ Slett</button>
                                     </form>
                                 </td>
                             </tr>
@@ -105,17 +105,17 @@
     @if (Model.PendingObstacles.Any())
     {
         <div class="mb-8">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">⏳ Pending Review</h2>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">⏳ Venter på behandling</h2>
             <div class="bg-white rounded-lg shadow-md overflow-hidden dark:bg-gray-800">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-blue-50 dark:bg-blue-900/50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Location</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Height</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Actions</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Lokasjon</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Høyde</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Dato</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Handlinger</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
@@ -148,9 +148,9 @@
                                 <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">@obstacle.Height.ToString("F2") m</td>
                                 <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">@obstacle.RegisteredDate.ToString("dd.MM.yyyy")</td>
                                 <td class="px-6 py-4 text-sm font-medium">
-                                    <a asp-action="Overview" asp-route-id="@obstacle.Id" class="text-blue-600 hover:text-blue-900 mr-4 dark:text-blue-400 dark:hover:text-blue-200">👁️ View</a>
+                                    <a asp-action="Overview" asp-route-id="@obstacle.Id" class="text-blue-600 hover:text-blue-900 mr-4 dark:text-blue-400 dark:hover:text-blue-200">👁️ Vis</a>
                                     <form asp-action="DeleteRegistration" asp-route-id="@obstacle.Id" method="post" class="inline delete-form">
-                                        <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200">🗑️ Delete</button>
+                                        <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200">🗑️ Slett</button>
                                     </form>
                                 </td>
                             </tr>
@@ -164,17 +164,17 @@
     @if (Model.ApprovedObstacles.Any())
     {
         <div class="mb-8">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">✅ Approved</h2>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">✅ Godkjent</h2>
             <div class="bg-white rounded-lg shadow-md overflow-hidden dark:bg-gray-800">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-green-50 dark:bg-green-900/50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Location</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Height</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Approved By</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Actions</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Lokasjon</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Høyde</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Godkjent av</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Handlinger</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
@@ -207,7 +207,7 @@
                                 <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">@obstacle.Height.ToString("F2") m</td>
                                 <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">@(obstacle.ProcessedBy ?? "N/A")</td>
                                 <td class="px-6 py-4 text-sm font-medium">
-                                    <a asp-action="Overview" asp-route-id="@obstacle.Id" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200">👁️ View</a>
+                                    <a asp-action="Overview" asp-route-id="@obstacle.Id" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200">👁️ Vis</a>
                                 </td>
                             </tr>
                         }
@@ -220,16 +220,16 @@
     @if (Model.RejectedObstacles.Any())
     {
         <div class="mb-8">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">❌ Rejected</h2>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">❌ Avslått</h2>
             <div class="bg-white rounded-lg shadow-md overflow-hidden dark:bg-gray-800">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-red-50 dark:bg-red-900/50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Location</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Rejected By</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Reason</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Actions</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Lokasjon</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Avslått av</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Årsak</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Handlinger</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
@@ -272,7 +272,7 @@
                                 <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">@(obstacle.ProcessedBy ?? "N/A")</td>
                                 <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">@(obstacle.RejectionReason ?? "N/A")</td>
                                 <td class="px-6 py-4 text-sm font-medium">
-                                    <a asp-action="Overview" asp-route-id="@obstacle.Id" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200">👁️ View</a>
+                                    <a></a>sp-action="Overview" asp-route-id="@obstacle.Id" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200">👁️ Vis/a>
                                 </td>
                             </tr>
                         }
@@ -285,9 +285,9 @@
     @if (!Model.IncompleteQuickRegs.Any() && !Model.PendingObstacles.Any() && !Model.ApprovedObstacles.Any() && !Model.RejectedObstacles.Any())
     {
         <div class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center dark:bg-gray-800 dark:border-gray-700">
-            <p class="text-gray-600 dark:text-gray-300 text-lg">You haven't registered any obstacles yet.</p>
+            <p class="text-gray-600 dark:text-gray-300 text-lg">Du har ikke registrert noen hindringer ennå.</p>
             <a asp-action="RegisterType" class="mt-4 inline-block px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition dark:bg-indigo-500 dark:hover:bg-indigo-600">
-                Register Your First Obstacle
+                Registrer ditt første hinder
             </a>
         </div>
     }
