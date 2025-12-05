@@ -1,638 +1,765 @@
-# Kartverket Kodeprosjekt
+# NRL Webapplikasjon
 
-A web application for registering and managing aviation obstacles in Norway. Built with ASP.NET Core MVC, Entity Framework, and MariaDB.
+En webapplikasjon for registrering og håndtering av luftfartshindre i Norge. Bygget med ASP.NET Core 9.0 MVC, Entity Framework Core 9.0, og MariaDB 10.11.
 
-**Third Semester Project**
-
----
-
-## Table of Contents
-
-- [About the Project](#about-the-project)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation Guide](#installation-guide)
-  - [First Time Setup](#first-time-setup)
-  - [Running the Application](#running-the-application)
-- [User Guide](#user-guide)
-  - [Test Accounts](#test-accounts)
-  - [Pilot Features](#pilot-features)
-  - [Registerfører Features](#registerfører-features)
-  - [Admin Features](#admin-features)
-- [Technical Documentation](#technical-documentation)
-  - [Project Structure](#project-structure)
-  - [Database Design](#database-design)
-  - [Architecture Decisions](#architecture-decisions)
-- [Technologies Used](#technologies-used)
-- [Known Issues](#known-issues)
-- [Future Plans](#future-plans)
-- [Troubleshooting](#troubleshooting)
-- [License](#license)
-- [Credits](#credits)
+**Prosjektoppgave i IS-200 (UiA)**
 
 ---
 
-## About the Project
+## Innholdsfortegnelse
 
-This application allows pilots to register obstacles (masts, poles, antennas, etc.) that could be hazardous to aviation. The system includes a three-tier approval workflow:
-
-1. **Pilots** register obstacles with location data
-2. **Registerfører** (Registry Officers) review and approve/reject submissions
-3. **Admins** manage users and view system statistics
-
-Key features:
-- Interactive map-based obstacle registration (Leaflet.js)
-- Quick Register and Full Register workflows
-- Role-based access control
-- Approval/rejection workflow with audit trail
-- Responsive design (works on mobile and desktop)
+* [Om Prosjektet](#om-prosjektet)
+* [Komme i Gang](#komme-i-gang)
+* [Testing](#testing)
+* [Database Design](#database-design)
+* [Teknisk Dokumentasjon](#teknisk-dokumentasjon)
+* [Sikkerhet](#sikkerhet)
+* [Kjente Problemer](#kjente-problemer)
+* [Feilsøking](#feilsøking)
 
 ---
 
-## Getting Started
+## Om Prosjektet
 
-This guide will help you set up and run the application on your computer, even if you have never written code before.
+Denne applikasjonen lar piloter registrere hindringer (master, stolper, antenner, etc.) som kan være farlige for luftfart. Systemet inkluderer en tredelt godkjenningsarbeidsflyt:
 
-### Prerequisites
+1. **Piloter** registrerer hindringer med lokasjonsdata
+2. **Registerførere** vurderer og godkjenner/avviser innleveringer
+3. **Administratorer** administrerer brukere og ser systemstatistikk
 
-You need to install these programs on your computer:
+### Hovedfunksjoner
 
-#### 1. Docker Desktop (Required)
-Docker runs the database in a container, so you don't have to install MariaDB manually.
-
-**Installation:**
-1. Go to [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
-2. Click "Download for Windows"
-3. Run the installer
-4. Restart your computer when prompted
-5. Open Docker Desktop and wait for it to start (you'll see a green icon)
-
-**System Requirements:**
-- Windows 10 64-bit: Pro, Enterprise, or Education (Build 19041 or higher)
-- OR Windows 11 64-bit
-- WSL 2 enabled (installer will help with this)
-
-#### 2. .NET 9.0 SDK (Required)
-This is needed to run the web application.
-
-**Installation:**
-1. Go to [https://dotnet.microsoft.com/download/dotnet/9.0](https://dotnet.microsoft.com/download/dotnet/9.0)
-2. Download ".NET 9.0 SDK" (not Runtime - we need the SDK!)
-3. Run the installer
-4. Open Command Prompt and type: `dotnet --version`
-5. You should see something like `9.0.x`
-
-#### 3. Git (Required)
-To download the project from GitHub.
-
-**Installation:**
-1. Go to [https://git-scm.com/downloads](https://git-scm.com/downloads)
-2. Download for Windows
-3. Run installer (keep all default settings)
-
-#### 4. Visual Studio Code (Optional but Recommended)
-A code editor to view and edit files.
-
-**Installation:**
-1. Go to [https://code.visualstudio.com/](https://code.visualstudio.com/)
-2. Download for Windows
-3. Run installer
+* Interaktivt kartbasert hindringregistrering (Leaflet.js med OpenStreetMap)
+* Quick Register og Full Register arbeidsflyter
+* Rollebasert tilgangskontroll med brukergodkjenning
+* Godkjennings-/avvisningsarbeidsflyt med fullstendig historikk
+* Responsiv design (fungerer på mobil og desktop)
+* Content Security Policy (CSP) implementering
+* Omfattende testsuite med xUnit og Moq
+* Export til Excel via ClosedXML
+* Flerspråkstøtte (Norsk/Engelsk)
 
 ---
 
-### Installation Guide
+## Komme i Gang
 
-Follow these steps exactly:
+### Forutsetninger
 
-#### Step 1: Download the Project
+#### 1. Docker Desktop (Påkrevd)
 
-1. Open **Command Prompt** (Press `Windows + R`, type `cmd`, press Enter)
+Docker kjører MariaDB-databasen i en container.
 
-2. Navigate to where you want to save the project:
-   ```cmd
-   cd Documents
-   ```
+**Installasjon:**
+1. Last ned fra https://www.docker.com/products/docker-desktop
+2. Installer og start Docker Desktop
+3. Vent til grønt ikon vises (Docker kjører)
 
-3. Download the project:
-   ```cmd
-   git clone https://github.com/FalckM/Kartverket-Kodeprosjekt.git
-   ```
+**Systemkrav:**
+* Windows 10 64-bit: Pro, Enterprise, eller Education (Build 19041+)
+* ELLER Windows 11 64-bit
+* WSL 2 aktivert
 
-4. Go into the project folder:
-   ```cmd
-   cd Kartverket-Kodeprosjekt
-   ```
+#### 2. .NET 9.0 SDK (Påkrevd)
 
-#### Step 2: Start Docker
+**Installasjon:**
+1. Last ned fra https://dotnet.microsoft.com/download/dotnet/9.0
+2. Installer SDK (ikke bare Runtime)
+3. Verifiser: `dotnet --version` (skal vise 9.0.x)
 
-1. Open **Docker Desktop** from your Start menu
-2. Wait until you see "Docker Desktop is running" (green icon)
-3. Keep Docker Desktop open in the background
+#### 3. Git (Påkrevd)
 
-#### Step 3: Start the Database
+**Installasjon:**
+1. Last ned fra https://git-scm.com/downloads
+2. Installer med standard innstillinger
 
-In the same Command Prompt window (inside the project folder):
+#### 4. Visual Studio 2022 eller VS Code (Anbefalt)
 
-```cmd
+**Visual Studio 2022:**
+- Profesjonell IDE med innebygd støtte for ASP.NET Core
+- Beste valg for utvikling og debugging
+
+**Visual Studio Code:**
+- Lett koderedigerer
+- Krever C# extension fra Microsoft
+
+---
+
+### Installasjonsguide
+
+#### Steg 1: Klon Prosjektet
+
+```bash
+git clone https://github.com/kJ4SPer/NRLWebApp.git
+cd NRLWebApp
+```
+
+#### Steg 2: Start Docker og Database
+
+1. Åpne Docker Desktop og vent til det er klart
+2. Start MariaDB-containeren:
+
+```bash
 docker-compose up -d
 ```
 
-**What this does:** Starts a MariaDB database in a Docker container.
+**Vent 15-20 sekunder** for at databasen skal starte fullstendig.
 
-**Wait 15 seconds** for the database to start properly.
+#### Steg 3: Installer Entity Framework Tools
 
-#### Step 4: Setup the Database
+```bash
+dotnet tool install --global dotnet-ef
+```
 
-1. Go into the application folder:
-   ```cmd
-   cd FirstWebApplication
-   ```
+Hvis allerede installert, oppdater:
 
-2. Apply database migrations (creates tables):
-   ```cmd
-   dotnet ef database update
-   ```
+```bash
+dotnet tool update --global dotnet-ef
+```
 
-   **If you get an error** saying `dotnet ef not found`:
-   ```cmd
-   dotnet tool install --global dotnet-ef
-   dotnet ef database update
-   ```
+#### Steg 4: Kjør Migrasjoner
 
-#### Step 5: Build the Application
+```bash
+cd FirstWebApplication
+dotnet ef database update
+```
 
-```cmd
+Dette oppretter alle tabeller i databasen.
+
+#### Steg 5: Bygg Applikasjonen
+
+```bash
 dotnet build
 ```
 
-This compiles the application. Wait for it to complete.
+#### Steg 6: Kjør Applikasjonen
 
----
-
-### First Time Setup
-
-The application automatically creates three test accounts when you run it for the first time:
-
-| Role | Email | Password |
-|------|-------|----------|
-| Pilot | pilot@test.com | Pilot123 |
-| Registerfører | registerforer@test.com | Register123 |
-| Admin | admin@test.com | Admin123 |
-
-These accounts are created by `UserSeederService` during startup.
-
----
-
-### Running the Application
-
-#### Start the Application
-
-In Command Prompt (inside `FirstWebApplication` folder):
-
-```cmd
+```bash
 dotnet run
 ```
 
-**You should see:**
-```
-Building...
-info: Microsoft.Hosting.Lifetime[14]
-      Now listening on: https://localhost:7286
-info: Microsoft.Hosting.Lifetime[14]
-      Now listening on: http://localhost:5112
-```
-
-#### Open in Browser
-
-1. Open your web browser
-2. Go to: **https://localhost:7286** (or the HTTPS URL shown in your terminal)
-3. If you see a security warning, click "Advanced" then "Proceed" (this is normal for localhost)
-
-#### Log In
-
-Use one of the test accounts:
-- **Pilot:** pilot@test.com / Pilot123
-- **Registerfører:** registerforer@test.com / Register123
-- **Admin:** admin@test.com / Admin123
-
-#### Stop the Application
-
-To stop the server:
-1. Go back to Command Prompt
-2. Press `Ctrl + C`
-
-To stop the database:
-```cmd
-cd ..
-docker-compose down
-```
+Applikasjonen starter på:
+- **HTTPS:** https://localhost:7286
+- **HTTP:** http://localhost:5112
 
 ---
 
-## User Guide
+### Database Seeding
 
-### Test Accounts
+Applikasjonen inkluderer `DatabaseSeeder.cs` som automatisk populerer databasen med testdata når den kjøres i Development-modus.
 
-The application comes with three pre-configured test accounts:
+#### Seeding Prosess
 
-#### Pilot Account
-- **Email:** pilot@test.com
-- **Password:** Pilot123
-- **Can:** Register obstacles, view own registrations, delete pending obstacles
+Seeding utføres i følgende rekkefølge:
 
-#### Registerfører Account
-- **Email:** registerforer@test.com
-- **Password:** Register123
-- **Can:** Review pending obstacles, approve/reject submissions, view all obstacles
+1. **Roller** - Oppretter Admin, Registerfører, og Pilot roller
+2. **Organisasjoner** - Oppretter 6 standard organisasjoner
+3. **StatusTyper** - Oppretter 4 status-typer (Registered, Pending, Approved, Rejected)
+4. **ObstacleTypes** - Oppretter 8 hindre-typer (Mast, Tower, Power Line, etc.)
+5. **Brukere** - Oppretter testkontoer + 10 tilfeldige piloter
+6. **Hindringer** - Oppretter 50 test-hindringer med tilfeldige data
 
-#### Admin Account
-- **Email:** admin@test.com
-- **Password:** Admin123
-- **Can:** Manage users, assign roles, view system statistics
+#### Testkontoer
 
----
+DatabaseSeeder oppretter følgende testkontoer:
 
-### Pilot Features
+| Rolle | E-post | Passord | Organisasjon |
+|-------|--------|---------|--------------|
+| Admin | admin@test.com | Admin123! | Kartverket |
+| Registerfører | reg@test.com | Reg123! | Kartverket |
+| Pilot | pilot@test.com | Pilot123! | Luftambulansen |
 
-After logging in as a pilot, you can:
+**Merk:** Alle seed-brukere er automatisk godkjent (`IsApproved = true`).
 
-#### 1. Register an Obstacle
+#### Seed Organisasjoner
 
-Two registration methods are available:
+DatabaseSeeder oppretter følgende organisasjoner:
 
-**Quick Register:**
-1. Click "Register Obstacle" in navbar
-2. Select "Quick Register"
-3. Click on map to mark obstacle location
-4. Click "Save and Continue"
-5. Later, complete the registration with name, height, and description
+1. **Kartverket** - Offentlig kartmyndighet
+2. **Luftambulansen** - Medisinsk lufttransport
+3. **Luftforsvaret** - Militær luftfart
+4. **Politiet** - Politi helikopter tjeneste
+5. **Norsk Luftsportforbund** - Fritidsflying
+6. **Privat** - Private piloter
 
-**Full Register:**
-1. Click "Register Obstacle" in navbar
-2. Select "Full Register"
-3. Fill in all fields:
-   - Name (e.g., "Radio Mast")
-   - Height in meters (e.g., 50)
-   - Description (e.g., "Red and white striped tower")
-4. Click on map to mark location
-5. Click "Submit"
+#### Seed Hindre-typer
 
-#### 2. View Your Registrations
+8 standard hindre-typer med definerte høyde-områder:
 
-Click "My Registrations" to see:
-- **Incomplete:** Quick registers waiting for completion
-- **Pending:** Submitted obstacles awaiting approval
-- **Approved:** Obstacles approved by Registerfører
-- **Rejected:** Obstacles rejected (with reason)
-
-#### 3. Complete Quick Registrations
-
-1. Go to "My Registrations"
-2. Find incomplete obstacles
-3. Click "Complete Registration"
-4. Fill in name, height, and description
-5. Click "Submit"
-
-#### 4. Delete Pending Obstacles
-
-You can only delete obstacles that are **pending** (not yet approved/rejected):
-1. Go to "My Registrations"
-2. Click "Delete" on a pending obstacle
-3. Confirm deletion
+- **Mast** (10-500m)
+- **Tower** (20-300m)
+- **Power Line** (5-100m)
+- **Wind Turbine** (50-250m)
+- **Building** (10-200m)
+- **Crane** (20-150m)
+- **Bridge** (10-100m)
+- **Other** (1-1000m)
 
 ---
 
-### Registerfører Features
+## Testing
 
-After logging in as Registerfører, you can:
+### Teststruktur
 
-#### 1. View Dashboard
-
-Shows statistics:
-- Pending obstacles (awaiting review)
-- Approved obstacles (total)
-- Rejected obstacles (total)
-
-#### 2. Review Pending Obstacles
-
-1. Click "Pending" in navbar
-2. See list of completed obstacle registrations
-3. Click "Review" on any obstacle
-
-**Note:** Incomplete quick registrations do NOT appear here. Only completed obstacles (with name, height, description) are shown.
-
-#### 3. Approve an Obstacle
-
-1. Review obstacle details and location
-2. Scroll to "Approve Obstacle" section
-3. Add optional comments
-4. Click "Approve This Obstacle"
-
-The pilot will see their obstacle marked as "Approved".
-
-#### 4. Reject an Obstacle
-
-1. Review obstacle details
-2. Scroll to "Reject Obstacle" section
-3. Enter rejection reason (required)
-4. Click "Reject This Obstacle"
-5. Confirm the action
-
-The pilot will see their obstacle marked as "Rejected" with your reason.
-
-#### 5. View Approved/Rejected Obstacles
-
-- Click "Approved" to see all approved obstacles
-- Click "Rejected" to see all rejected obstacles
-- Click "View Details" to see obstacle information
-
----
-
-### Admin Features
-
-After logging in as Admin, you can:
-
-#### 1. View Dashboard
-
-Shows system-wide statistics:
-- Total users
-- Total obstacles
-- Approved/Pending counts
-- User role distribution
-
-#### 2. Manage Users
-
-1. Click "Users" in navbar
-2. See all registered users with their roles
-3. Click "Manage Roles" to modify a user
-
-#### 3. Assign/Remove Roles
-
-1. Select a user
-2. See current roles
-3. Click "Assign" to add a role
-4. Click "Remove" to remove a role
-
-Available roles:
-- **Pilot:** Can register obstacles
-- **Registerfører:** Can approve/reject obstacles
-- **Admin:** Can manage users
-
-#### 4. Delete Users
-
-1. Go to "Manage Users"
-2. Click "Delete" next to a user
-3. Confirm deletion
-
-**Note:** You cannot delete your own account.
-
-#### 5. View Statistics
-
-Click "Statistics" to see:
-- Obstacle statistics (total, approved, pending, rejected)
-- User statistics by role
-- Recent activity
-
----
-
-## Technical Documentation
-
-### Project Structure
+Prosjektet har en omfattende testsuite i `NRLWebApp.Tests`-katalogen med **324 enhetstester** totalt.
 
 ```
-Kartverket-Kodeprosjekt/
-├── FirstWebApplication/
-│   ├── Controllers/              # MVC Controllers
-│   │   ├── AccountController.cs  # Login, Register, Logout
-│   │   ├── AdminController.cs    # User management, statistics
-│   │   ├── HomeController.cs     # Landing page
-│   │   ├── PilotController.cs    # Obstacle registration
-│   │   └── RegisterforerController.cs  # Approval workflow
-│   │
-│   ├── Models/                   # View Models
-│   │   ├── LoginViewModel.cs
-│   │   ├── RegisterViewModel.cs
-│   │   └── ErrorViewModel.cs
-│   │
-│   ├── Entities/                 # Database Models
-│   │   └── ObstacleData.cs       # Main obstacle entity
-│   │
-│   ├── Data/                     # Database Context
-│   │   └── ApplicationDbContext.cs
-│   │
-│   ├── Services/                 # Business Logic
-│   │   ├── RoleInitializerService.cs   # Creates roles on startup
-│   │   ├── UserSeederService.cs        # Creates test users
-│   │   └── UserRoleService.cs          # Role management helpers
-│   │
-│   ├── Views/                    # Razor Views (HTML)
-│   │   ├── Account/              # Login/Register forms
-│   │   ├── Admin/                # Admin dashboard and user management
-│   │   ├── Home/                 # Landing page, privacy
-│   │   ├── Pilot/                # Obstacle registration forms
-│   │   ├── Registerforer/        # Approval/rejection views
-│   │   └── Shared/               # Layout, navigation
-│   │
-│   ├── wwwroot/                  # Static files
-│   │   ├── css/                  # Stylesheets (Tailwind CSS)
-│   │   ├── js/                   # JavaScript
-│   │   └── lib/                  # Third-party libraries
-│   │       ├── leaflet/          # Map library
-│   │       ├── leaflet-draw/     # Drawing tools
-│   │       ├── jquery/
-│   │       └── bootstrap/
-│   │
-│   ├── Migrations/               # Database migrations
-│   ├── Properties/               # Launch settings
-│   ├── Program.cs                # Application startup
-│   ├── appsettings.json          # Configuration
-│   └── FirstWebApplication.csproj
-│
-├── docker-compose.yml            # Docker configuration
-├── README.md                     # This file
-└── .gitignore
+NRLWebApp.Tests/
+├── Controllers/
+│   ├── AdminControllerTests.cs         (81 tester)
+│   ├── HomeControllerTests.cs          (12 tester)
+│   ├── PilotControllerTests.cs         (154 tester)
+│   └── RegisterforerControllerTests.cs (77 tester)
+├── Security/
+│   └── CspMiddlewareTests.cs           (8 tester)
+├── Mocks/
+│   ├── MockUserManager.cs
+│   ├── MockRoleManager.cs
+│   ├── MockLoggerFactory.cs
+│   └── TestDbContext.cs
+└── NRLWebApp.Tests.csproj
 ```
 
----
+### Test Rammeverk
 
-### Controllers Explained
+**Testverktøy:**
+- **xUnit 2.9.2** - Test framework
+- **Moq 4.20.72** - Mocking library
+- **EF Core InMemory 8.0.11** - In-memory database for testing
+- **Coverlet 6.0.2** - Code coverage
+- **Visual Studio Test SDK 17.12.0** - Test runner
 
-#### AccountController.cs
-**Purpose:** Handles user authentication
+### Typer Tester
 
-**Key Methods:**
-- `Register()` - Creates new user accounts
-- `Login()` - Authenticates users and redirects based on role
-- `Logout()` - Signs out current user
+#### 1. Controller Enhetstester
 
-**How it works:**
-1. User submits login form
-2. `SignInManager` validates credentials
-3. If successful, gets user's roles
-4. Redirects to appropriate dashboard:
-   - Admin → AdminDashboard
-   - Registerfører → RegisterforerDashboard
-   - Pilot → RegisterType
+**PilotControllerTests.cs** (154 tester)
 
-#### PilotController.cs
-**Purpose:** Obstacle registration and management
+Hovedkategorier:
+- **RegisterType GET/POST** (7 tester)
+  - `RegisterType_Get_WithApprovedUser_ReturnsView()`
+  - `RegisterType_Get_WithUnapprovedUser_RedirectsToAccountPending()`
+  
+- **QuickRegister GET/POST** (12 tester)
+  - `QuickRegister_Post_ValidGeometry_SavesToDatabase()`
+  - `QuickRegister_Post_ValidGeometry_CreatesRegisteredStatus()`
+  - `QuickRegister_Post_EmptyGeometry_ReturnsViewWithError()`
+  - `QuickRegister_Post_UnapprovedUser_RedirectsToAccountPending()`
 
-**Key Methods:**
-- `RegisterType()` - Choose Quick or Full Register
-- `QuickRegister()` - Save location first, complete later
-- `FullRegister()` - Complete registration in one step
-- `MyRegistrations()` - View all obstacles by current pilot
-- `CompleteQuickRegister()` - Finish incomplete quick registers
-- `DeleteRegistration()` - Delete pending obstacles
+- **QuickRegisterApi POST** (8 tester)
+  - `QuickRegisterApi_ValidGeoJSON_ReturnsOk()`
+  - `QuickRegisterApi_InvalidJSON_ReturnsBadRequest()`
 
-**Authorization:** `[Authorize(Roles = "Pilot")]`
+- **FullRegister GET/POST** (15 tester)
+  - `FullRegister_Post_ValidData_CreatesObstacle()`
+  - `FullRegister_Post_ValidData_CreatesPendingStatus()`
+  - `FullRegister_Post_InvalidModelState_ReturnsView()`
 
-**How Quick Register works:**
-1. Pilot clicks map → saves geometry
-2. Obstacle saved with NULL name/height/description
-3. Appears in "Incomplete" list
-4. Pilot completes later → becomes "Pending"
+- **CompleteQuickRegister GET/POST** (18 tester)
+  - `CompleteQuickRegister_Get_ValidId_ReturnsView()`
+  - `CompleteQuickRegister_Post_ValidData_UpdatesObstacle()`
+  - `CompleteQuickRegister_Post_ValidData_ChangeStatusToPending()`
 
-#### RegisterforerController.cs
-**Purpose:** Review and approve/reject obstacles
+- **MyRegistrations** (25 tester)
+  - `MyRegistrations_ReturnsUserObstaclesGroupedByStatus()`
+  - `MyRegistrations_IncludesIncompleteQuickRegs()`
+  - `MyRegistrations_FiltersByCurrentUser()`
 
-**Key Methods:**
-- `RegisterforerDashboard()` - Statistics overview
-- `PendingObstacles()` - List all complete obstacles awaiting review
-- `ReviewObstacle()` - Detailed view with approve/reject forms
-- `ApproveObstacle()` - Mark obstacle as approved
-- `RejectObstacle()` - Mark obstacle as rejected with reason
-- `ApprovedObstacles()` - List all approved obstacles
-- `RejectedObstacles()` - List all rejected obstacles
-- `ViewObstacle()` - View details of any obstacle
+- **Overview** (12 tester)
+  - `Overview_WithValidId_ReturnsObstacleDetails()`
+  - `Overview_WithInvalidId_ReturnsNotFound()`
+  - `Overview_WithOtherUserObstacle_ReturnsNotFound()`
 
-**Authorization:** `[Authorize(Roles = "Registerfører")]`
+- **DeleteRegistration** (8 tester)
+  - `DeleteRegistration_ValidId_DeletesObstacle()`
+  - `DeleteRegistration_WithStatus_DeletesStatusHistory()`
+  - `DeleteRegistration_InvalidId_ReturnsRedirect()`
 
-**How approval works:**
-1. Query filters: `IsApproved=false AND IsRejected=false AND has name/height/description`
-2. Registerfører reviews obstacle
-3. On approve: Sets `IsApproved=true`, saves who/when/comments
-4. On reject: Sets `IsRejected=true`, saves who/when/reason
+- **Authorization Tests** (5 tester)
+  - `AllControllerActions_RequireApproval_RedirectWhenUnapproved()`
 
-#### AdminController.cs
-**Purpose:** User and system management
+**RegisterforerControllerTests.cs** (77 tester)
 
-**Key Methods:**
-- `AdminDashboard()` - System statistics
-- `AdminUsers()` - List all users with roles
-- `AdminManageUser()` - Manage a specific user's roles
-- `AssignRole()` - Add role to user
-- `RemoveRole()` - Remove role from user
-- `DeleteUser()` - Delete user account
-- `AdminStatistics()` - Detailed system metrics
+Hovedkategorier:
+- **Dashboard** (8 tester)
+  - `RegisterforerDashboard_ReturnsCorrectCounts()`
+  - `RegisterforerDashboard_WithNoObstacles_ReturnsZeros()`
 
-**Authorization:** `[Authorize(Roles = "Admin")]`
+- **PendingObstacles** (12 tester)
+  - `PendingObstacles_ReturnsOnlyPendingStatus()`
+  - `PendingObstacles_ExcludesIncomplete()`
+  - `PendingObstacles_OrdersByDateDesc()`
 
----
+- **ApproveObstacle GET/POST** (20 tester)
+  - `ApproveObstacle_Get_ValidId_ReturnsView()`
+  - `ApproveObstacle_Post_ValidId_SetsApprovedStatus()`
+  - `ApproveObstacle_Post_CreatesStatusHistory()`
+  - `ApproveObstacle_Post_DeactivatesOldStatus()`
 
-### Models and Entities
+- **RejectObstacle GET/POST** (18 tester)
+  - `RejectObstacle_Get_ValidId_ReturnsView()`
+  - `RejectObstacle_Post_WithReason_SetsRejectedStatus()`
+  - `RejectObstacle_Post_WithoutReason_ReturnsError()`
 
-#### ObstacleData.cs (Entity)
-**Purpose:** Represents an obstacle in the database
+- **ApprovedObstacles** (9 tester)
+  - `ApprovedObstacles_ReturnsOnlyApproved()`
+  - `ApprovedObstacles_IncludesApproverInfo()`
 
-**Properties:**
+- **RejectedObstacles** (10 tester)
+  - `RejectedObstacles_ReturnsOnlyRejected()`
+  - `RejectedObstacles_IncludesRejectionReason()`
+
+**AdminControllerTests.cs** (81 tester)
+
+Hovedkategorier:
+- **Dashboard** (6 tester)
+  - `AdminDashboard_ReturnsCounts()`
+  - `AdminDashboard_WithNoUsers_ReturnsZeroCounts()`
+
+- **ApproveUser** (15 tester)
+  - `ApproveUser_ValidId_SetsApprovedTrue()`
+  - `ApproveUser_InvalidId_ReturnsNotFound()`
+  - `ApproveUser_AlreadyApproved_ReturnsRedirect()`
+
+- **PendingUsers** (10 tester)
+  - `PendingUsers_ReturnsOnlyUnapproved()`
+  - `PendingUsers_IncludesRegistrationDate()`
+
+- **ManageUser GET** (8 tester)
+  - `ManageUser_ValidId_ReturnsUserWithRoles()`
+  - `ManageUser_InvalidId_ReturnsNotFound()`
+
+- **AssignRole POST** (12 tester)
+  - `AssignRole_ValidUserAndRole_AddsRole()`
+  - `AssignRole_UserAlreadyHasRole_ReturnsError()`
+  - `AssignRole_InvalidRole_ReturnsError()`
+
+- **RemoveRole POST** (12 tester)
+  - `RemoveRole_ValidUserAndRole_RemovesRole()`
+  - `RemoveRole_UserDoesntHaveRole_ReturnsError()`
+
+- **DeleteUser** (10 tester)
+  - `DeleteUser_ValidId_RemovesUser()`
+  - `DeleteUser_SelfDelete_ReturnsForbidden()`
+  - `DeleteUser_InvalidId_ReturnsNotFound()`
+
+- **AllUsers** (8 tester)
+  - `AllUsers_ReturnsAllUsersWithRoles()`
+  - `AllUsers_IncludesOrganizationInfo()`
+
+**HomeControllerTests.cs** (12 tester)
+
+- Index action tests
+- Privacy action tests
+- Error handling tests
+
+#### 2. Security Tester
+
+**CspMiddlewareTests.cs** (8 tester)
+
+- `CspMiddleware_AddsSecurityHeaders()`
+- `CspMiddleware_GeneratesUniqueNonce()`
+- `CspMiddleware_BuildsCorrectPolicy()`
+- `CspMiddleware_StoresNonceInContext()`
+
+### Kjøre Tester
+
+#### Alle Tester
+
+```bash
+cd NRLWebApp.Tests
+dotnet test
+```
+
+#### Med Detaljert Output
+
+```bash
+dotnet test --logger "console;verbosity=detailed"
+```
+
+#### Kun Én Testklasse
+
+```bash
+dotnet test --filter "FullyQualifiedName~PilotControllerTests"
+```
+
+#### Med Code Coverage
+
+```bash
+dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+```
+
+### Test Coverage
+
+Prosjektet har høy testdekning:
+
+| Komponent | Dekningsgrad | Antall Tester |
+|-----------|--------------|---------------|
+| Controllers | ~85% | 324 |
+| Models | ~90% | (inkludert i controller tests) |
+| Middleware | ~80% | 8 |
+| **Totalt** | **~85%** | **324** |
+
+### Mocking Strategi
+
+Prosjektet bruker custom mock-klasser for å sikre konsistent testing:
+
+**MockUserManager.cs**
 ```csharp
-// Basic Information
-public int Id { get; set; }                    // Primary key
-public string ObstacleName { get; set; }       // e.g., "Radio Tower"
-public double ObstacleHeight { get; set; }     // In meters
-public string ObstacleDescription { get; set; } // Details
-public string ObstacleGeometry { get; set; }   // WKT format (POINT, LINESTRING, POLYGON)
-public string? ObstacleType { get; set; }      // e.g., "Mast", "Pole"
-
-// Registration Info
-public DateTime RegisteredDate { get; set; }   // When created
-public string RegisteredBy { get; set; }       // Email of pilot
-
-// Approval Status
-public bool IsApproved { get; set; }           // true = approved
-public string? ApprovedBy { get; set; }        // Email of registerfører
-public DateTime? ApprovedDate { get; set; }    // When approved
-public string? ApprovalComments { get; set; }  // Optional notes
-
-// Rejection Status
-public bool IsRejected { get; set; }           // true = rejected
-public string? RejectedBy { get; set; }        // Email of registerfører
-public DateTime? RejectedDate { get; set; }    // When rejected
-public string? RejectionReason { get; set; }   // Required explanation
+// Mocker UserManager<ApplicationUser>
+// Inkluderer metoder for:
+- FindByIdAsync
+- FindByEmailAsync
+- GetUsersInRoleAsync
+- CreateAsync
+- UpdateAsync
+- DeleteAsync
 ```
 
-**Validation:**
-- `ObstacleName`: Required, max 100 characters
-- `ObstacleHeight`: Required, range 0-200 meters
-- `ObstacleDescription`: Required, max 1000 characters
-- `ObstacleGeometry`: Required, stored as WKT string
-
-#### View Models
-**LoginViewModel.cs:**
+**MockRoleManager.cs**
 ```csharp
-public string Email { get; set; }
-public string Password { get; set; }
-public bool RememberMe { get; set; }
+// Mocker RoleManager<IdentityRole>
+// Inkluderer metoder for:
+- RoleExistsAsync
+- CreateAsync
+- FindByNameAsync
 ```
 
-**RegisterViewModel.cs:**
+**TestDbContext**
 ```csharp
-public string Email { get; set; }
-public string Password { get; set; }
-public string ConfirmPassword { get; set; }
+// In-memory database context for testing
+// Bruker EF Core InMemory provider
 ```
+
+### Test Best Practices
+
+1. **Arrange-Act-Assert Pattern** - Alle tester følger AAA-strukturen
+2. **Descriptive Naming** - Testnavn beskriver scenario og forventet resultat
+3. **Isolated Tests** - Hver test bruker egen database (Guid-basert navn)
+4. **Mocking External Dependencies** - UserManager, RoleManager, Logger mockes
+5. **Comprehensive Coverage** - Både positive og negative testscenarier
+6. **Edge Cases** - Tester grensetilfeller (null, empty, invalid data)
 
 ---
 
-### Services
+## Database Design
 
-#### RoleInitializerService.cs
-**Purpose:** Creates the three roles on application startup
+### ER-Diagram
 
-**When it runs:** Once at startup in `Program.cs`
+![ER Diagram](er-diagram.png)
 
-**What it does:**
-1. Checks if "Pilot" role exists → creates if missing
-2. Checks if "Registerfører" role exists → creates if missing
-3. Checks if "Admin" role exists → creates if missing
+*Diagrammet viser databasestrukturen med alle tabeller og relasjoner.*
 
-#### UserSeederService.cs
-**Purpose:** Creates test accounts for development
+### Database Oversikt
 
-**When it runs:** Once at startup (only in Development environment)
+Prosjektet bruker en **normalisert relasjonsdatabase** med følgende komponenter:
 
-**What it does:**
-1. Creates pilot@test.com with Pilot role
-2. Creates registerforer@test.com with Registerfører role
-3. Creates admin@test.com with Admin role
+- **MariaDB 10.11** som database
+- **Entity Framework Core 9.0** som ORM
+- **Pomelo.EntityFrameworkCore.MySql 9.0** som database provider
+- **Code-First** migrasjoner for skjema-håndtering
 
-**Note:** Only runs if `IWebHostEnvironment.IsDevelopment()` is true
+### Tabellstruktur
 
-#### UserRoleService.cs
-**Purpose:** Helper methods for role management
+#### 1. Organisasjon
 
-**Methods:**
-- `AssignRoleToUserAsync()` - Assigns role to user
-- `RemoveRoleFromUserAsync()` - Removes role from user
-- `GetUserRolesAsync()` - Gets all roles for a user
-- `GetUsersInRoleAsync()` - Gets all users with a specific role
-- `IsInRoleAsync()` - Checks if user has a role
+Representerer organisasjoner som brukere kan tilhøre.
 
-**Used by:** AdminController
+```sql
+CREATE TABLE Organisasjoner (
+    Id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    ContactEmail VARCHAR(255),
+    ContactPhone VARCHAR(20),
+    Address VARCHAR(255),
+    Active BOOLEAN DEFAULT TRUE,
+    CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
 
----
+**Seeded Data:**
+- Kartverket
+- Luftambulansen
+- Luftforsvaret
+- Politiet
+- Norsk Luftsportforbund
+- Privat
 
-### Database Design
+**Relasjoner:**
+- **1-til-mange** med ApplicationUser (én organisasjon, mange brukere)
 
-#### Database: MariaDB 10.11
-**Why MariaDB?**
-- Open-source, free
-- MySQL-compatible
-- Excellent performance
-- Easy to run in Docker
+#### 2. ApplicationUser (Identity)
 
-#### Connection String
+Utvider ASP.NET Identity's IdentityUser med custom felter.
+
+```sql
+-- Arver fra AspNetUsers (Identity)
+ALTER TABLE AspNetUsers ADD (
+    Fornavn VARCHAR(50),
+    Etternavn VARCHAR(50),
+    IsApproved BOOLEAN DEFAULT FALSE,
+    RegisteredDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    OrganisasjonId BIGINT NULL,
+    
+    FOREIGN KEY (OrganisasjonId) REFERENCES Organisasjoner(Id) ON DELETE SET NULL
+);
+```
+
+**Custom Felter:**
+- `Fornavn` - Brukerens fornavn
+- `Etternavn` - Brukerens etternavn
+- `IsApproved` - Om admin har godkjent brukeren
+- `RegisteredDate` - Når brukeren registrerte seg
+- `OrganisasjonId` - Tilknyttet organisasjon (nullable)
+
+**Relasjoner:**
+- **Mange-til-én** med Organisasjon
+- **Mange-til-mange** med Roller (via AspNetUserRoles)
+- **1-til-mange** med Obstacle (registrerte hindringer)
+- **1-til-mange** med ObstacleStatus (statusendringer)
+
+#### 3. StatusType (Lookup Table)
+
+Definerer de fire mulige statusene for et hinder.
+
+```sql
+CREATE TABLE StatusTypes (
+    Id INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Description VARCHAR(255)
+);
+
+-- Seeded data (via OnModelCreating)
+INSERT INTO StatusTypes VALUES
+    (1, 'Registered', 'Quick Register saved - incomplete'),
+    (2, 'Pending', 'Awaiting approval from Registerfører'),
+    (3, 'Approved', 'Approved by Registerfører'),
+    (4, 'Rejected', 'Rejected by Registerfører');
+```
+
+**Status Flow:**
+1. **Registered** → Quick Register lagret, mangler data
+2. **Pending** → Komplett, venter på godkjenning
+3. **Approved** → Godkjent av registerfører
+4. **Rejected** → Avvist av registerfører
+
+#### 4. ObstacleType (Lookup Table)
+
+Definerer typer hindringer med høydebegrensninger.
+
+```sql
+CREATE TABLE ObstacleTypes (
+    Id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    Description VARCHAR(255),
+    MinHeight DECIMAL(10,2),
+    MaxHeight DECIMAL(10,2)
+);
+```
+
+**Seeded Data (8 typer):**
+- Mast (10-500m)
+- Tower (20-300m)
+- Power Line (5-100m)
+- Wind Turbine (50-250m)
+- Building (10-200m)
+- Crane (20-150m)
+- Bridge (10-100m)
+- Other (1-1000m)
+
+#### 5. Obstacle (Core Table)
+
+Hovedtabell for hindringer. Inneholder kun kjernedata, ingen status-informasjon.
+
+```sql
+CREATE TABLE Obstacles (
+    Id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    ObstacleTypeId BIGINT NULL,
+    RegisteredByUserId VARCHAR(450) NOT NULL,
+    CurrentStatusId BIGINT NULL,
+    
+    Height DECIMAL(10,2),  -- Nullable for Quick Register
+    Description VARCHAR(1000),  -- Nullable for Quick Register
+    Location TEXT NOT NULL,  -- GeoJSON eller WKT format
+    RegisteredDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (ObstacleTypeId) REFERENCES ObstacleTypes(Id) ON DELETE SET NULL,
+    FOREIGN KEY (RegisteredByUserId) REFERENCES AspNetUsers(Id) ON DELETE RESTRICT,
+    FOREIGN KEY (CurrentStatusId) REFERENCES ObstacleStatuses(Id) ON DELETE SET NULL
+);
+```
+
+**Viktige Felter:**
+- `Height` - Nullable (for Quick Register)
+- `Description` - Nullable (for Quick Register)
+- `Location` - GeoJSON format: `{"type":"Point","coordinates":[10.75,59.91]}`
+- `CurrentStatusId` - Peker til aktiv status i ObstacleStatuses
+- `RegisteredByUserId` - Hvem registrerte hinderet (pilot)
+
+**Relasjoner:**
+- **Mange-til-én** med ObstacleType
+- **Mange-til-én** med ApplicationUser (registrator)
+- **1-til-én** med ObstacleStatus (current status)
+- **1-til-mange** med ObstacleStatus (historikk)
+
+#### 6. ObstacleStatus (History Table)
+
+Lagrer **alle** statusendringer for et hinder. Dette gir fullstendig audit trail.
+
+```sql
+CREATE TABLE ObstacleStatuses (
+    Id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    ObstacleId BIGINT NOT NULL,
+    StatusTypeId INT NOT NULL,
+    ChangedByUserId VARCHAR(450) NOT NULL,
+    ChangedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Comments VARCHAR(255),
+    IsActive BOOLEAN DEFAULT TRUE,
+    
+    FOREIGN KEY (ObstacleId) REFERENCES Obstacles(Id) ON DELETE CASCADE,
+    FOREIGN KEY (StatusTypeId) REFERENCES StatusTypes(Id) ON DELETE RESTRICT,
+    FOREIGN KEY (ChangedByUserId) REFERENCES AspNetUsers(Id) ON DELETE RESTRICT
+);
+```
+
+**Viktige Konsepter:**
+
+**Status History Pattern:**
+- Hver gang status endres, opprettes **ny rad** i ObstacleStatuses
+- Gammel status settes til `IsActive = false`
+- Ny status settes til `IsActive = true`
+- `Obstacle.CurrentStatusId` oppdateres til ny status
+
+**Eksempel Status Flow:**
+
+```
+Obstacle ID 1:
+  1. [Registered]  IsActive=false  (01.12.2024 10:00)
+  2. [Pending]     IsActive=false  (01.12.2024 11:00)
+  3. [Approved]    IsActive=true   (02.12.2024 14:30)  <-- Current
+```
+
+**Relasjoner:**
+- **Mange-til-én** med Obstacle
+- **Mange-til-én** med StatusType
+- **Mange-til-én** med ApplicationUser (hvem endret)
+
+### Database Resilience
+
+#### MySqlRetryingExecutionStrategy
+
+Prosjektet bruker **EnableRetryOnFailure** fra Pomelo.EntityFrameworkCore.MySql for å håndtere midlertidige databasefeil.
+
+**Konfigurasjon (Program.cs):**
+```csharp
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(
+        connectionString,
+        new MariaDbServerVersion(new Version(10, 11, 0)),
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
+            errorNumbersToAdd: null
+        )
+    ));
+```
+
+**Hva gjør denne?**
+
+`EnableRetryOnFailure` aktiverer automatisk retry-logikk for transiente feil:
+
+1. **Transiente Feil** - Midlertidige problemer som kan løses ved retry:
+   - Database connection timeout
+   - Deadlocks
+   - Transient network errors
+   - Database temporarily unavailable
+
+2. **Retry-parametere:**
+   - `maxRetryCount: 5` - Maksimalt 5 forsøk
+   - `maxRetryDelay: 5 sekunder` - Maks ventetid mellom forsøk
+   - `errorNumbersToAdd: null` - Standard MySQL/MariaDB feilkoder
+
+3. **Exponential Backoff:**
+   - Første retry: ~1 sekund
+   - Andre retry: ~2 sekunder
+   - Tredje retry: ~4 sekunder
+   - Fjerde retry: ~5 sekunder (maks)
+   - Femte retry: ~5 sekunder
+
+**Fordeler:**
+- Forbedret pålitelighet i produksjon
+- Håndterer nettverk-glitches automatisk
+- Reduserer feilmeldinger til brukere
+- Ingen kodeendringer nødvendig
+
+**Når brukes dette IKKE:**
+- Permanente feil (feil passord, manglende tabell)
+- Business logic errors
+- Validation errors
+
+**Eksempel Scenario:**
+
+```
+1. Bruker sender forespørsel → Database timeout
+2. EF Core oppdager transient error
+3. Venter 1 sekund, prøver igjen
+4. Fortsatt timeout
+5. Venter 2 sekunder, prøver igjen
+6. Suksess! ✓
+```
+
+Dette skjer **transparent** - brukeren merker ingenting utenom litt forsinkelse.
+
+### Normalisering
+
+Databasen følger **3NF (Third Normal Form):**
+
+1. **1NF** - Alle kolonner inneholder atomiske verdier
+2. **2NF** - Ingen partial dependencies
+3. **3NF** - Ingen transitive dependencies
+
+**Fordeler:**
+- Eliminerer data redundans
+- Letter vedlikehold og oppdateringer
+- Forbedrer data integritet
+- Skalerbar struktur
+
+**Eksempel på normalisering:**
+
+**Før (denormalisert):**
+```
+Obstacle: Id, Height, Location, ObstacleTypeName, StatusName, RegisteredByEmail, OrganizationName
+```
+
+**Etter (normalisert):**
+```
+Obstacle: Id, Height, Location, ObstacleTypeId, CurrentStatusId, RegisteredByUserId
+ObstacleType: Id, Name
+StatusType: Id, Name
+ApplicationUser: Id, Email, OrganisasjonId
+Organisasjon: Id, Name
+```
+
+### Indekser og Ytelse
+
+**Primærnøkler:** Automatisk indeksert av databasen
+
+**Foreign Keys:** Automatisk indeksert av EF Core
+
+**Spesielle indekser:**
+```sql
+-- Rask oppslag av hindringer per bruker
+CREATE INDEX IX_Obstacles_RegisteredByUserId ON Obstacles(RegisteredByUserId);
+
+-- Rask oppslag av aktiv status
+CREATE INDEX IX_ObstacleStatuses_IsActive ON ObstacleStatuses(IsActive);
+
+-- Rask oppslag av status per hinder
+CREATE INDEX IX_ObstacleStatuses_ObstacleId ON ObstacleStatuses(ObstacleId);
+```
+
+### Connection String
+
+**appsettings.json:**
 ```json
 {
   "ConnectionStrings": {
@@ -641,697 +768,1000 @@ public string ConfirmPassword { get; set; }
 }
 ```
 
-#### Tables
-
-**AspNetUsers** (Identity Framework)
-- Stores user accounts
-- Email, password hash, etc.
-
-**AspNetRoles** (Identity Framework)
-- Stores roles: Pilot, Registerfører, Admin
-
-**AspNetUserRoles** (Identity Framework)
-- Links users to roles (many-to-many)
-
-**Obstacles** (Our custom table)
-- Stores all obstacle data
-- One table for all states (pending, approved, rejected, incomplete)
-
-#### Obstacles Table Schema
-
-```sql
-CREATE TABLE Obstacles (
-    Id INT PRIMARY KEY AUTO_INCREMENT,
-    
-    -- Basic Info
-    ObstacleName VARCHAR(100),
-    ObstacleHeight DOUBLE,
-    ObstacleDescription VARCHAR(1000),
-    ObstacleGeometry LONGTEXT NOT NULL,
-    ObstacleType VARCHAR(50),
-    
-    -- Registration
-    RegisteredDate DATETIME DEFAULT CURRENT_TIMESTAMP,
-    RegisteredBy VARCHAR(100),
-    
-    -- Approval
-    IsApproved BOOLEAN DEFAULT 0,
-    ApprovedBy VARCHAR(100),
-    ApprovedDate DATETIME,
-    ApprovalComments TEXT,
-    
-    -- Rejection
-    IsRejected BOOLEAN DEFAULT 0,
-    RejectedBy VARCHAR(100),
-    RejectedDate DATETIME,
-    RejectionReason TEXT,
-    
-    UNIQUE INDEX IX_Obstacles_ObstacleName (ObstacleName)
-);
-```
-
-#### Why One Table? (Soft State Pattern)
-
-**Decision:** Store all obstacle states in a single table using boolean flags
-
-**Alternatives considered:**
-1. Separate tables (PendingObstacles, ApprovedObstacles, RejectedObstacles)
-2. Status table with foreign keys
-3. State machine pattern with history
-
-**Why we chose soft states:**
-
-**Pros:**
-- Simple to understand and query
-- No complex joins needed
-- Complete audit trail in one place
-- Fast lookups (indexed boolean flags)
-- Easy to add new states
-- No data movement between tables
-- Perfect for simple workflows
-
-**Cons:**
-- Some NULL fields (sparse data)
-- No change history if status is modified
-- Can't track "re-submissions"
-
-**Verdict:** For a simple 3-state workflow (Pending → Approved/Rejected), soft states are the industry-standard solution. Used by GitHub, Trello, Jira, and most modern applications.
-
-#### State Detection Logic
-
-**Incomplete Quick Register:**
-```csharp
-string.IsNullOrEmpty(ObstacleName) || 
-ObstacleHeight == 0 || 
-string.IsNullOrEmpty(ObstacleDescription)
-```
-
-**Pending (awaiting approval):**
-```csharp
-!IsApproved && !IsRejected && 
-!string.IsNullOrEmpty(ObstacleName) && 
-ObstacleHeight > 0 && 
-!string.IsNullOrEmpty(ObstacleDescription)
-```
-
-**Approved:**
-```csharp
-IsApproved == true
-```
-
-**Rejected:**
-```csharp
-IsRejected == true
+**Docker Compose Configuration:**
+```yaml
+services:
+  mariadb:
+    image: mariadb:10.11
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ObstacleDB
+      MYSQL_USER: obstacleuser
+      MYSQL_PASSWORD: 1234
+    ports:
+      - "3306:3306"
 ```
 
 ---
 
-### Architecture Decisions
+## Teknisk Dokumentasjon
+
+### Prosjektstruktur
+
+```
+NRLWebApp/
+├── FirstWebApplication/              # Hovedapplikasjon
+│   ├── Areas/
+│   │   └── Identity/                 # Identity UI overrides
+│   │       └── Pages/
+│   │           └── Account/
+│   │               ├── Login.cshtml
+│   │               ├── Register.cshtml
+│   │               ├── AccountPending.cshtml
+│   │               └── Logout.cshtml
+│   │
+│   ├── Controllers/
+│   │   ├── HomeController.cs         # Landing page
+│   │   ├── PilotController.cs        # Hinder-registrering
+│   │   ├── RegisterforerController.cs # Godkjenning
+│   │   ├── AdminController.cs        # Brukeradministrasjon
+│   │   └── SettingsController.cs     # Brukerinnstillinger
+│   │
+│   ├── Data/
+│   │   └── ApplicationDbContext.cs   # EF Core DbContext
+│   │
+│   ├── Entities/                     # Database modeller
+│   │   ├── ApplicationUser.cs        # Utvider IdentityUser
+│   │   ├── Organisasjon.cs
+│   │   ├── ObstacleType.cs
+│   │   ├── StatusType.cs
+│   │   ├── Obstacle.cs
+│   │   └── ObstacleStatus.cs
+│   │
+│   ├── Models/                       # View Models
+│   │   ├── User/
+│   │   │   ├── LoginViewModel.cs
+│   │   │   └── RegisterViewModel.cs
+│   │   ├── Obstacle/
+│   │   │   ├── RegisterObstacleViewModel.cs
+│   │   │   ├── CompleteQuickRegViewModel.cs
+│   │   │   ├── MyRegistrationsViewModel.cs
+│   │   │   ├── ObstacleDetailsViewModel.cs
+│   │   │   ├── ApproveObstacleViewModel.cs
+│   │   │   └── RejectObstacleViewModel.cs
+│   │   ├── ViewModels/
+│   │   │   ├── UserViewModel.cs
+│   │   │   └── EditUserViewModel.cs
+│   │   ├── Settings/
+│   │   │   └── SettingsViewModel.cs
+│   │   ├── Enums/
+│   │   │   └── ObstacleStatusEnums.cs
+│   │   └── ErrorViewModel.cs
+│   │
+│   ├── Services/
+│   │   ├── DatabaseSeeder.cs         # Seed testdata
+│   │   └── IUserRoleService.cs       # Interface for rolle-håndtering
+│   │
+│   ├── Middleware/
+│   │   └── CspMiddleware.cs          # Content Security Policy
+│   │
+│   ├── Helpers/
+│   │   └── CspHelper.cs              # CSP utility metoder
+│   │
+│   ├── Migrations/                   # EF Core migrations
+│   │
+│   ├── Views/                        # Razor views
+│   │   ├── Home/
+│   │   ├── Pilot/
+│   │   ├── Registerforer/
+│   │   ├── Admin/
+│   │   ├── Settings/
+│   │   └── Shared/
+│   │       ├── _Layout.cshtml
+│   │       ├── _ValidationScriptsPartial.cshtml
+│   │       └── Error.cshtml
+│   │
+│   ├── wwwroot/                      # Static files
+│   │   ├── css/
+│   │   │   ├── site.css
+│   │   │   └── input.css             # Tailwind input
+│   │   ├── js/
+│   │   │   └── site.js
+│   │   └── lib/                      # Biblioteker
+│   │       ├── leaflet/
+│   │       ├── leaflet-draw/
+│   │       ├── jquery/
+│   │       └── bootstrap/
+│   │
+│   ├── Resources/                    # Localization resources
+│   │
+│   ├── Program.cs                    # Application startup
+│   ├── appsettings.json             # Configuration
+│   ├── package.json                 # npm packages
+│   └── FirstWebApplication.csproj
+│
+├── NRLWebApp.Tests/                 # Test prosjekt
+│   ├── Controllers/
+│   ├── Security/
+│   ├── Mocks/
+│   └── NRLWebApp.Tests.csproj
+│
+├── docker-compose.yml               # Docker configuration
+├── docker-compose.override.yml
+├── .dockerignore
+├── .gitignore
+└── README.md
+```
+
+### Teknologier og Versjoner
+
+#### Backend
+
+**Framework:**
+- **ASP.NET Core 9.0** - Web framework med MVC pattern
+- **.NET 9.0 SDK** - Runtime og SDK
+
+**Database:**
+- **Entity Framework Core 9.0** - ORM (Object-Relational Mapper)
+- **Pomelo.EntityFrameworkCore.MySql 9.0** - MySQL/MariaDB provider
+- **MySqlConnector 2.4.0** - MySQL connector
+- **MariaDB 10.11** - Database server (via Docker)
+
+**Authentication & Authorization:**
+- **ASP.NET Core Identity 9.0** - Brukeradministrasjon
+  - Password hashing (PBKDF2)
+  - Role-based authorization
+  - Cookie authentication
+  - User management
+
+**Spatial Data:**
+- **NetTopologySuite 2.5.0** - Spatial data library
+- **NetTopologySuite.IO.GeoJSON 4.0.0** - GeoJSON serialization
+
+**Export:**
+- **ClosedXML 0.105.0** - Excel file generation
+
+**Logging:**
+- **Microsoft.Extensions.Logging** - Strukturert logging
+
+#### Frontend
+
+**UI Framework:**
+- **Tailwind CSS 4.1.13** - Utility-first CSS
+- **Bootstrap 5.3.3** - UI komponenter (minimal bruk)
+
+**Mapping:**
+- **Leaflet.js 1.9.4** - Interactive map library
+  - BSD-2-Clause license
+- **Leaflet.draw 1.0.4** - Drawing tools for markers/polygons
+  - MIT license
+- **OpenStreetMap** - Map tiles (ODbL license)
+
+**JavaScript:**
+- **jQuery 3.7.1** - DOM manipulation (MIT license)
+- **Vanilla JavaScript** - Custom interactivity
+
+#### Testing
+
+**Test Framework:**
+- **xUnit 2.9.2** - Unit testing framework
+- **Moq 4.20.72** - Mocking library for interfaces
+- **Microsoft.EntityFrameworkCore.InMemory 8.0.11** - In-memory database
+- **Coverlet 6.0.2** - Code coverage tool
+- **Microsoft.NET.Test.Sdk 17.12.0** - Test SDK
+
+#### DevOps
+
+**Containerization:**
+- **Docker 24.x** - Containerization platform
+- **Docker Compose 2.x** - Multi-container orchestration
+- **MariaDB Docker Image 10.11** - Official MariaDB image
+
+**Development Tools:**
+- **Visual Studio 2022** eller **VS Code** - IDE
+- **.NET CLI** - Command-line tools
+- **Entity Framework Core Tools** - Migrations CLI
+
+**Version Control:**
+- **Git** - Source control
+- **GitHub** - Repository hosting
+
+#### Build & Deploy
+
+**Build System:**
+- **MSBuild** - .NET build system
+- **NuGet** - Package management
+
+### Arkitektur Beslutninger
 
 #### 1. MVC Pattern
-**Decision:** Use Model-View-Controller architecture
 
-**Why:**
-- Separation of concerns (data, logic, presentation)
-- Easy to test individual components
-- Industry standard for web applications
-- Built-in support from ASP.NET Core
+**Beslutning:** Bruk Model-View-Controller arkitektur
 
-**Structure:**
-- **Model:** ObstacleData, ViewModels
-- **View:** Razor .cshtml files
-- **Controller:** Logic and routing
+**Hvorfor:**
+- Separation of concerns (data, logikk, presentasjon)
+- Testbar kode (kan teste controller logic isolert)
+- Industristandard for webapplikasjoner
+- Innebygd støtte i ASP.NET Core
 
-#### 2. Role-Based Access Control
-**Decision:** Use ASP.NET Identity with custom roles
+**Komponenter:**
+- **Model** - Entities og ViewModels
+- **View** - Razor (.cshtml) views
+- **Controller** - Business logic og routing
 
-**Why:**
-- Built-in authentication/authorization
-- Secure password hashing (PBKDF2)
-- Cookie-based authentication
-- Easy role management
+#### 2. Repository Pattern - IKKE Brukt
 
-**Roles:**
-- Pilot: Register and manage own obstacles
-- Registerfører: Approve/reject submissions
-- Admin: Manage users and view stats
+**Beslutning:** Bruk DbContext direkte i controllers
 
-#### 3. Entity Framework Core
-**Decision:** Use EF Core as ORM (Object-Relational Mapper)
+**Hvorfor:**
+- EF Core er allerede en abstraksjon over databasen
+- Unødvendig ekstra lag for denne applikasjonen
+- DbContext tilbyr change tracking, caching, og mer
+- Lettere å teste med InMemory database
 
-**Why:**
-- No raw SQL needed (type-safe queries)
-- Automatic database migrations
-- Change tracking
-- LINQ support
+**Alternativ vurdert:** Generic Repository Pattern (avvist som overengineering)
 
-**Example:**
+#### 3. Status History Pattern
+
+**Beslutning:** Separate ObstacleStatus tabell for status-historikk
+
+**Hvorfor:**
+- Fullstendig audit trail (hvem, hva, når)
+- Kan se alle statusendringer over tid
+- Enkel å query current status (via CurrentStatusId)
+- Skalerbar (kan legge til nye statuser)
+
+**Alternativ vurdert:**
+- Boolean flags i Obstacle-tabellen (mister historikk)
+- Event sourcing (overkill for dette prosjektet)
+
+#### 4. Normalized Database Design
+
+**Beslutning:** 3NF normalisering med lookup-tabeller
+
+**Hvorfor:**
+- Eliminerer data redundans
+- Data integritet via foreign keys
+- Enklere å vedlikeholde (én endring, ett sted)
+- Standard best practice
+
+**Trade-offs:**
+- Flere joins nødvendig (men EF Core håndterer dette)
+- Litt mer kompleks queries (men mer maintainable)
+
+#### 5. Identity Framework for Authentication
+
+**Beslutning:** Bruk ASP.NET Core Identity
+
+**Hvorfor:**
+- Battle-tested og sikker
+- PBKDF2 password hashing (100,000 iterations)
+- Rolle-basert autorisasjon innebygd
+- Cookie authentication
+- Lett å utvide (ApplicationUser)
+
+**Alternativ vurdert:** Custom authentication (avvist - for risikabelt)
+
+#### 6. Dependency Injection
+
+**Beslutning:** Bruk innebygd DI container
+
+**Services registrert:**
 ```csharp
-// Instead of SQL:
-// SELECT * FROM Obstacles WHERE RegisteredBy = 'user@email.com'
-
-// We write:
-var obstacles = await _context.Obstacles
-    .Where(o => o.RegisteredBy == userEmail)
-    .ToListAsync();
-```
-
-#### 4. Dependency Injection
-**Decision:** Use built-in DI container
-
-**Services registered:**
-```csharp
+// Database
 builder.Services.AddDbContext<ApplicationDbContext>();
-builder.Services.AddScoped<UserRoleService>();
-builder.Services.AddScoped<RoleInitializerService>();
-builder.Services.AddScoped<UserSeederService>();
+
+// Identity
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>();
+
+// Custom services
+builder.Services.AddScoped<DatabaseSeeder>();
 ```
 
-**Benefits:**
-- Loose coupling
-- Easy to test (mock services)
-- Automatic lifecycle management
+**Fordeler:**
+- Loose coupling mellom komponenter
+- Enklere testing (kan mocke dependencies)
+- Automatisk lifecycle management (Scoped, Transient, Singleton)
 
-#### 5. Docker for Database
-**Decision:** Use Docker Compose for MariaDB
+#### 7. Docker for Database
 
-**Why:**
-- No manual database installation
-- Consistent environment across developers
-- Easy to reset/rebuild
-- Portable (works on any OS with Docker)
+**Beslutning:** Kjør MariaDB i Docker container
 
-**Configuration:** `docker-compose.yml`
+**Hvorfor:**
+- Konsistent miljø på tvers av utviklere
+- Ingen manuell database-installasjon
+- Enkel å resette (docker-compose down -v)
+- Produksjonsklar (samme image i prod)
 
-#### 6. Tailwind CSS for Styling
-**Decision:** Use Tailwind CSS utility classes
+**Alternativ vurdert:** Lokal MariaDB installasjon (mer jobb for hvert teammedlem)
 
-**Why:**
-- Rapid development (no custom CSS needed)
-- Consistent design system
-- Small final bundle size
-- Responsive by default
+#### 8. Localization Support
 
-**Example:**
+**Beslutning:** Implementer flerspråk-støtte (Norsk/Engelsk)
+
+**Hvorfor:**
+- Fremtidsrettet (mulig internasjonal bruk)
+- God brukeropplevelse
+- Innebygd i ASP.NET Core
+- Lett å legge til nye språk
+
+**Konfigurasjon:**
+```csharp
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+var supportedCultures = new[] { "nb-NO", "en-US" };
+app.UseRequestLocalization(localizationOptions);
+```
+
+#### 9. Code-First Migrations
+
+**Beslutning:** Bruk EF Core migrations for skjema-håndtering
+
+**Hvorfor:**
+- Database skjema versjonert i kode
+- Automatisk generering av migrasjoner
+- Enkel rollback ved feil
+- Team kan dele migrasjoner via Git
+
+**Kommandoer:**
+```bash
+# Opprett ny migrering
+dotnet ef migrations add MigrationName
+
+# Oppdater database
+dotnet ef database update
+
+# Rollback til forrige
+dotnet ef database update PreviousMigrationName
+```
+
+#### 10. Content Security Policy (CSP)
+
+**Beslutning:** Implementer CSP via custom middleware
+
+**Hvorfor:**
+- Beskytter mot XSS-angrep
+- Kontrollerer hvilke kilder som kan laste ressurser
+- Nonce-basert script authorization
+- Industristandard sikkerhetspraksis
+
+**Se [Sikkerhet](#sikkerhet) seksjon for detaljer.**
+
+---
+
+## Sikkerhet
+
+### Content Security Policy (CSP)
+
+Applikasjonen implementerer Content Security Policy via `CspMiddleware.cs`.
+
+#### Hva er CSP?
+
+Content Security Policy er en sikkerhetsfunksjon som hjelper med å forhindre Cross-Site Scripting (XSS), clickjacking, og andre code injection attacks.
+
+#### Implementering
+
+**CspMiddleware.cs:**
+```csharp
+public class CspMiddleware
+{
+    public async Task InvokeAsync(HttpContext context)
+    {
+        // 1. Generer unik nonce for denne requesten
+        var nonce = GenerateNonce();
+        
+        // 2. Lagre nonce i HttpContext
+        context.Items["csp-nonce"] = nonce;
+        
+        // 3. Bygg CSP policy
+        var cspPolicy = BuildCspPolicy(nonce, context.Request.IsHttps);
+        
+        // 4. Legg til security headers
+        context.Response.Headers.Append("Content-Security-Policy", cspPolicy);
+        context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+        context.Response.Headers.Append("X-Frame-Options", "DENY");
+        context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+        
+        await _next(context);
+    }
+}
+```
+
+#### CSP Policy
+
+**Standard policy:**
+```
+default-src 'self';
+script-src 'self' 'nonce-{RANDOM}' 'unsafe-inline' https://unpkg.com https://cdn.tailwindcss.com;
+style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.tailwindcss.com;
+img-src 'self' data: https://*.tile.openstreetmap.org https://cache.kartverket.no https://unpkg.com;
+font-src 'self';
+connect-src 'self' ws: wss: http: https:;
+frame-ancestors 'none';
+form-action 'self';
+```
+
+**Forklaring:**
+- `default-src 'self'` - Kun samme origin som standard
+- `script-src` - Scripts fra samme origin + nonce + CDN
+- `style-src` - Styles fra samme origin + inline + CDN
+- `img-src` - Bilder fra samme origin + OpenStreetMap tiles
+- `connect-src` - API calls til samme origin + WebSockets
+- `frame-ancestors 'none'` - Kan ikke embeddes i iframe (clickjacking protection)
+- `form-action 'self'` - Forms kan kun submittes til samme origin
+
+#### Nonce-basert Script Authorization
+
+**Hva er en nonce?**
+En nonce er et **number used once** - en tilfeldig generert streng som er unik per request.
+
+**Hvordan fungerer det:**
+
+1. **Server genererer nonce:**
+```csharp
+private string GenerateNonce()
+{
+    var randomBytes = new byte[32];
+    using (var rng = RandomNumberGenerator.Create())
+    {
+        rng.GetBytes(randomBytes);
+    }
+    return Convert.ToBase64String(randomBytes);
+}
+```
+
+2. **Nonce inkluderes i CSP header:**
+```
+script-src 'self' 'nonce-abc123random...';
+```
+
+3. **Inline scripts må inkludere nonce:**
 ```html
-<button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">
-  Click Me
-</button>
+<script nonce="abc123random...">
+    console.log("Dette scriptet vil kjøre");
+</script>
+
+<script>
+    console.log("Dette scriptet vil IKKE kjøre (mangler nonce)");
+</script>
 ```
 
-#### 7. Leaflet.js for Maps
-**Decision:** Use Leaflet with OpenStreetMap
-
-**Why:**
-- Free and open-source
-- Lightweight (39 KB)
-- Great documentation
-- Supports drawing tools (Leaflet.draw)
-
-**Features used:**
-- Point markers
-- Polylines
-- Polygons
-- Drawing controls
-
----
-
-### Views Structure
-
-#### Shared Layout (_Layout.cshtml)
-**Purpose:** Common navbar and footer for all pages
-
-**Features:**
-- Role-based navigation (different links for Pilot/Registerfører/Admin)
-- User email display
-- Logout button
-- Responsive design
-
-#### Pilot Views
-
-**RegisterType.cshtml**
-- Choose Quick or Full Register
-- Two card buttons
-
-**QuickRegister.cshtml**
-- Map with drawing tools
-- Save location only
-
-**FullRegister.cshtml**
-- Complete form with map
-- Name, height, description, location
-
-**MyRegistrations.cshtml**
-- Four tabs: Incomplete, Pending, Approved, Rejected
-- Color-coded status badges
-- Action buttons (Complete, Delete, View)
-
-**CompleteQuickRegister.cshtml**
-- Form to fill in missing details
-- Map shows existing location
-
-**Overview.cshtml**
-- Success page after registration
-- Shows all obstacle details
-- Action buttons (Register another, View all, Done)
-
-#### Registerfører Views
-
-**RegisterforerDashboard.cshtml**
-- Statistics cards (pending, approved, rejected)
-- Quick action buttons
-
-**PendingObstacles.cshtml**
-- Table of completed obstacles awaiting review
-- Review button for each
-
-**ReviewObstacle.cshtml**
-- Detailed obstacle information
-- Map showing location
-- Approve form (with optional comments)
-- Reject form (with required reason)
-
-**ApprovedObstacles.cshtml**
-- Table of approved obstacles
-- Shows who approved and when
-- View details link
-
-**RejectedObstacles.cshtml**
-- Table of rejected obstacles
-- Shows rejection reason
-- View details link
-
-**ViewObstacle.cshtml**
-- Read-only obstacle details
-- Map showing location
-- Status badge
-
-#### Admin Views
-
-**AdminDashboard.cshtml**
-- System statistics (users, obstacles)
-- Role distribution
-- Quick action cards
-
-**AdminUsers.cshtml**
-- Table of all users
-- Role badges
-- Manage and Delete buttons
-
-**AdminManageUser.cshtml**
-- Current roles section
-- Available roles section
-- Assign/Remove buttons
-- Delete user (danger zone)
-
-**AdminStatistics.cshtml**
-- Detailed metrics
-- Obstacle statistics breakdown
-- User statistics by role
-- Recent activity
-
-#### Account Views
-
-**Index.cshtml** (Home)
-- Login form
-- Register form (toggled with JavaScript)
-- Welcome message
-
-**Privacy.cshtml**
-- Privacy policy placeholder
-
----
-
-## Technologies Used
-
-### Backend
-
-**ASP.NET Core 9.0**
-- Web framework
-- [https://dotnet.microsoft.com/](https://dotnet.microsoft.com/)
-
-**Entity Framework Core 8.0**
-- ORM (database access)
-- [https://docs.microsoft.com/ef/core/](https://docs.microsoft.com/ef/core/)
-
-**ASP.NET Identity**
-- Authentication and authorization
-- [https://docs.microsoft.com/aspnet/core/security/authentication/identity](https://docs.microsoft.com/aspnet/core/security/authentication/identity)
-
-**Pomelo.EntityFrameworkCore.MySql 8.0**
-- EF Core provider for MySQL/MariaDB
-- [https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql)
-
-### Frontend
-
-**Leaflet.js 1.9.4**
-- Interactive maps
-- [https://leafletjs.com/](https://leafletjs.com/)
-- License: BSD-2-Clause
-
-**Leaflet.draw 1.0.4**
-- Drawing tools for Leaflet
-- [https://github.com/Leaflet/Leaflet.draw](https://github.com/Leaflet/Leaflet.draw)
-- License: MIT
-
-**OpenStreetMap**
-- Map tiles
-- [https://www.openstreetmap.org/](https://www.openstreetmap.org/)
-- License: ODbL
-
-**Tailwind CSS 4.1.13**
-- Utility-first CSS framework
-- [https://tailwindcss.com/](https://tailwindcss.com/)
-- License: MIT
-
-**jQuery 3.7.1**
-- JavaScript library
-- [https://jquery.com/](https://jquery.com/)
-- License: MIT
-
-**Bootstrap 5.3.3**
-- UI components (minimal use)
-- [https://getbootstrap.com/](https://getbootstrap.com/)
-- License: MIT
-
-### Database
-
-**MariaDB 10.11**
-- Relational database
-- [https://mariadb.org/](https://mariadb.org/)
-- License: GPL v2
-
-### DevOps
-
-**Docker 24.x**
-- Containerization
-- [https://www.docker.com/](https://www.docker.com/)
-
-**Docker Compose 2.x**
-- Multi-container orchestration
-
-### Development Tools
-
-**Visual Studio 2022** or **Visual Studio Code**
-- IDE
-- [https://visualstudio.microsoft.com/](https://visualstudio.microsoft.com/)
-
-**.NET CLI**
-- Command-line tools for .NET
-
-**Git**
-- Version control
-- [https://git-scm.com/](https://git-scm.com/)
-
----
-
-## Known Issues
-
-### 1. Authentication Redirect Loop
-**Issue:** After database reset, normal browser may show redirect loop
-
-**Cause:** Old authentication cookies conflict with new database
-
-**Solution:** Clear browser cookies or use Private/Incognito mode
-
-**How to fix:**
-- Press F12 → Storage → Cookies → Delete All
-- Or use Private/Incognito mode
-
-### 2. Incomplete Quick Registers Visible to Pilot
-**Issue:** Incomplete quick registrations appear in "My Registrations"
-
-**Cause:** This is intentional - pilots need to see what needs completion
-
-**Not a bug:** Working as designed
-
-### 3. Database Connection on First Startup
-**Issue:** Sometimes `dotnet ef database update` fails immediately after `docker-compose up`
-
-**Cause:** MariaDB takes 10-15 seconds to fully start
-
-**Solution:** Wait 20 seconds after starting Docker before running database commands
-
-### 4. Unique Constraint on ObstacleName
-**Issue:** Cannot register two obstacles with the same name
-
-**Cause:** Database has unique index on `ObstacleName`
-
-**Solution:** Use descriptive, unique names (e.g., "Radio Tower A", "Radio Tower B")
-
-**To remove constraint:** Run migration to drop the unique index (if needed)
-
----
-
-## Future Plans
-
-### Planned Features
-
-#### Phase 1: Enhanced Obstacle Management
-- Edit obstacle details after submission (before approval)
-- Bulk approval/rejection
-- Export obstacles to CSV/Excel
-- Advanced search and filtering
-- Obstacle categories/tags
-
-#### Phase 2: Improved Mapping
-- Multiple geometry types per obstacle (e.g., base + height zone)
-- 3D visualization of obstacles
-- Terrain elevation data integration
-- Distance measurement tools
-- Export map as PDF
-
-#### Phase 3: Workflow Improvements
-- Multi-level approval (Level 1 → Level 2 → Final)
-- Comment system (discussions on obstacles)
-- Notification system (email when obstacle is approved/rejected)
-- Approval history (see who changed status and when)
-- Re-submission after rejection
-
-#### Phase 4: Reporting & Analytics
-- Advanced statistics dashboard
-- Obstacle density heat maps
-- Historical data trends
-- Custom report generation
-- Data visualization charts
-
-#### Phase 5: User Experience
-- Mobile app (React Native or Flutter)
-- Offline mode (Progressive Web App)
-- Multi-language support (Norwegian, English)
-- Dark mode
-- Accessibility improvements (WCAG 2.1 compliance)
-
-#### Phase 6: Integration
-- REST API for external systems
-- WebSocket real-time updates
-- Integration with aviation databases
-- GIS system integration
-- Automated data import from other sources
-
-#### Phase 7: Security & Performance
-- Two-factor authentication (2FA)
-- API rate limiting
-- Redis caching for performance
-- CDN for static assets
-- Database indexing optimization
-- Audit logging (track all changes)
-
----
-
-## Troubleshooting
-
-### Docker Issues
-
-**Problem:** "Docker is not running"
-```
-Error: Cannot connect to Docker daemon
+4. **View kan hente nonce:**
+```cshtml
+@{
+    var nonce = Context.Items["csp-nonce"]?.ToString();
+}
+
+<script nonce="@nonce">
+    // Sikker inline JavaScript
+</script>
 ```
 
-**Solution:**
-1. Open Docker Desktop
-2. Wait for green icon
-3. Try command again
+**Fordeler:**
+- Blokkerer injiserte scripts (XSS)
+- Tillater våre egne inline scripts
+- Bedre enn 'unsafe-inline'
+
+#### Andre Security Headers
+
+**X-Content-Type-Options: nosniff**
+- Forhindrer MIME type sniffing
+- Browser må respektere Content-Type header
+
+**X-Frame-Options: DENY**
+- Kan ikke embeddes i iframe
+- Beskytter mot clickjacking
+
+**Referrer-Policy: strict-origin-when-cross-origin**
+- Sender kun origin (ikke full URL) ved cross-origin requests
+- Beskytter sensitiv informasjon i URL
+
+#### Testing CSP
+
+CSP middleware har dedikerte tester i `CspMiddlewareTests.cs`:
+
+```csharp
+[Fact]
+public async Task CspMiddleware_AddsContentSecurityPolicyHeader()
+{
+    // Arrange
+    var context = new DefaultHttpContext();
+    // ... setup
+    
+    // Act
+    await middleware.InvokeAsync(context);
+    
+    // Assert
+    Assert.True(context.Response.Headers.ContainsKey("Content-Security-Policy"));
+}
+```
+
+**8 tester totalt:**
+- Header eksistens
+- Nonce generering
+- Nonce uniqueness
+- Policy format
+- Context storage
+- Security headers
+
+### Password Requirements
+
+**Konfigurasjon (Program.cs):**
+```csharp
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = true;           // Må ha tall
+    options.Password.RequireLowercase = true;       // Må ha lowercase
+    options.Password.RequireUppercase = false;      // Trenger IKKE uppercase
+    options.Password.RequireNonAlphanumeric = false; // Trenger IKKE spesialtegn
+    options.Password.RequiredLength = 6;            // Minimum 6 tegn
+    options.SignIn.RequireConfirmedAccount = false; // Email confirmation ikke påkrevd
+})
+```
+
+**Password Hashing:**
+- **Algoritme:** PBKDF2 (Password-Based Key Derivation Function 2)
+- **Iterations:** 100,000 (ASP.NET Core default)
+- **Salt:** Unik per passord (256-bit random)
+- **Output:** 256-bit hash
+
+**Eksempel hash:**
+```
+AQAAAAIAAYagAAAAEGHmN8z... (184 tegn)
+```
+
+### Authorization
+
+**Role-based Access Control:**
+
+```csharp
+// Controller-nivå
+[Authorize(Roles = "Pilot")]
+public class PilotController : Controller
+{
+    // Kun Pilot-rolle har tilgang
+}
+
+// Action-nivå
+[Authorize(Roles = "Admin,Registerfører")]
+public async Task<IActionResult> SpecialAction()
+{
+    // Admin ELLER Registerfører har tilgang
+}
+```
+
+**Custom Authorization - User Approval:**
+
+Alle controllers sjekker `IsApproved` flagg:
+
+```csharp
+public async Task<IActionResult> SomeAction()
+{
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null || !user.IsApproved)
+    {
+        return RedirectToAction("AccountPending", "Account");
+    }
+    
+    // Fortsett med action
+}
+```
+
+**Roller i systemet:**
+1. **Admin** - Full tilgang til alt
+2. **Registerfører** - Godkjenning av hindringer
+3. **Pilot** - Registrering av hindringer
+
+### SQL Injection Protection
+
+**EF Core bruker parameteriserte queries:**
+
+```csharp
+// SIKKER - Parametrized query
+var obstacles = await _context.Obstacles
+    .Where(o => o.RegisteredByUserId == userId)
+    .ToListAsync();
+
+// Blir til:
+// SELECT * FROM Obstacles WHERE RegisteredByUserId = @p0
+// Parameter @p0 = userId (escapet av EF Core)
+```
+
+**Aldri bruk FromSqlRaw uten parametere:**
+
+```csharp
+// FARLIG - SQL Injection mulig
+var obstacles = _context.Obstacles
+    .FromSqlRaw($"SELECT * FROM Obstacles WHERE Id = {id}");
+
+// SIKKER - Parameterisert
+var obstacles = _context.Obstacles
+    .FromSqlRaw("SELECT * FROM Obstacles WHERE Id = {0}", id);
+```
+
+### HTTPS Enforcement
+
+**Prod miljø (Program.cs):**
+```csharp
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();  // HTTP Strict Transport Security
+}
+
+app.UseHttpsRedirection();  // Redirect HTTP → HTTPS
+```
+
+**HSTS (HTTP Strict Transport Security):**
+- Browser husker at siden kun bruker HTTPS
+- Beskytter mot protocol downgrade attacks
+- Default: 30 dager
+
+### Input Validation
+
+**Model Validation:**
+
+```csharp
+public class RegisterObstacleViewModel
+{
+    [Required(ErrorMessage = "Navn er påkrevd")]
+    [StringLength(100, ErrorMessage = "Navn kan maks være 100 tegn")]
+    public string Name { get; set; }
+    
+    [Required(ErrorMessage = "Høyde er påkrevd")]
+    [Range(0.1, 10000, ErrorMessage = "Høyde må være mellom 0.1 og 10000 meter")]
+    public decimal Height { get; set; }
+    
+    [StringLength(1000, ErrorMessage = "Beskrivelse kan maks være 1000 tegn")]
+    public string? Description { get; set; }
+}
+```
+
+**Controller Validation:**
+
+```csharp
+[HttpPost]
+public async Task<IActionResult> CreateObstacle(RegisterObstacleViewModel model)
+{
+    if (!ModelState.IsValid)
+    {
+        return View(model);  // Returnerer med feilmeldinger
+    }
+    
+    // Fortsett med lagring
+}
+```
+
+### Anti-Forgery Tokens
+
+**Alle POST forms har CSRF protection:**
+
+```cshtml
+<form method="post" asp-action="CreateObstacle" asp-controller="Pilot">
+    @Html.AntiForgeryToken()
+    <!-- Form fields -->
+</form>
+```
+
+**Automatisk validering:**
+- ASP.NET Core validerer automatisk anti-forgery token
+- Hvis token mangler eller er ugyldig → 400 Bad Request
 
 ---
 
-**Problem:** "Port 3306 is already in use"
-```
-Error: bind: address already in use
+## Kjente Problemer
+
+### 1. Browser Security Warnings (Localhost)
+
+**Problem:** Nettleser viser sikkerhetsadvarsel for self-signed certificate
+
+**Årsak:** Localhost bruker self-signed SSL certificate
+
+**Løsning:**
+1. Klikk "Avansert" eller "Advanced"
+2. Klikk "Fortsett til localhost (usikker)" / "Proceed to localhost (unsafe)"
+3. Dette er trygt for lokale miljøer
+
+**Alternativt:** Stol på dev-sertifikatet
+```bash
+dotnet dev-certs https --trust
 ```
 
-**Solution:**
-1. Another MySQL/MariaDB is running
-2. Stop it: `net stop MySQL` (or close XAMPP/WAMP)
-3. Or change port in `docker-compose.yml`
+### 2. Database Connection Issues Første Gang
+
+**Problem:** "Unable to connect to database" ved første kjøring
+
+**Årsak:** MariaDB tar 10-15 sekunder å starte
+
+**Løsning:** Vent 20 sekunder etter `docker-compose up` før `dotnet run`
+
+### 3. In-Memory Database for Testing
+
+**Problem:** Microsoft.EntityFrameworkCore.InMemory 8.0.11 (ikke 9.0)
+
+**Årsak:** InMemory provider versjon 9.0 har bugs med Identity
+
+**Status:** Venter på stable release
+
+**Impact:** Ingen - fungerer perfekt med EF Core 9.0
+
+### 4. CSP Warnings i Developer Console
+
+**Problem:** Console viser CSP violations for inline styles
+
+**Årsak:** Tailwind CSS genererer inline styles
+
+**Status:** Forventet oppførsel, 'unsafe-inline' tillatt for styles
+
+**Impact:** Ingen sikkerhetsrisiko
+
+### 5. Unique Constraint På Obstacle Name
+
+**Problem:** Kan ikke opprette to hindringer med samme navn
+
+**Årsak:** Databasen har unique constraint
+
+**Løsning:** Bruk unike navn (f.eks., "Mast 1", "Mast 2")
+
+**Hvis du vil fjerne:** Lag ny migrering som dropper constraint
 
 ---
 
-### .NET Issues
+## Feilsøking
+
+### Docker Problemer
+
+**Problem:** "Cannot connect to Docker daemon"
+
+**Løsning:**
+1. Åpne Docker Desktop
+2. Vent til grønt ikon
+3. Prøv kommando igjen
+
+---
+
+**Problem:** "Port 3306 already in use"
+
+**Løsning:**
+```bash
+# Stopp eventuelle andre MySQL/MariaDB instances
+net stop MySQL80   # Windows
+# ELLER
+docker ps          # Finn annen container
+docker stop <container-id>
+
+# Eller endre port i docker-compose.yml
+ports:
+  - "3307:3306"
+```
+
+---
+
+### .NET Problemer
 
 **Problem:** "dotnet: command not found"
 
-**Solution:**
-1. Install .NET SDK (see Prerequisites)
-2. Restart Command Prompt
-3. Verify: `dotnet --version`
+**Løsning:**
+1. Installer .NET 9.0 SDK
+2. Restart terminal/command prompt
+3. Verifiser: `dotnet --version`
 
 ---
 
-**Problem:** "Entity Framework tools not found"
-```
-Could not execute because the specified command or file was not found.
-Possible reasons for this include:
-  * You misspelled a built-in dotnet command.
-  * You intended to execute a .NET program, but dotnet-ef does not exist.
-```
+**Problem:** "dotnet ef: command not found"
 
-**Solution:**
-```cmd
+**Løsning:**
+```bash
 dotnet tool install --global dotnet-ef
+# Eller oppdater
+dotnet tool update --global dotnet-ef
 ```
 
 ---
 
-**Problem:** "Build failed" errors
+**Problem:** Build errors om manglende packages
 
-**Solution:**
-1. Check you're in `FirstWebApplication` folder
-2. Run: `dotnet clean`
-3. Run: `dotnet restore`
-4. Run: `dotnet build`
-5. Check error messages - might be missing packages
+**Løsning:**
+```bash
+cd FirstWebApplication
+dotnet clean
+dotnet restore
+dotnet build
+```
 
 ---
 
-### Database Issues
+### Database Problemer
 
 **Problem:** "Unable to connect to database"
-```
-MySqlConnector.MySqlException: Unable to connect to any of the specified MySQL hosts.
-```
 
-**Solution:**
-1. Is Docker running? Check Docker Desktop
-2. Is MariaDB started? Run: `docker ps` (should see `mariadbcontainer`)
-3. Wait 20 seconds after `docker-compose up`
-4. Check connection string in `appsettings.json`
+**Løsning:**
+1. Er Docker kjørende? → `docker ps`
+2. Er MariaDB startet? → Vent 20 sekunder
+3. Sjekk connection string i appsettings.json
+4. Test connection: `docker exec -it mariadbcontainer mysql -u obstacleuser -p1234`
 
 ---
 
 **Problem:** "Table 'ObstacleDB.Obstacles' doesn't exist"
 
-**Solution:**
-Run migrations:
-```cmd
+**Løsning:**
+```bash
 cd FirstWebApplication
 dotnet ef database update
 ```
 
 ---
 
-**Problem:** "Database migration failed"
+**Problem:** Database er tom (ingen testdata)
 
-**Solution:**
-Nuclear reset:
-```cmd
-docker-compose down -v
-docker-compose up -d
-# Wait 20 seconds
-cd FirstWebApplication
-dotnet ef database update
-```
+**Løsning:**
+DatabaseSeeder kjører kun i Development mode:
 
----
+```bash
+# Windows PowerShell
+$env:ASPNETCORE_ENVIRONMENT="Development"
+dotnet run
 
-### Application Issues
+# Windows CMD
+set ASPNETCORE_ENVIRONMENT=Development
+dotnet run
 
-**Problem:** "Login fails" or "Invalid credentials"
-
-**Solution:**
-1. Check you're using correct test account:
-   - pilot@test.com / Pilot123
-   - registerforer@test.com / Register123
-   - admin@test.com / Admin123
-2. Make sure database was seeded (check console output when app started)
-3. Try nuclear reset
-
----
-
-**Problem:** "View not found" error
-```
-InvalidOperationException: The view 'RegisterType' was not found
-```
-
-**Solution:**
-1. Check view file exists: `Views/Pilot/RegisterType.cshtml`
-2. Check action name matches view name exactly
-3. Check controller name matches folder name
-
----
-
-**Problem:** "Redirect loop" after login
-
-**Solution:**
-1. Clear browser cookies (F12 → Storage → Delete all)
-2. Use Private/Incognito mode
-3. See [Known Issues](#known-issues) section
-
----
-
-### Map Issues
-
-**Problem:** Map doesn't load (gray area)
-
-**Solution:**
-1. Check internet connection (needs OpenStreetMap tiles)
-2. Check browser console (F12) for errors
-3. Verify Leaflet.js and Leaflet.draw are loaded
-4. Check if Leaflet CSS is included in `_Layout.cshtml`
-
----
-
-**Problem:** Can't draw on map
-
-**Solution:**
-1. Check Leaflet.draw.js is loaded
-2. Check draw control is initialized in JavaScript
-3. Look for JavaScript errors in console (F12)
-
----
-
-### General Tips
-
-**Always check:**
-1. Docker is running
-2. You're in the correct folder
-3. No typos in commands
-4. Browser console for JavaScript errors (F12)
-5. Application console output for server errors
-
-**Nuclear reset (fixes 90% of issues):**
-```cmd
-docker-compose down -v
-docker-compose up -d
-# Wait 20 seconds
-cd FirstWebApplication
-dotnet clean
-dotnet restore
-dotnet build
-dotnet ef database update
+# Linux/Mac
+export ASPNETCORE_ENVIRONMENT=Development
 dotnet run
 ```
 
 ---
 
-## License
+**Problem:** Migrasjoner feiler
 
-This project is licensed under the MIT License - see below for details:
+**Løsning - Nuclear reset:**
+```bash
+# Stopp alt
+docker-compose down -v
+
+# Start database
+docker-compose up -d
+
+# Vent 20 sekunder
+
+# Kjør migrasjoner på nytt
+cd FirstWebApplication
+dotnet ef database drop --force
+dotnet ef database update
+
+# Start applikasjonen
+dotnet run
+```
+
+---
+
+### Test Problemer
+
+**Problem:** Tester feiler med database errors
+
+**Løsning:**
+Tester bruker InMemory database, ikke ekte database. Hvis tester feiler:
+
+```bash
+cd NRLWebApp.Tests
+dotnet clean
+dotnet restore
+dotnet build
+dotnet test
+```
+
+---
+
+**Problem:** Spesifikke tester feiler
+
+**Løsning:**
+```bash
+# Kjør med detaljert output
+dotnet test --logger "console;verbosity=detailed"
+
+# Kjør kun én testklasse
+dotnet test --filter "FullyQualifiedName~PilotControllerTests"
+
+# Kjør én spesifikk test
+dotnet test --filter "FullyQualifiedName~QuickRegister_Post_ValidGeometry_SavesToDatabase"
+```
+
+---
+
+### Logging
+
+**Se logger:**
+
+Applikasjonen logger til console. For mer detaljert logging, endre appsettings.json:
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore.Database.Command": "Information"
+    }
+  }
+}
+```
+
+**Logging nivåer:**
+- `Trace` - Ekstremt detaljert
+- `Debug` - Debug informasjon
+- `Information` - Generell informasjon
+- `Warning` - Advarsler
+- `Error` - Feil
+- `Critical` - Kritiske feil
+
+**Se database queries:**
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Microsoft.EntityFrameworkCore.Database.Command": "Information"
+    }
+  }
+}
+```
+
+---
+
+### General Tips
+
+**Nuclear Reset (løser de fleste problemer):**
+
+```bash
+# 1. Stopp alt
+docker-compose down -v
+
+# 2. Rens .NET
+cd FirstWebApplication
+dotnet clean
+rm -rf bin/ obj/   # Eller manuelt slett mapper
+
+# 3. Start database
+cd ..
+docker-compose up -d
+
+# 4. Vent 20 sekunder
+timeout /t 20   # Windows
+sleep 20        # Linux/Mac
+
+# 5. Restore og bygg
+cd FirstWebApplication
+dotnet restore
+dotnet build
+
+# 6. Database setup
+dotnet ef database drop --force
+dotnet ef database update
+
+# 7. Kjør
+dotnet run
+```
+
+**Alltid sjekk:**
+1. Docker Desktop kjører (grønt ikon)
+2. Du er i riktig mappe
+3. Connection string i appsettings.json er korrekt
+4. Ingen typos i kommandoer
+5. ASPNETCORE_ENVIRONMENT er satt til "Development" for seeding
+
+---
+
+## Lisens
+
+Dette prosjektet er lisensiert under MIT License.
+
+### MIT License
 
 ```
 MIT License
 
-Copyright (c) 2024 Kartverket Kodeprosjekt
+Copyright (c) 2024 NRL Webapplikasjon Team
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -1352,52 +1782,78 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+### Third-Party Licenses
+
+**Leaflet.js** - BSD-2-Clause License
+- https://leafletjs.com/
+- © 2010-2024 Leaflet contributors
+
+**Leaflet.draw** - MIT License
+- https://github.com/Leaflet/Leaflet.draw
+
+**OpenStreetMap** - ODbL License
+- https://www.openstreetmap.org/copyright
+- © OpenStreetMap contributors
+
+**Tailwind CSS** - MIT License
+- https://tailwindcss.com/
+
+**Bootstrap** - MIT License
+- https://getbootstrap.com/
+
+**jQuery** - MIT License
+- https://jquery.com/
+
+**MariaDB** - GPL v2 License
+- https://mariadb.org/
+
 ---
 
 ## Credits
 
-**Developed by:** Third Semester Students
+**Utviklet av:** IS-200 Prosjektgruppe (UiA)
 
-**Third-Party Libraries:**
-- [Leaflet.js](https://leafletjs.com/) - BSD-2-Clause License
-- [Leaflet.draw](https://github.com/Leaflet/Leaflet.draw) - MIT License
-- [OpenStreetMap](https://www.openstreetmap.org/) - ODbL License
-- [Tailwind CSS](https://tailwindcss.com/) - MIT License
-- [Bootstrap](https://getbootstrap.com/) - MIT License
-- [jQuery](https://jquery.com/) - MIT License
+**Prosjektår:** 2024
 
-**Map Data:**
-- © OpenStreetMap contributors
-- [https://www.openstreetmap.org/copyright](https://www.openstreetmap.org/copyright)
+**Veiledere:** Universitetet i Agder
 
-**Frameworks:**
-- ASP.NET Core - Microsoft
-- Entity Framework Core - Microsoft
-- MariaDB - MariaDB Foundation
-
-**Special Thanks:**
-- Kartverket for project inspiration
-- OpenStreetMap community for map data
-- All open-source contributors
+**Spesiell takk til:**
+- Kartverket for prosjekt inspirasjon
+- OpenStreetMap community for kartdata
+- ASP.NET Core team for et fantastisk framework
+- xUnit og Moq teams for testing tools
+- MariaDB Foundation for database
 
 ---
 
 ## Repository
 
-**GitHub:** [https://github.com/FalckM/Kartverket-Kodeprosjekt](https://github.com/FalckM/Kartverket-Kodeprosjekt)
+**GitHub:** https://github.com/kJ4SPer/NRLWebApp
 
-**Issues:** Report bugs or request features at [GitHub Issues](https://github.com/FalckM/Kartverket-Kodeprosjekt/issues)
+**Issues:** Rapporter bugs via GitHub Issues
 
-**Contributions:** Not accepting contributions at this time (student project)
+**Pull Requests:** Ikke akseptert (student prosjekt)
 
----
-
-**Last Updated:** 2024
-
-**Project Status:** Active Development
-
-**Contact:** Via GitHub Issues only
+**Wiki:** Teknisk dokumentasjon i README.md
 
 ---
 
-*Made with ASP.NET Core, Entity Framework, MariaDB, and Leaflet.js*
+## Kontakt
+
+**Support:** Via GitHub Issues kun
+
+**E-post:** Ikke tilgjengelig (student prosjekt)
+
+**Discord/Slack:** Ikke tilgjengelig
+
+---
+
+**Sist Oppdatert:** Desember 2024
+
+**Prosjekt Status:** Aktiv Utvikling
+
+**Versjon:** 1.0.0
+
+---
+
+*Bygget med ❤️ i Norge med ASP.NET Core, EF Core, MariaDB, og Leaflet.js*
