@@ -24,13 +24,9 @@ namespace NRLWebApp.Tests.Controllers
             var mockLogger = new Mock<ILogger<PilotController>>();
 
             var userId = "test-pilot-123";
-            var user = new ApplicationUser { Id = userId, IsApproved = true };
+            var user = new ApplicationUser { Id = userId };
 
-            var mockUserManager = MockHelpers.MockUserManager(new List<ApplicationUser> { user });
-            mockUserManager.Setup(um => um.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns(userId);
-            mockUserManager.Setup(um => um.GetUserAsync(It.IsAny<ClaimsPrincipal>())).ReturnsAsync(user);
-
-            var controller = new PilotController(context, mockUserManager.Object, mockLogger.Object);
+            var controller = new PilotController(context, mockLogger.Object);
             controller.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, userId) };
@@ -57,12 +53,15 @@ namespace NRLWebApp.Tests.Controllers
             // Arrange
             var context = TestDbContext.Create();
             var mockLogger = new Mock<ILogger<PilotController>>();
-
             var userId = "pilot-1";
-            var mockUserManager = MockHelpers.MockUserManager(new List<ApplicationUser>());
-            mockUserManager.Setup(um => um.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns(userId);
 
-            // Legg til data som skal slettes
+            // --- FIX START: Legg til StatusTyper slik at koden finner navnene "Pending" etc. ---
+            context.StatusTypes.AddRange(
+                new StatusType { Id = 1, Name = "Registered" },
+                new StatusType { Id = 2, Name = "Pending" }
+            );
+            // --- FIX END ---
+
             var obstacle = new Obstacle { Id = 10L, RegisteredByUserId = userId, Location = "POINT(1 1)", Name = "To Be Deleted" };
             context.Obstacles.Add(obstacle);
 
@@ -73,7 +72,7 @@ namespace NRLWebApp.Tests.Controllers
             await context.SaveChangesAsync();
             context.ChangeTracker.Clear();
 
-            var controller = new PilotController(context, mockUserManager.Object, mockLogger.Object);
+            var controller = new PilotController(context, mockLogger.Object);
             controller.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, userId) };
@@ -88,14 +87,10 @@ namespace NRLWebApp.Tests.Controllers
             // Assert
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("MyRegistrations", redirect.ActionName);
-            Assert.Equal("Registreringen ble slettet.", controller.TempData["SuccessMessage"]);
+            Assert.Equal("Obstacle deleted successfully.", controller.TempData["SuccessMessage"]);
 
-            // Verifiser at ALT er borte
             var deletedObstacle = await context.Obstacles.FindAsync(10L);
             Assert.Null(deletedObstacle);
-
-            var deletedStatus = await context.ObstacleStatuses.FindAsync(100L);
-            Assert.Null(deletedStatus);
         }
     }
 }

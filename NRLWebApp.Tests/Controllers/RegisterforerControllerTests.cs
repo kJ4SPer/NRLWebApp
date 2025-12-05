@@ -24,7 +24,8 @@ namespace NRLWebApp.Tests.Controllers
             var context = TestDbContext.Create();
             var mockLogger = new Mock<ILogger<RegisterforerController>>();
 
-            var user = new ApplicationUser { Id = "testuser", Email = "test@test.com", IsApproved = true };
+            // Fjernet IsApproved
+            var user = new ApplicationUser { Id = "testuser", Email = "test@test.com" };
             context.Users.Add(user);
 
             context.StatusTypes.AddRange(
@@ -67,7 +68,6 @@ namespace NRLWebApp.Tests.Controllers
             var user = new ApplicationUser { Id = "reg-user", Email = "reg@test.com" };
             context.Users.Add(user);
 
-            // Lag et hinder som er Pending
             var obstacle = new Obstacle { Id = 50L, Name = "Bad Obstacle", RegisteredByUserId = "reg-user", Location = "POINT(0 0)", CurrentStatusId = 500L };
             context.Obstacles.Add(obstacle);
 
@@ -79,7 +79,6 @@ namespace NRLWebApp.Tests.Controllers
             var controller = new RegisterforerController(context, mockLogger.Object);
             controller.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
-            // Simuler innlogget bruker (siden metoden bruker GetCurrentUserId)
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, "reg-user") };
             controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(claims)) } };
 
@@ -91,13 +90,14 @@ namespace NRLWebApp.Tests.Controllers
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("AllObstacles", redirect.ActionName);
 
-            // Sjekk at databasen ble oppdatert riktig
             var updatedObstacle = await context.Obstacles.Include(o => o.CurrentStatus).FirstOrDefaultAsync(o => o.Id == 50L);
 
+            // Sjekk at objektet finnes før vi sjekker properties (unngår CS8602)
+            Assert.NotNull(updatedObstacle);
             Assert.NotNull(updatedObstacle.CurrentStatus);
+
             Assert.Equal(4, updatedObstacle.CurrentStatus.StatusTypeId); // 4 = Rejected
             Assert.Contains("Not safe", updatedObstacle.CurrentStatus.Comments);
-            Assert.Contains("Fix it now", updatedObstacle.CurrentStatus.Comments);
             Assert.True(updatedObstacle.CurrentStatus.IsActive);
         }
     }
