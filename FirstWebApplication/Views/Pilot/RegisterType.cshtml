@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Choose Registration Type";
+    ViewData["Title"] = "Velg registreringstype";
     Layout = "_Layout";
 }
 
@@ -18,16 +18,16 @@
         <!-- Quick Register Option -->
         <a href="@Url.Action("QuickRegister", "Pilot")" class="option-box quick">
             <div class="icon">⚡</div>
-            <h2>Quick Register</h2>
-            <p>Register your current location instantly. Perfect when you're on the go and need to report an obstacle quickly.</p>
-            <span class="btn">Quick Register</span>
+            <h2>Hurtigregistrering</h2>
+            <p>Registrer posisjonen din umiddelbart. Perfekt når du er på farten og må rapportere en hindring raskt.</p>
+            <span class="btn">Hurtigregistrering</span>
         </a>
 
         <!-- Full Register Option -->
         <a href="@Url.Action("FullRegister", "Pilot")" class="option-box full">
             <div class="icon">📝</div>
             <h2>Full Register</h2>
-            <p>Complete detailed registration with all obstacle information. Choose your location on the map and fill in all details.</p>
+            <p>Fullfør detaljert registrering med all informasjon om hinder. Velg din plassering på kartet og fyll inn alle detaljer.</p>
             <span class="btn">Full Register</span>
         </a>
     </div>
