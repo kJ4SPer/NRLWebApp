@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // AKTIVER LINJETEGNING HER:
             polyline: {
                 shapeOptions: {
-                    color: '#2563eb', // Blue
+                    color: '#2563eb', 
                     weight: 4
                 }
             },
@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
             wkt = `LINESTRING(${coords})`;
         }
 
-        console.log("Generated WKT:", wkt); // Debugging
+        console.log("Generated WKT:", wkt);
         document.getElementById('obstacleGeometryInput').value = wkt;
     }
 
@@ -148,7 +148,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Ellers, plasser markør som før
         drawnItems.clearLayers();
         var marker = L.marker(e.latlng, { draggable: true }).addTo(drawnItems);
 

@@ -21,20 +21,15 @@ namespace FirstWebApplication.Entities
         public int StatusTypeId { get; set; }
         public StatusType? StatusType { get; set; }
 
-        // Hvem endret status?
         [Required]
         [StringLength(450)]
         public string ChangedByUserId { get; set; } = string.Empty;
         public ApplicationUser? ChangedByUser { get; set; }
-
-        // Når?
         public DateTime ChangedDate { get; set; } = DateTime.Now;
 
-        // Kommentar
         [StringLength(255)]
         public string? Comments { get; set; }
 
-        // Er dette den aktive/nåværende status?
         public bool IsActive { get; set; } = true;
     }
 }

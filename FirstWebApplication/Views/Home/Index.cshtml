@@ -11,13 +11,13 @@
 @* --- CSS: KART, LAYOUT OG DESIGN --- *@
 <style nonce="@Html.GetNonce()">
 
-    /* 1. Skjul standard navbar og footer */
+    /*Skjul standard navbar og footer */
         header, footer, .border-top.footer {
                 display: none !important;
 
     }
 
-    /* NY REGEL: Gjør hovedinnholdsområdet transparent */
+    /*Gjør hovedinnholdsområdet transparent */
     .main-content {
         background-color: transparent !important;
     }
@@ -30,7 +30,7 @@
     }
 
 
-    /* 2. Bakgrunnskart */
+    /*Bakgrunnskart */
         #map-background {
                 position: fixed;
                 top: 0;
@@ -43,7 +43,7 @@
     }
 
 
-    /* 3. Mørk overlay */
+    /*Mørk overlay */
         #map-overlay {
                 position: fixed;
                 top: 0;
@@ -57,7 +57,7 @@
     }
 
 
-    /* 4. Hovedcontainer */
+    /*Hovedcontainer */
         .landing-container {
                 height: 100vh;
                 width: 100%;
@@ -66,21 +66,16 @@
                 padding-bottom: 50px;
 
     }
-
-
-    /* 5. HERO TEKST - JUSTERT FOR LYS BAKGRUNN */
         .hero-section {
                 margin-bottom: 3rem;
                 text-align: center;
-                color: #1f2937; /* SATT TIL MØRK GRÅ (Tailwind gray-800) for lesbarhet mot den lyse bakgrunnen */
+                color: #1f2937; 
 
     }
 
         .hero-title {
                 font-weight: 800;
                 text-transform: uppercase;
-
-        /* Fjerner hvit farge og bruker inherited #1f2937 */
 
     }
 
@@ -89,21 +84,16 @@
                 opacity: 0.9;
                 margin-top: 10px;
 
-        /* Fjerner hvit farge og bruker inherited #1f2937 */
-
     }
 
         .hero-divider {
                 width: 100px;
                 height: 5px;
-                background-color: #1f2937; /* Gjør streken mørk grå */
+                background-color: #1f2937; 
                 margin: 20px auto;
                 border-radius: 2px;
 
     }
-
-
-    /* 6. Kort-design - HØYERE OG SMALERE */
         .action-card {
                 border: none;
                 border-radius: 15px;
@@ -121,7 +111,7 @@
         }
 
 
-    /* 7. Privacy link */
+    /*Privacy link */
         .privacy-link-container {
                 margin-top: auto;
                 padding-top: 30px;
@@ -132,13 +122,13 @@
     }
 
         .privacy-link {
-                color: #1f2937; /* Mørk lenketekst */
+                color: #1f2937;
                 text-decoration: none;
 
     }
 
             .privacy-link:hover {
-                    color: #3b82f6; /* Blå hover */
+                    color: #3b82f6;
                     text-decoration: underline;
 
     }
@@ -164,7 +154,6 @@
         @if (SignInManager.IsSignedIn(User))
         {
             /* --- VISNING FOR INNLOGGET BRUKER --- */
-            /* Endret fra col-lg-7 til col-lg-5 for å gjøre den smalere */
             <div class="col-12 col-md-8 col-lg-5 mb-4">
                 <div class="card action-card shadow-lg p-4">
                     <div class="card-body text-center">
@@ -195,7 +184,6 @@
             /* --- VISNING FOR GJEST --- */
 
             @* LOGG INN BOKS *@
-            /* Endret fra col-lg-7 til col-lg-5 for å gjøre den smalere */
             <div class="col-12 col-md-8 col-lg-5 mb-4">
                 <div class="card action-card shadow-lg">
                     <div class="card-body p-5 text-center">

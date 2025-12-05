@@ -64,7 +64,6 @@ namespace FirstWebApplication.Controllers
                     Location = obstacleGeometry,
                     RegisteredByUserId = userId,
                     RegisteredDate = DateTime.Now
-                    // NAME ER FJERNET HERFRA
                 };
 
                 _context.Obstacles.Add(obstacle);
@@ -123,18 +122,14 @@ namespace FirstWebApplication.Controllers
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
-                    // 1. Determine Type Name logic beholdes for typevalg, men brukes ikke til navn
                     string typeName = model.ObstacleType ?? "Hinder";
                     if (model.ObstacleType == "Other" && !string.IsNullOrWhiteSpace(CustomObstacleType))
                     {
                         typeName = CustomObstacleType;
                     }
 
-                    // GENERERING AV NAVN ER FJERNET HER
-
                     var obstacle = new Obstacle
                     {
-                        // NAME ER FJERNET HERFRA
                         Height = model.ObstacleHeight,
                         Description = model.ObstacleDescription,
                         Location = model.ObstacleGeometry,
@@ -219,8 +214,6 @@ namespace FirstWebApplication.Controllers
 
                 if (obstacle == null) return NotFound();
 
-                // AUTOMATISK NAVN ER FJERNET HERFRA
-
                 obstacle.Height = model.ObstacleHeight;
                 obstacle.Description = model.ObstacleDescription;
                 await SetObstacleTypeAsync(obstacle, model.ObstacleType, CustomObstacleType);
@@ -251,8 +244,6 @@ namespace FirstWebApplication.Controllers
                 return View(model);
             }
         }
-
-        // ... [Rest of controller remains unchanged] ...
 
         [HttpGet]
         public async Task<IActionResult> MyRegistrations()
@@ -342,7 +333,6 @@ namespace FirstWebApplication.Controllers
                     Location = obstacleGeometry,
                     RegisteredByUserId = userId,
                     RegisteredDate = DateTime.Now
-                    // NAME ER FJERNET HERFRA
                 };
                 _context.Obstacles.Add(obstacle);
                 await _context.SaveChangesAsync();
@@ -425,7 +415,6 @@ namespace FirstWebApplication.Controllers
             return new ObstacleListItemViewModel
             {
                 Id = obstacle.Id,
-                // NAME ER FJERNET HER
                 Height = obstacle.Height ?? 0,
                 Type = obstacle.ObstacleType?.Name ?? "Ukjent",
                 Location = obstacle.Location,
@@ -441,9 +430,6 @@ namespace FirstWebApplication.Controllers
             return new ObstacleDetailsViewModel
             {
                 Id = obstacle.Id,
-
-                // NAME ER FJERNET HER
-
                 Height = obstacle.Height ?? 0,
                 Description = obstacle.Description ?? string.Empty,
                 Type = obstacle.ObstacleType?.Name,

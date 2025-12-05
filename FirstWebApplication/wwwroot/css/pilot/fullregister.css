@@ -116,21 +116,21 @@ label {
    ========================================= */
 
 .dark .registration-form {
-    background: #1f2937; /* Mørk bakgrunn for skjemaet */
-    color: #e5e7eb; /* Lys tekstfarge */
+    background: #1f2937; 
+    color: #e5e7eb; 
     box-shadow: -2px 0 10px rgba(255, 255, 255, 0.1);
 }
 
     .dark .registration-form label {
-        color: #e5e7eb; /* Lys farge på etiketter */
+        color: #e5e7eb;
     }
 
     .dark .registration-form .form-control {
-        background: #374151; /* Litt lysere mørk bakgrunn for input-felt */
-        border: 1px solid #4b5563; /* Lysere kantlinje */
-        color: #f9fafb; /* Hvit tekst i input */
+        background: #374151; 
+        border: 1px solid #4b5563; 
+        color: #f9fafb; 
     }
 
         .dark .registration-form .form-control:focus {
-            border-color: #6366f1; /* Lilla fokusfarge */
+            border-color: #6366f1; 
         }

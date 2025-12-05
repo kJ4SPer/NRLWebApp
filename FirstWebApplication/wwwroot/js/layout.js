@@ -14,8 +14,6 @@ document.addEventListener('DOMContentLoaded', function () {
         mobileMenuButton.addEventListener('click', toggleMobileMenu);
     }
 
-    // Fjernet darkModeToggle.addEventListener('click', toggleDarkMode); herfra
-
     // Close mobile menu when clicking outside
     document.addEventListener('click', function (event) {
         const menu = document.getElementById('mobile-menu');
@@ -38,8 +36,4 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
-
-    // Fjernet initializeDarkMode(); herfra
 });
-
-// Fjernet toggleDarkMode, updateDarkModeIcons og initializeDarkMode funksjonene som nå ligger i _Layout.cshtml.

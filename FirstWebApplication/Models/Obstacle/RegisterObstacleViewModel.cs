@@ -7,8 +7,6 @@ namespace FirstWebApplication.Models.Obstacle
     /// </summary>
     public class RegisterObstacleViewModel
     {
-        // REMOVED: ObstacleName - Generated automatically by the controller
-
         [Range(0.1, 10000, ErrorMessage = "Height must be between 0.1 and 10000 meters")]
         [Display(Name = "Height (meters)")]
         public decimal? ObstacleHeight { get; set; }

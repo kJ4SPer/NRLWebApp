@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Security.Claims; // Nødvendig for GetCurrentUserId
+using System.Security.Claims;
 using System.Linq;
 using System.Collections.Generic;
 using System;
@@ -132,7 +132,7 @@ namespace FirstWebApplication.Controllers
                 return RedirectToAction("ReviewObstacle", new { id = model.ObstacleId });
 
             var obstacle = await _context.Obstacles
-                .Include(o => o.CurrentStatus) // FIKS: Sikrer at CurrentStatus hentes for UpdateObstacleStatusAsync
+                .Include(o => o.CurrentStatus)
                 .FirstOrDefaultAsync(o => o.Id == model.ObstacleId);
 
             if (obstacle == null)
@@ -144,7 +144,6 @@ namespace FirstWebApplication.Controllers
 
             await UpdateObstacleStatusAsync(obstacle, 3, userId, model.Comments ?? "");
 
-            // ENDRET: Bruker ID i meldingen siden Name er fjernet
             TempData["SuccessMessage"] = $"Obstacle #{obstacle.Id} has been approved.";
             return RedirectToAction("AllObstacles");
         }
@@ -158,7 +157,7 @@ namespace FirstWebApplication.Controllers
                 return RedirectToAction("ReviewObstacle", new { id = model.ObstacleId });
 
             var obstacle = await _context.Obstacles
-                .Include(o => o.CurrentStatus) // FIKS: Sikrer at CurrentStatus hentes for UpdateObstacleStatusAsync
+                .Include(o => o.CurrentStatus)
                 .FirstOrDefaultAsync(o => o.Id == model.ObstacleId);
 
             if (obstacle == null)
@@ -174,7 +173,6 @@ namespace FirstWebApplication.Controllers
 
             await UpdateObstacleStatusAsync(obstacle, 4, userId, comments);
 
-            // ENDRET: Bruker ID i meldingen siden Name er fjernet
             TempData["SuccessMessage"] = $"Obstacle #{obstacle.Id} has been rejected.";
             return RedirectToAction("AllObstacles");
         }
@@ -274,7 +272,6 @@ namespace FirstWebApplication.Controllers
                     .Select(o => new
                     {
                         id = o.Id,
-                        // NAME ER FJERNET HER
                         type = o.ObstacleType != null ? o.ObstacleType.Name : "Unknown",
                         height = o.Height ?? 0,
                         description = o.Description ?? "",
@@ -299,7 +296,6 @@ namespace FirstWebApplication.Controllers
                     var geomPreview = string.IsNullOrEmpty(first.geometry)
                         ? "NULL"
                         : first.geometry.Substring(0, Math.Min(50, first.geometry.Length));
-                    // ENDRET: Fjernet name fra logging
                     _logger.LogInformation("First obstacle: Id={Id}, Type={Type}, Geometry={Geometry}",
                         first.id, first.type, geomPreview);
                 }
@@ -364,7 +360,6 @@ namespace FirstWebApplication.Controllers
             return new ObstacleListItemViewModel
             {
                 Id = obstacle.Id,
-                // NAME ER FJERNET HER
                 Type = obstacle.ObstacleType?.Name,
                 Height = obstacle.Height ?? 0,
                 Location = obstacle.Location ?? string.Empty,
@@ -385,7 +380,6 @@ namespace FirstWebApplication.Controllers
             return new ObstacleListItemViewModel
             {
                 Id = obstacle.Id,
-                // NAME ER FJERNET HER
                 Type = obstacle.ObstacleType?.Name,
                 Height = obstacle.Height ?? 0,
                 Location = obstacle.Location ?? string.Empty,
@@ -431,7 +425,6 @@ namespace FirstWebApplication.Controllers
             return new ObstacleDetailsViewModel
             {
                 Id = obstacle.Id,
-                // NAME ER FJERNET HER
                 Type = obstacle.ObstacleType?.Name,
                 Height = obstacle.Height ?? 0,
                 Description = obstacle.Description ?? "",
@@ -515,12 +508,11 @@ namespace FirstWebApplication.Controllers
             };
         }
 
-        // Anvender sortering på query (Fjernet sortering på Name)
+        // Anvender sortering på query
         private IQueryable<Obstacle> ApplySorting(IQueryable<Obstacle> query, string? sortBy, string? sortOrder)
         {
             return sortBy?.ToLower() switch
             {
-                // "NAME" CASE ER FJERNET HERFRA
                 "type" => sortOrder == "asc"
                     ? query.OrderBy(o => o.ObstacleType!.Name)
                     : query.OrderByDescending(o => o.ObstacleType!.Name),

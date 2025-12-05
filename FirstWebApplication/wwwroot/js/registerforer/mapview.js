@@ -130,7 +130,6 @@ function displayObstacles(obstacles) {
                 className: ''
             });
 
-            // ENDRET: Bruker ID i tittelen i stedet for Navn
             const titleHtml = `<h3 style="margin: 0 0 10px 0; color: #1f2937; font-size: 16px;">Obstacle #${obstacle.id}</h3>`;
 
             if (geometryWKT.startsWith('POINT')) {
@@ -261,7 +260,6 @@ function applyFilters() {
     const showRejected = document.getElementById('filter-status-rejected').checked;
 
     const filteredObstacles = allObstacles.filter(obstacle => {
-        // ENDRET: Søk på ID eller Type i stedet for Navn
         if (searchText) {
             const idMatch = obstacle.id.toString().includes(searchText);
             const typeMatch = obstacle.type.toLowerCase().includes(searchText);

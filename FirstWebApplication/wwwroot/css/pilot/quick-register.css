@@ -242,35 +242,35 @@
 /* Målretter mot dark mode på status overlay-elementer */
 .dark .status-overlay .status-box,
 .dark .status-overlay .duplicate-popup {
-    background: #1f2937; /* Mørkere bakgrunn for boksene */
-    color: #e5e7eb; /* Lys tekstfarge */
+    background: #1f2937; 
+    color: #e5e7eb; 
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
 }
 
 /* Gjør Duplicate Item-boksen lesbar */
 .dark .status-overlay .duplicate-item {
-    background: #374151; /* Litt lysere mørk bakgrunn */
-    border-left: 4px solid #f59e0b; /* Gul kant beholdes */
+    background: #374151; 
+    border-left: 4px solid #f59e0b; 
 }
 
     .dark .status-overlay .duplicate-item h3 {
-        color: #f9fafb; /* Hvit tittel */
+        color: #f9fafb; 
     }
 
     .dark .status-overlay .duplicate-item p {
-        color: #d1d5db; /* Lys brødtekst */
+        color: #d1d5db; 
     }
 
 .dark .status-overlay .help-text {
-    background: #075985; /* Mørk blå for hjelpeteksten */
-    border-left: 4px solid #38bdf8; /* Lysere blå kant */
-    color: #e0f2f1; /* Veldig lys tekst */
+    background: #075985; 
+    border-left: 4px solid #38bdf8; 
+    color: #e0f2f1; 
 }
 
     .dark .status-overlay .help-text strong {
-        color: #67e8f9; /* Enda lysere tittel */
+        color: #67e8f9; 
     }
 
 .dark .status-overlay .redirect-timer {
-    color: #9ca3af; /* Lysere farge for nedtelling */
+    color: #9ca3af; 
 }

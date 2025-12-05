@@ -61,34 +61,34 @@
    ========================================= */
 
 .dark .details-card {
-    background: #1f2937; /* Mørk bakgrunn for kort */
+    background: #1f2937; 
     box-shadow: 0 1px 3px rgba(255, 255, 255, 0.1);
 }
 
 .dark .detail-row {
-    border-bottom: 1px solid #374151; /* Mørkere skillelinje */
+    border-bottom: 1px solid #374151; 
 }
 
 .dark .detail-label {
-    color: #d1d5db; /* Lys farge på etiketter */
+    color: #d1d5db; 
 }
 
 .dark .detail-value {
-    color: #f9fafb; /* Hvit farge på verdier */
+    color: #f9fafb; 
 }
 
 /* Oppdatering av Status-merker for bedre kontrast i Dark Mode */
 .dark .status-approved {
-    background-color: #047857; /* Dypere grønn */
-    color: #a7f3d0; /* Lysere tekst */
+    background-color: #047857; 
+    color: #a7f3d0; 
 }
 
 .dark .status-pending {
-    background-color: #1e40af; /* Dypere blå */
-    color: #bfdbfe; /* Lysere tekst */
+    background-color: #1e40af; 
+    color: #bfdbfe; 
 }
 
 .dark .status-rejected {
-    background-color: #991b1b; /* Dypere rød */
-    color: #fecaca; /* Lysere tekst */
+    background-color: #991b1b; 
+    color: #fecaca; 
 }

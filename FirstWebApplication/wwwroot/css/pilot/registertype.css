@@ -13,7 +13,7 @@ html, body {
 /* Full-screen map background */
 .register-type-container {
     position: fixed;
-    top: 64px; /* Below navbar */
+    top: 64px; 
     left: 0;
     right: 0;
     bottom: 0;
@@ -33,7 +33,7 @@ html, body {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.35); /* litt lysere i lys modus */
+    background-color: rgba(0, 0, 0, 0.35); 
     backdrop-filter: blur(2px);
     z-index: 10;
     display: flex;
@@ -147,13 +147,13 @@ html, body {
 
 /* Mørkere overlay over kartet i dark mode */
 .dark .register-overlay {
-    background-color: rgba(15, 23, 42, 0.75); /* mørkere enn i lys modus */
+    background-color: rgba(15, 23, 42, 0.75); 
     backdrop-filter: blur(3px);
 }
 
     /* Selve kortene blir mørke med lys tekst */
     .dark .register-overlay .option-box {
-        background: #020617; /* veldig mørk blå/sort */
+        background: #020617; 
         color: #e5e7eb;
         border-radius: 20px;
         border: 1px solid #1f2937;
@@ -169,16 +169,14 @@ html, body {
             color: #d1d5db;
         }
 
-        /* Ikonene kan få mer «glow» i dark mode */
         .dark .register-overlay .option-box.quick .icon {
-            color: #22c55e; /* grønn-ish */
+            color: #22c55e; 
         }
 
         .dark .register-overlay .option-box.full .icon {
-            color: #a855f7; /* lilla-ish */
+            color: #a855f7; 
         }
 
-        /* Knappene beholder fargene, men popper mer i dark mode */
         .dark .register-overlay .option-box .btn {
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
         }

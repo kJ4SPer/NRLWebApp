@@ -65,7 +65,6 @@ function handleLocationSuccess(position) {
         })
     }).addTo(map);
 
-    // ENDRET: Gå rett til lagring i stedet for å sjekke duplikater
     proceedWithRegistration();
 }
 

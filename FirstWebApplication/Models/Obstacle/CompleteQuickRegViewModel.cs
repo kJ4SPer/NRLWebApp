@@ -9,8 +9,6 @@ namespace FirstWebApplication.Models.Obstacle
     {
         public long ObstacleId { get; set; }
 
-        // REMOVED: ObstacleName - Generated automatically by the controller
-
         [Required(ErrorMessage = "Height is required")]
         [Range(0.1, 10000, ErrorMessage = "Height must be between 0.1 and 10000 meters")]
         [Display(Name = "Height (meters)")]

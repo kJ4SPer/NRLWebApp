@@ -13,11 +13,7 @@ namespace FirstWebApplication.Entities
         [PersonalData]
         [StringLength(50)]
         public string Etternavn { get; set; } = string.Empty;
-
-        // NYTT: Sjekk om bruker er godkjent av admin
         public bool IsApproved { get; set; } = false;
-
-        // NYTT: Dato for registrering (kjekt for admin å se)
         public DateTime RegisteredDate { get; set; } = DateTime.Now;
 
         public long? OrganisasjonId { get; set; }

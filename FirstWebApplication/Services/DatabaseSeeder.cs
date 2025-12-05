@@ -164,7 +164,7 @@ namespace FirstWebApplication.Services
                     Fornavn = fornavn,
                     Etternavn = etternavn,
                     EmailConfirmed = true,
-                    IsApproved = true, // <--- VIKTIG
+                    IsApproved = true, 
                     RegisteredDate = DateTime.Now,
                     OrganisasjonId = orgId
                 };
@@ -177,14 +177,12 @@ namespace FirstWebApplication.Services
             }
             else
             {
-                // FIKS FOR EKSISTERENDE BRUKERE (Hvis admin ble opprettet før vi la til godkjenning)
                 if (!user.IsApproved)
                 {
                     user.IsApproved = true;
                     await _userManager.UpdateAsync(user);
                 }
 
-                // Sjekk også at de har riktig rolle
                 if (!await _userManager.IsInRoleAsync(user, role))
                 {
                     await _userManager.AddToRoleAsync(user, role);
