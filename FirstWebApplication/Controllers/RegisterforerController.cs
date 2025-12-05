@@ -522,14 +522,18 @@ namespace FirstWebApplication.Controllers
             {
                 // "NAME" CASE ER FJERNET HERFRA
                 "type" => sortOrder == "asc"
-                    ? query.OrderBy(o => o.ObstacleType!.Name)
-                    : query.OrderByDescending(o => o.ObstacleType!.Name),
+                    // Sorterer null-verdier sist, deretter etter navn ASC (robust EF-mønster)
+                    ? query.OrderBy(o => o.ObstacleType == null).ThenBy(o => o.ObstacleType!.Name)
+                    // Sorterer null-verdier sist, deretter etter navn DESC (robust EF-mønster)
+                    : query.OrderBy(o => o.ObstacleType == null).ThenByDescending(o => o.ObstacleType!.Name),
                 "height" => sortOrder == "asc"
+                    // Height er nullable (antar standard SQL-sortering er OK)
                     ? query.OrderBy(o => o.Height)
                     : query.OrderByDescending(o => o.Height),
                 "status" => sortOrder == "asc"
-                    ? query.OrderBy(o => o.CurrentStatus!.StatusTypeId)
-                    : query.OrderByDescending(o => o.CurrentStatus!.StatusTypeId),
+                    // Bruker StatusTypeId som er numerisk og definerer rekkefølgen (2, 3, 4)
+                    ? query.OrderBy(o => o.CurrentStatus.StatusTypeId)
+                    : query.OrderByDescending(o => o.CurrentStatus.StatusTypeId),
                 "registereddate" => sortOrder == "asc"
                     ? query.OrderBy(o => o.RegisteredDate)
                     : query.OrderByDescending(o => o.RegisteredDate),
