@@ -9,10 +9,6 @@ using Microsoft.AspNetCore.Mvc.Razor;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ----------------------
-//   SERVICE CONFIG
-// ----------------------
-
 // Localization (required for IViewLocalizer)
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
@@ -52,9 +48,6 @@ builder.Services.AddScoped<DatabaseSeeder>();
 
 var app = builder.Build();
 
-// ----------------------
-//   DATABASE SEEDING
-// ----------------------
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -77,9 +70,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// ----------------------
-//  REQUEST LOCALIZATION
-// ----------------------
 var supportedCultures = new[] { "nb-NO", "en-US" };
 
 var localizationOptions = new RequestLocalizationOptions()
@@ -87,9 +77,6 @@ var localizationOptions = new RequestLocalizationOptions()
     .AddSupportedCultures(supportedCultures)
     .AddSupportedUICultures(supportedCultures);
 
-// ----------------------
-//   MIDDLEWARE PIPELINE
-// ----------------------
 app.UseCspMiddleware();
 app.UseRequestLocalization(localizationOptions);
 

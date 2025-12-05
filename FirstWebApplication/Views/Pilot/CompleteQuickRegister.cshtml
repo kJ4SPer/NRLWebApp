@@ -28,7 +28,6 @@
         <form asp-action="CompleteQuickRegister" method="post">
             <input type="hidden" asp-for="ObstacleId" />
 
-            @* FIKS: Legg til valideringssammendrag for å vise generelle feilmeldinger fra kontrolleren *@
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3 font-semibold"></div>
 
             <input type="hidden" asp-for="ObstacleGeometry" id="obstacleGeometryInput" />
