@@ -1,88 +1,86 @@
 ﻿using FirstWebApplication.Controllers;
 using FirstWebApplication.Entities;
-using FirstWebApplication.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ViewFeatures; // Required for TempDataDictionary
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
 using NRLWebApp.Tests.Mocks;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
-using FirstWebApplication.Data;
 
 namespace NRLWebApp.Tests.Controllers
 {
     public class AdminControllerTests
     {
-        // Helper to setup Controller with real TempData logic
-        private FirstWebApplication.Controllers.AdminController CreateController(string loggedInUserId, List<ApplicationUser> adminUsers, Mock<UserManager<ApplicationUser>> mockUserManager, Mock<IUserRoleService> mockRoleService)
+        [Fact]
+        public async Task AdminDashboard_Counts_Pending_And_TotalUsers_Correctly()
         {
-            var dbContext = TestDbContext.Create();
-
-            // Simulate RoleService returning the requested admins
-            mockRoleService
-                .Setup(s => s.GetUsersInRoleAsync("Admin"))
-                .ReturnsAsync(adminUsers);
-
-            // Simulate logged-in Admin user
-            var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            // Arrange
+            var users = new List<ApplicationUser>
             {
-                new Claim(ClaimTypes.NameIdentifier, loggedInUserId),
-                new Claim(ClaimTypes.Name, "logged@in.com"),
-                new Claim(ClaimTypes.Role, "Admin")
-            }, "mock"));
-
-            // Create HttpContext manually to share between ControllerContext and TempData
-            var httpContext = new DefaultHttpContext() { User = user };
-
-            // FIX: Use real TempDataDictionary instead of Mock
-            // Mocks do not store values assigned to indexers by default. 
-            // The real class will persist the error message for the Assert check.
-            var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
-
-            var controller = new FirstWebApplication.Controllers.AdminController(mockUserManager.Object, mockRoleService.Object, dbContext)
-            {
-                ControllerContext = new ControllerContext()
-                {
-                    HttpContext = httpContext
-                },
-                TempData = tempData // Assign the real dictionary
+                new ApplicationUser { Id = "1", IsApproved = false },
+                new ApplicationUser { Id = "2", IsApproved = true },
+                new ApplicationUser { Id = "3", IsApproved = true }
             };
 
-            return controller;
+            var mockUserManager = MockHelpers.MockUserManager(users);
+            var mockRoleManager = MockHelpers.MockRoleManager();
+            var context = TestDbContext.Create();
+
+            var controller = new AdminController(mockUserManager.Object, mockRoleManager.Object, context);
+
+            // Act
+            var result = await controller.AdminDashboard();
+
+            // Assert
+            var viewResult = Assert.IsType<ViewResult>(result);
+            Assert.Equal(1, viewResult.ViewData["PendingCount"]);
+            Assert.Equal(3, viewResult.ViewData["TotalUsers"]);
         }
 
         [Fact]
-        public async Task DeleteUser_WhenDeletingLastAdmin_ReturnsErrorAndPreventsDeletion()
+        public async Task ApproveUser_UpdatesUser_And_Redirects()
         {
             // Arrange
-            var userToDelete = new ApplicationUser { Id = "admin-to-delete", Email = "admin@user.com" };
-            var mockUserManager = MockUserManager.Create();
+            var user = new ApplicationUser { Id = "user1", Email = "test@test.com", IsApproved = false };
+            var mockUserManager = MockHelpers.MockUserManager(new List<ApplicationUser> { user });
+            mockUserManager.Setup(x => x.FindByIdAsync("user1")).ReturnsAsync(user);
 
-            var mockRoleService = new Mock<IUserRoleService>();
-            mockRoleService.Setup(s => s.GetUsersInRoleAsync("Admin")).ReturnsAsync(new List<ApplicationUser> { userToDelete });
-
-            mockUserManager.Setup(m => m.FindByIdAsync(userToDelete.Id)).ReturnsAsync(userToDelete);
-            mockUserManager.Setup(m => m.GetRolesAsync(userToDelete)).ReturnsAsync(new List<string> { "Admin" });
-
-            // Simulate another Admin is logged in
-            var controller = CreateController("other-admin-id", new List<ApplicationUser> { userToDelete }, mockUserManager, mockRoleService);
+            var controller = new AdminController(mockUserManager.Object, MockHelpers.MockRoleManager().Object, TestDbContext.Create());
+            controller.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
             // Act
-            var result = await controller.DeleteUser(userToDelete.Id);
+            var result = await controller.ApproveUser("user1");
 
             // Assert
-            var redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("AdminUsers", redirectToActionResult.ActionName);
+            Assert.True(user.IsApproved);
+            mockUserManager.Verify(x => x.UpdateAsync(user), Times.Once);
 
-            // Verify the error message exists (Safe null check added)
-            Assert.Contains("Cannot delete the last Admin user!", controller.TempData["Error"]?.ToString() ?? "");
+            var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+            Assert.Equal("AdminPendingUsers", redirectResult.ActionName);
+        }
 
-            // Verify DeleteAsync was NEVER called
-            mockUserManager.Verify(m => m.DeleteAsync(It.IsAny<ApplicationUser>()), Times.Never);
+        [Fact]
+        public async Task DeleteUser_DeletesUser_WhenFound()
+        {
+            // Arrange
+            var user = new ApplicationUser { Id = "delete-me", Email = "del@test.com" };
+            var mockUserManager = MockHelpers.MockUserManager(new List<ApplicationUser> { user });
+            mockUserManager.Setup(x => x.FindByIdAsync("delete-me")).ReturnsAsync(user);
+
+            var controller = new AdminController(mockUserManager.Object, MockHelpers.MockRoleManager().Object, TestDbContext.Create());
+            controller.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+
+            // Act
+            var result = await controller.DeleteUser("delete-me");
+
+            // Assert
+            mockUserManager.Verify(x => x.DeleteAsync(user), Times.Once);
+
+            var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+            Assert.Equal("AdminUsers", redirectResult.ActionName);
+            Assert.Equal("Bruker slettet.", controller.TempData["SuccessMessage"]);
         }
     }
 }

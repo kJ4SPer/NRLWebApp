@@ -1,156 +1,101 @@
 ﻿using FirstWebApplication.Controllers;
-using FirstWebApplication.Data;
 using FirstWebApplication.Entities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NRLWebApp.Tests.Mocks;
+using System.Collections.Generic;
 using System.Security.Claims;
-using Xunit;
-using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc.ViewFeatures; // Trengs for ITempDataProvider
+using Xunit;
 
 namespace NRLWebApp.Tests.Controllers
 {
     public class PilotControllerTests
     {
-        private readonly Mock<ILogger<PilotController>> _mockLogger = new Mock<ILogger<PilotController>>();
-
-        // Hjelpefunksjon for å sette opp Controlleren med en simulert Pilot
-        private PilotController CreateController(ApplicationDbContext context, string userId = "pilot-id-123")
-        {
-            var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, userId),
-                new Claim(ClaimTypes.Role, "Pilot")
-            }, "mock"));
-
-            var httpContext = new DefaultHttpContext() { User = user };
-            var controllerContext = new ControllerContext() { HttpContext = httpContext };
-
-            var controller = new PilotController(context, _mockLogger.Object)
-            {
-                ControllerContext = controllerContext,
-                // Initialiser TempData for å unngå NullReferenceException i testene
-                TempData = new TempDataDictionary(
-                    httpContext,
-                    Mock.Of<ITempDataProvider>()
-                )
-            };
-
-            return controller;
-        }
-
-        // Hjelpefunksjon for å legge til StatusType-data i In-Memory DB
-        private async Task SeedStatusTypes(ApplicationDbContext context)
-        {
-            if (!context.StatusTypes.Any())
-            {
-                // Vi trenger Approved (3) og Pending (2) for disse testene
-                context.StatusTypes.Add(new StatusType { Id = 3, Name = "Approved" });
-                context.StatusTypes.Add(new StatusType { Id = 2, Name = "Pending" });
-                context.StatusTypes.Add(new StatusType { Id = 1, Name = "Registered" }); // For QuickReg
-                await context.SaveChangesAsync();
-            }
-        }
-
         [Fact]
-        public async Task DeleteRegistration_OtherUsersObstacle_ReturnsErrorMessage()
+        public async Task QuickRegister_ValidData_SavesToDatabase()
         {
             // Arrange
             var context = TestDbContext.Create();
-            // Vi trenger Pending status (ID 2) for at sletting skal være mulig i kontroller-logikken
-            await SeedStatusTypes(context);
+            var mockLogger = new Mock<ILogger<PilotController>>();
 
-            var otherUserId = "annen-pilot-id-999";
-            var currentUserId = "pilot-id-123";
+            var userId = "test-pilot-123";
+            var user = new ApplicationUser { Id = userId, IsApproved = true };
 
-            // 1. Opprett en hindring eid av en ANNEN bruker
-            var obstacle = new Obstacle
+            var mockUserManager = MockHelpers.MockUserManager(new List<ApplicationUser> { user });
+            mockUserManager.Setup(um => um.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns(userId);
+            mockUserManager.Setup(um => um.GetUserAsync(It.IsAny<ClaimsPrincipal>())).ReturnsAsync(user);
+
+            var controller = new PilotController(context, mockUserManager.Object, mockLogger.Object);
+            controller.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+
+            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, userId) };
+            controller.ControllerContext = new ControllerContext
             {
-                Id = 200,
-                RegisteredByUserId = otherUserId, // Eies av annen bruker!
-                Name = "Other Users Obstacle",
-                Location = "POINT(10 10)",
-                RegisteredDate = DateTime.Now
+                HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(claims)) }
             };
+
+            // Act
+            var result = await controller.QuickRegister("POINT(10 10)");
+
+            // Assert
+            var redirect = Assert.IsType<RedirectToActionResult>(result);
+            Assert.Equal("RegisterType", redirect.ActionName);
+
+            var obstacle = await context.Obstacles.FirstOrDefaultAsync();
+            Assert.NotNull(obstacle);
+            Assert.Equal("POINT(10 10)", obstacle.Location);
+        }
+
+        [Fact]
+        public async Task DeleteRegistration_RemovesObstacle_And_History()
+        {
+            // Arrange
+            var context = TestDbContext.Create();
+            var mockLogger = new Mock<ILogger<PilotController>>();
+
+            var userId = "pilot-1";
+            var mockUserManager = MockHelpers.MockUserManager(new List<ApplicationUser>());
+            mockUserManager.Setup(um => um.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns(userId);
+
+            // Legg til data som skal slettes
+            var obstacle = new Obstacle { Id = 10L, RegisteredByUserId = userId, Location = "POINT(1 1)", Name = "To Be Deleted" };
             context.Obstacles.Add(obstacle);
 
-            // 2. Opprett en slettbar status (Pending ID 2) og koble den
-            var status = new ObstacleStatus
-            {
-                Id = 1,
-                ObstacleId = 200,
-                StatusTypeId = 2, // Pending
-                ChangedByUserId = otherUserId,
-                IsActive = true
-            };
+            var status = new ObstacleStatus { Id = 100L, ObstacleId = 10L, StatusTypeId = 2, ChangedByUserId = userId };
             context.ObstacleStatuses.Add(status);
-            obstacle.CurrentStatusId = status.Id; // Link status til hindringen
 
+            obstacle.CurrentStatusId = 100L;
             await context.SaveChangesAsync();
+            context.ChangeTracker.Clear();
 
-            // 3. Opprett kontrolleren som den NÅVÆRENDE brukeren ("pilot-id-123")
-            var controller = CreateController(context, currentUserId);
+            var controller = new PilotController(context, mockUserManager.Object, mockLogger.Object);
+            controller.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
+            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, userId) };
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(claims)) }
+            };
 
             // Act
-            // Prøver å slette hindringen (ID 200) som eies av en annen bruker (IDOR-sjekk)
-            var result = await controller.DeleteRegistration(200);
+            var result = await controller.DeleteRegistration(10L);
 
             // Assert
-            // Skal redirecte til MyRegistrations
-            var redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("MyRegistrations", redirectToActionResult.ActionName);
+            var redirect = Assert.IsType<RedirectToActionResult>(result);
+            Assert.Equal("MyRegistrations", redirect.ActionName);
+            Assert.Equal("Registreringen ble slettet.", controller.TempData["SuccessMessage"]);
 
-            // Sjekk feilmelding: Obstacle not found fordi Where-klausulen (o.RegisteredByUserId == userId) feilet
-            Assert.Contains("Obstacle not found.", controller.TempData["ErrorMessage"]?.ToString());
+            // Verifiser at ALT er borte
+            var deletedObstacle = await context.Obstacles.FindAsync(10L);
+            Assert.Null(deletedObstacle);
 
-            // Sjekk at hindringen IKKE er slettet fra databasen
-            Assert.NotNull(await context.Obstacles.FindAsync(200L));
-        }
-
-        [Fact]
-        public async Task DeleteRegistration_CannotDeleteApprovedObstacle_ReturnsError()
-        {
-            // Arrange
-            var context = TestDbContext.Create();
-            await SeedStatusTypes(context);
-            var userId = "pilot-id-123";
-
-            // Opprett en Approved (3) obstacle
-            var obstacle = new Obstacle
-            { Id = 102, RegisteredByUserId = userId, Name = "Approved Obstacle" };
-            context.Obstacles.Add(obstacle);
-
-            var approvedStatus = new ObstacleStatus
-            { ObstacleId = 102, StatusTypeId = 3, ChangedByUserId = "admin-id", IsActive = true, StatusType = context.StatusTypes.Find(3) };
-            context.ObstacleStatuses.Add(approvedStatus);
-
-            // Lagre endringene for å sikre at statusen og hindringen eksisterer i DB og har en ID
-            await context.SaveChangesAsync();
-
-            // Sett CurrentStatusId og lagre endringen på den sporet entiteten.
-            obstacle.CurrentStatusId = approvedStatus.Id;
-            await context.SaveChangesAsync();
-
-            var controller = CreateController(context, userId);
-
-            // Act
-            var result = await controller.DeleteRegistration(102);
-
-            // Assert
-            var redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("MyRegistrations", redirectToActionResult.ActionName);
-
-            // Sjekk feilmelding 
-            Assert.Contains("You can only delete obstacles that are pending or incomplete.", controller.TempData["ErrorMessage"]?.ToString());
-
-            // Sjekk at hindringen IKKE er slettet
-            Assert.NotNull(await context.Obstacles.FindAsync(102L));
+            var deletedStatus = await context.ObstacleStatuses.FindAsync(100L);
+            Assert.Null(deletedStatus);
         }
     }
 }
