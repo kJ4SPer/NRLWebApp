@@ -126,6 +126,10 @@ namespace FirstWebApplication.Migrations
                 {
                     Id = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    Fornavn = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Etternavn = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     OrganisasjonId = table.Column<long>(type: "bigint", nullable: true),
                     UserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -265,36 +269,6 @@ namespace FirstWebApplication.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Behandlinger",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    ObstacleId = table.Column<long>(type: "bigint", nullable: false),
-                    RegisterforerUserId = table.Column<string>(type: "varchar(450)", maxLength: 450, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    StatusId = table.Column<long>(type: "bigint", nullable: false),
-                    Action = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    ProcessedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    Comments = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    RejectionReason = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Behandlinger", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Behandlinger_AspNetUsers_RegisterforerUserId",
-                        column: x => x.RegisterforerUserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
                 name: "Obstacles",
                 columns: table => new
                 {
@@ -424,21 +398,6 @@ namespace FirstWebApplication.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Behandlinger_ObstacleId",
-                table: "Behandlinger",
-                column: "ObstacleId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Behandlinger_RegisterforerUserId",
-                table: "Behandlinger",
-                column: "RegisterforerUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Behandlinger_StatusId",
-                table: "Behandlinger",
-                column: "StatusId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Obstacles_CurrentStatusId",
                 table: "Obstacles",
                 column: "CurrentStatusId");
@@ -467,22 +426,6 @@ namespace FirstWebApplication.Migrations
                 name: "IX_ObstacleStatuses_StatusTypeId",
                 table: "ObstacleStatuses",
                 column: "StatusTypeId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Behandlinger_ObstacleStatuses_StatusId",
-                table: "Behandlinger",
-                column: "StatusId",
-                principalTable: "ObstacleStatuses",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Behandlinger_Obstacles_ObstacleId",
-                table: "Behandlinger",
-                column: "ObstacleId",
-                principalTable: "Obstacles",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Obstacles_ObstacleStatuses_CurrentStatusId",
@@ -522,9 +465,6 @@ namespace FirstWebApplication.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
-
-            migrationBuilder.DropTable(
-                name: "Behandlinger");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

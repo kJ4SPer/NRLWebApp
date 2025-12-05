@@ -16,35 +16,26 @@ namespace FirstWebApplication.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
-            // Generate unique nonce for this request
+            // 1. Generer nonce
             var nonce = GenerateNonce();
 
-            // Store nonce in HttpContext for use in views
+            // 2. Lagre med riktig nøkkel ("csp-nonce")
             context.Items["csp-nonce"] = nonce;
 
-            // Build CSP header
+            // 3. Bygg Policy
             var cspPolicy = BuildCspPolicy(nonce, context.Request.IsHttps);
 
-            // Add security headers
+            // 4. Headers
             context.Response.Headers.Append("Content-Security-Policy", cspPolicy);
             context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
             context.Response.Headers.Append("X-Frame-Options", "DENY");
-            context.Response.Headers.Append("X-XSS-Protection", "0"); // Modern browsers use CSP instead
             context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
-
-            // Only add HSTS in production with HTTPS
-            if (context.Request.IsHttps)
-            {
-                context.Response.Headers.Append("Strict-Transport-Security",
-                    "max-age=31536000; includeSubDomains; preload");
-            }
 
             await _next(context);
         }
 
         private string GenerateNonce()
         {
-            // Generate cryptographically secure random nonce
             var randomBytes = new byte[32];
             using (var rng = RandomNumberGenerator.Create())
             {
@@ -55,57 +46,23 @@ namespace FirstWebApplication.Middleware
 
         private string BuildCspPolicy(string nonce, bool isHttps)
         {
+            // Enklere policy for å unngå blokkeringer i dev
             var policies = new List<string>
             {
-                // Default: only same origin
                 "default-src 'self'",
-
-                // Scripts: self + nonce for inline scripts + CDNs + unsafe-inline/unsafe-hashes
                 $"script-src 'self' 'nonce-{nonce}' 'unsafe-inline' 'unsafe-hashes' https://unpkg.com https://cdn.tailwindcss.com",
-
-                // Styles: self + unsafe-inline (NO nonce so unsafe-inline works for Tailwind CDN)
                 $"style-src 'self' 'unsafe-inline' 'unsafe-hashes' https://unpkg.com https://cdn.tailwindcss.com",
-
-                // Images: self + data URIs for inline images + OpenStreetMap tiles
-                "img-src 'self' data: https://*.tile.openstreetmap.org",
-
-                // Fonts: self only
+                "img-src 'self' data: https://*.tile.openstreetmap.org https://cache.kartverket.no",
                 "font-src 'self'",
-
-                // Connect (AJAX/fetch): self for API calls + development tools
-                "connect-src 'self' ws://localhost:* wss://localhost:* http://localhost:*",
-
-                // Media: self only
-                "media-src 'self'",
-
-                // Objects: none (block Flash, Java, etc.)
-                "object-src 'none'",
-
-                // Frame ancestors: none (prevents clickjacking)
+                "connect-src 'self' ws: wss: http: https:", // Åpner for alt av connect i dev
                 "frame-ancestors 'none'",
-
-                // Base URI: self only
-                "base-uri 'self'",
-
-                // Form actions: self only
-                "form-action 'self'",
-
-                // Block all mixed content
-                "block-all-mixed-content",
-
-                // Upgrade insecure requests in production
+                "form-action 'self'"
             };
-
-            if (isHttps)
-            {
-                policies.Add("upgrade-insecure-requests");
-            }
 
             return string.Join("; ", policies) + ";";
         }
     }
 
-    // Extension method for easy registration
     public static class CspMiddlewareExtensions
     {
         public static IApplicationBuilder UseCspMiddleware(this IApplicationBuilder builder)

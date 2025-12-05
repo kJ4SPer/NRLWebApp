@@ -1,0 +1,116 @@
+﻿@page
+@using FirstWebApplication.Helpers
+@model RegisterModel
+@{
+    ViewData["Title"] = "Registrer deg";
+}
+
+<style nonce="@CspHelper.GetNonce(Html)">
+    header, footer, .border-top.footer { display: none !important; }
+    .main-content { background-color: transparent !important; }
+    body { overflow: hidden; }
+    #map-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; filter: grayscale(20%); }
+    #map-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background-color: rgba(33, 37, 41, 0.75); pointer-events: none; }
+    .auth-container { height: 100vh; width: 100%; display: flex; justify-content: center; align-items: center; overflow-y: auto; padding: 20px; }
+    .action-card { border: none; border-radius: 15px; background-color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 600px; }
+    .step-content { display: none; }
+    .step-content.active { display: block; animation: fadeIn 0.4s; }
+    @Html.Raw("@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }")
+    .role-btn { border: 2px solid #dee2e6; border-radius: 12px; padding: 25px; text-align: center; cursor: pointer; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .role-btn:hover { border-color: #0d6efd; background-color: #f0f8ff; transform: translateY(-5px); }
+    .role-icon { font-size: 3rem; color: #0d6efd; margin-bottom: 15px; }
+    .role-title { font-weight: 800; font-size: 1.4rem; color: #333; }
+</style>
+
+<div id="map-background"></div>
+<div id="map-overlay"></div>
+
+<div class="auth-container">
+    <div class="action-card p-4 p-md-5">
+        <div class="card-body">
+            <form id="registerForm" method="post">
+                <input type="hidden" asp-for="Input.SelectedRole" id="selectedRoleInput" />
+                
+                <div id="step1" class="step-content active">
+                    <div class="text-center mb-5"><h1 class="fw-bold display-5">Velg din rolle</h1><p class="text-muted">Hva skal du bruke registeret til?</p></div>
+                    <div class="row g-4">
+                        <div class="col-6"><div class="role-btn" id="btnRolePilot"><i class="bi bi-airplane-engines role-icon"></i><span class="role-title">Pilot</span></div></div>
+                        <div class="col-6"><div class="role-btn" id="btnRoleRegisterforer"><i class="bi bi-building-gear role-icon"></i><span class="role-title">Registerfører</span></div></div>
+                    </div>
+                    <div class="mt-5 text-center"><a href="/" class="text-muted text-decoration-none">Avbryt</a></div>
+                </div>
+
+                <div id="step2" class="step-content">
+                    <div class="text-center mb-4"><h2 class="fw-bold">Tilhørighet</h2></div>
+                    <div class="form-floating mb-3">
+                        <select asp-for="Input.OrganisasjonId" asp-items="Model.Organisasjoner" class="form-select" id="orgSelect" style="height: 60px;"><option value="" disabled selected>-- Velg --</option></select>
+                        <label>Organisasjon</label>
+                        <span asp-validation-for="Input.OrganisasjonId" class="text-danger"></span>
+                    </div>
+                    <div class="d-grid gap-2 mt-5">
+                        <button type="button" id="btnStep2Next" class="btn btn-primary btn-lg">Neste steg</button>
+                        <button type="button" id="btnStep2Back" class="btn btn-outline-secondary">Tilbake</button>
+                    </div>
+                </div>
+
+                <div id="step3" class="step-content">
+                    <div class="text-center mb-4"><h2 class="fw-bold">Opprett bruker</h2><p class="text-muted" id="summaryText">Fyll ut detaljene dine</p></div>
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6"><div class="form-floating"><input asp-for="Input.Fornavn" class="form-control" placeholder="Fornavn" required /><label>Fornavn</label><span asp-validation-for="Input.Fornavn" class="text-danger"></span></div></div>
+                        <div class="col-6"><div class="form-floating"><input asp-for="Input.Etternavn" class="form-control" placeholder="Etternavn" required /><label>Etternavn</label><span asp-validation-for="Input.Etternavn" class="text-danger"></span></div></div>
+                    </div>
+                    <div class="form-floating mb-3"><input asp-for="Input.Email" class="form-control" placeholder="Email" required /><label>Email</label><span asp-validation-for="Input.Email" class="text-danger"></span></div>
+                    <div class="form-floating mb-3"><input asp-for="Input.Password" class="form-control" placeholder="Passord" required /><label>Passord</label><span asp-validation-for="Input.Password" class="text-danger"></span></div>
+                    <div class="form-floating mb-4"><input asp-for="Input.ConfirmPassword" class="form-control" placeholder="Bekreft" required /><label>Bekreft passord</label><span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span></div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Fullfør</button>
+                        <button type="button" id="btnStep3Back" class="btn btn-outline-secondary">Tilbake</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
+    <script src="~/lib/leaflet/leaflet.js"></script>
+    <script nonce="@CspHelper.GetNonce(Html)">
+        document.addEventListener("DOMContentLoaded", function () {
+            var map = L.map('map-background', { zoomControl: false, dragging: false, scrollWheelZoom: false, attributionControl: false }).setView([59.91, 10.75], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+            // Logikk for Wizard
+            var btnPilot = document.getElementById('btnRolePilot');
+            var btnReg = document.getElementById('btnRoleRegisterforer');
+            var btnStep2Next = document.getElementById('btnStep2Next');
+            var btnStep2Back = document.getElementById('btnStep2Back');
+            var btnStep3Back = document.getElementById('btnStep3Back');
+
+            if(btnPilot) btnPilot.addEventListener('click', function() { selectRole('Pilot'); });
+            if(btnReg) btnReg.addEventListener('click', function() { selectRole('Registerfører'); });
+            if(btnStep2Next) btnStep2Next.addEventListener('click', function() { goToStep(3); });
+            if(btnStep2Back) btnStep2Back.addEventListener('click', function() { goToStep(1); });
+            if(btnStep3Back) btnStep3Back.addEventListener('click', goBackFromStep3);
+        });
+
+        function selectRole(role) {
+            document.getElementById('selectedRoleInput').value = role;
+            if (role === 'Pilot') { goToStep(2); } 
+            else { 
+                document.getElementById('summaryText').innerText = "Du registreres under Kartverket";
+                goToStep(3); 
+            }
+        }
+        function goToStep(step) {
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('step' + step).classList.add('active');
+        }
+        function goBackFromStep3() {
+            var role = document.getElementById('selectedRoleInput').value;
+            if (role === 'Pilot') goToStep(2); else goToStep(1);
+        }
+    </script>
+}

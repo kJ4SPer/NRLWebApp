@@ -1,5 +1,8 @@
+@using FirstWebApplication.Helpers
+
 <!DOCTYPE html>
 <html lang="en">
+ @* Fjernet data-bs-theme="light" herfra *@@* HTML-taggen starter i nøytral tilstand *@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,7 +11,6 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
 
-    <!-- Tailwind CSS CDN (for development - use built CSS in production) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script @Html.Raw(Html.NonceAttribute())>
         tailwind.config = {
@@ -16,19 +18,18 @@
         }
     </script>
 
-    <!-- Leaflet CSS for maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-          crossorigin="anonymous" />
+                  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+                  crossorigin="anonymous" />
 
     @await RenderSectionAsync("Head", required: false)
 </head>
-<body class="bg-gray-50">
+<body>
     <header>
-        <nav class="bg-gray-200 shadow shadow-gray-300 w-100 px-4 lg:px-8">
+        @* Fjernet dark:bg/shadow fra nav-baren, da det styres av JS KUN når logget inn *@
+        <nav class="bg-gray-200 shadow shadow-gray-300 w-100 px-4 lg:px-8 dark:bg-gray-800 dark:shadow-gray-700">
             <div class="h-16 mx-auto container flex items-center justify-between">
-                <!-- Logo - Left -->
-                <div class="text-indigo-500 flex items-center flex-shrink-0">
+                <div class="text-indigo-500 flex items-center flex-shrink-0 dark:text-indigo-400">
                     <a asp-controller="Home" asp-action="Index" class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -38,17 +39,14 @@
                     </a>
                 </div>
 
-                <!-- Mobile Menu Button -->
-                <button id="mobile-menu-button" class="mobile-menu-button items-center justify-center p-2 rounded-md text-gray-600 hover:text-indigo-500 hover:bg-gray-300 focus:outline-none">
+                <button id="mobile-menu-button" class="mobile-menu-button items-center justify-center p-2 rounded-md text-gray-600 hover:text-indigo-500 hover:bg-gray-300 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-indigo-400">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
 
-                <!-- Desktop Navigation -->
                 <div class="desktop-nav items-center gap-4">
-                    <!-- Dark Mode Toggle -->
-                    <button id="dark-mode-toggle" class="dark-mode-toggle text-gray-600" title="Toggle dark mode">
+                    <button id="dark-mode-toggle" class="dark-mode-toggle text-gray-600 dark:text-gray-300" title="Toggle dark mode">
                         <svg id="sun-icon" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
@@ -59,56 +57,67 @@
 
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <!-- Navigation Links -->
-                        <ul class="flex font-semibold text-gray-600 text-sm">
+                        <ul class="flex font-semibold text-gray-600 text-sm dark:text-gray-300">
                             @if (User.IsInRole("Pilot"))
                             {
-                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap dark:hover:text-indigo-400">
                                     <a asp-controller="Pilot" asp-action="RegisterType">Register</a>
                                 </li>
-                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap dark:hover:text-indigo-400">
                                     <a asp-controller="Pilot" asp-action="MyRegistrations">My Registrations</a>
-                                </li>
-                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
-                                    <a asp-controller="Pilot" asp-action="Dashboard">Dashboard</a>
                                 </li>
                             }
 
                             @if (User.IsInRole("Registerfører"))
                             {
-                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap dark:hover:text-indigo-400">
                                     <a asp-controller="Registerforer" asp-action="RegisterforerDashboard">Dashboard</a>
                                 </li>
-                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap dark:hover:text-indigo-400">
                                     <a asp-controller="Registerforer" asp-action="MapView">Map View</a>
                                 </li>
-                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap dark:hover:text-indigo-400">
                                     <a asp-controller="Registerforer" asp-action="AllObstacles">All Obstacles</a>
                                 </li>
                             }
 
                             @if (User.IsInRole("Admin"))
                             {
-                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap dark:hover:text-indigo-400">
                                     <a asp-controller="Admin" asp-action="AdminDashboard">Dashboard</a>
                                 </li>
-                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap dark:hover:text-indigo-400">
                                     <a asp-controller="Admin" asp-action="AdminUsers">Users</a>
                                 </li>
-                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap">
+                                <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap dark:hover:text-indigo-400">
                                     <a asp-controller="Admin" asp-action="AdminStatistics">Statistics</a>
                                 </li>
                             }
                         </ul>
 
-                        <!-- User Email - hidden on smaller desktops -->
-                        <span class="text-gray-600 text-xs font-medium hidden xl:inline truncate max-w-32">
+                        <span class="text-gray-600 text-xs font-medium hidden xl:inline truncate max-w-32 dark:text-gray-400">
                             @User.Identity?.Name
                         </span>
 
-                        <!-- Logout Button -->
-                        <form asp-controller="Account" asp-action="Logout" method="post" class="inline flex-shrink-0">
-                            <button type="submit" class="px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-gray-50 rounded-lg flex items-center gap-1 transition text-sm">
+                        <a asp-controller="Settings"
+                                                asp-action="Index"
+                                                class="px-2 py-2 text-gray-600 hover:text-indigo-500 mr-2 dark:text-gray-300 dark:hover:text-indigo-400"
+                                                title="Settings">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                   d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94
+                                                     3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724
+                                                     0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426
+                                                     1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724
+                                                     1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31
+                                                     2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                   d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </a>
+
+                        <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" class="inline flex-shrink-0">
+                            <button type="submit" class="px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-gray-50 rounded-lg flex items-center gap-1 transition text-sm dark:bg-indigo-600 dark:hover:bg-indigo-700">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
                                 </svg>
@@ -119,7 +128,7 @@
                     else
                     {
                         <a asp-controller="Home" asp-action="Index">
-                            <button class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-gray-50 rounded-xl flex items-center gap-2 transition">
+                            <button class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-gray-50 rounded-xl flex items-center gap-2 transition dark:bg-indigo-600 dark:hover:bg-indigo-700">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd" />
                                 </svg>
@@ -130,11 +139,9 @@
                 </div>
             </div>
 
-            <!-- Mobile Menu -->
-            <div class="mobile-menu pb-4" id="mobile-menu">
-                <!-- Dark Mode Toggle for Mobile -->
-                <div class="border-t border-gray-300 pt-4 px-4 mb-2">
-                    <button id="mobile-dark-mode-toggle" class="flex items-center gap-2 text-gray-600 font-semibold">
+            <div class="mobile-menu pb-4 bg-gray-200 dark:bg-gray-800" id="mobile-menu">
+                <div class="border-t border-gray-300 pt-4 px-4 mb-2 dark:border-gray-700">
+                    <button id="mobile-dark-mode-toggle" class="flex items-center gap-2 text-gray-600 font-semibold dark:text-gray-300">
                         <svg id="mobile-sun-icon" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
@@ -147,54 +154,58 @@
 
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <div class="border-t border-gray-300 pt-4">
-                        <!-- User info -->
-                        <div class="px-4 py-2 text-sm text-gray-600 font-medium border-b border-gray-300 mb-2">
+                    <div class="border-t border-gray-300 pt-4 dark:border-gray-700">
+                        <div class="px-4 py-2 text-sm text-gray-600 font-medium border-b border-gray-300 mb-2 dark:text-gray-400 dark:border-gray-700">
                             @User.Identity?.Name
                         </div>
 
                         @if (User.IsInRole("Pilot"))
                         {
-                            <a asp-controller="Pilot" asp-action="RegisterType" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                            <a asp-controller="Pilot" asp-action="RegisterType" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-indigo-400">
                                 Register Obstacle
                             </a>
-                            <a asp-controller="Pilot" asp-action="MyRegistrations" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                            <a asp-controller="Pilot" asp-action="MyRegistrations" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-indigo-400">
                                 My Registrations
                             </a>
-                            <a asp-controller="Pilot" asp-action="Dashboard" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                            <a asp-controller="Pilot" asp-action="Dashboard" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-indigo-400">
                                 Dashboard
                             </a>
                         }
 
                         @if (User.IsInRole("Registerfører"))
                         {
-                            <a asp-controller="Registerforer" asp-action="RegisterforerDashboard" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                            <a asp-controller="Registerforer" asp-action="RegisterforerDashboard" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-indigo-400">
                                 Dashboard
                             </a>
-                            <a asp-controller="Registerforer" asp-action="MapView" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                            <a asp-controller="Registerforer" asp-action="MapView" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-indigo-400">
                                 Map View
                             </a>
-                            <a asp-controller="Registerforer" asp-action="AllObstacles" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                            <a asp-controller="Registerforer" asp-action="AllObstacles" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-indigo-400">
                                 All Obstacles
                             </a>
                         }
 
                         @if (User.IsInRole("Admin"))
                         {
-                            <a asp-controller="Admin" asp-action="AdminDashboard" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                            <a asp-controller="Admin" asp-action="AdminDashboard" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-indigo-400">
                                 Dashboard
                             </a>
-                            <a asp-controller="Admin" asp-action="AdminUsers" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                            <a asp-controller="Admin" asp-action="AdminUsers" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-indigo-400">
                                 Users
                             </a>
-                            <a asp-controller="Admin" asp-action="AdminStatistics" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold">
+                            <a asp-controller="Admin" asp-action="AdminStatistics" class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-indigo-400">
                                 Statistics
                             </a>
                         }
 
-                        <!-- Logout -->
+                        <a asp-controller="Settings"
+                                                asp-action="Index"
+                                                class="block px-4 py-3 text-gray-600 hover:bg-gray-300 hover:text-indigo-500 font-semibold dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-indigo-400">
+                            Settings
+                        </a>
+
                         <form asp-controller="Account" asp-action="Logout" method="post" class="mt-2 px-4">
-                            <button type="submit" class="w-full px-4 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-semibold">
+                            <button type="submit" class="w-full px-4 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-semibold dark:bg-indigo-600 dark:hover:bg-indigo-700">
                                 Logout
                             </button>
                         </form>
@@ -202,8 +213,8 @@
                 }
                 else
                 {
-                    <div class="border-t border-gray-300 pt-4 px-4">
-                        <a asp-controller="Home" asp-action="Index" class="block w-full px-4 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-semibold text-center">
+                    <div class="border-t border-gray-300 pt-4 px-4 dark:border-gray-700">
+                        <a asp-controller="Home" asp-action="Index" class="block w-full px-4 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-semibold text-center dark:bg-indigo-600 dark:hover:bg-indigo-700">
                             Login
                         </a>
                     </div>
@@ -212,11 +223,12 @@
         </nav>
     </header>
 
-    <main role="main" class="min-h-screen main-content">
+    @* Fjernet dark:bg-gray-900 herfra for å unngå at Logg Inn-siden blir mørk *@@* Logg inn siden bruker standard bg-gray-50 *@@* Dark Mode-bakgrunn styres nå kun av tema-sidene *@
+    <main role="main" class="min-h-screen main-content bg-gray-50">
         @RenderBody()
     </main>
 
-    <footer class="bg-gray-800 text-white py-6 mt-auto">
+    <footer class="bg-gray-800 text-white py-6 mt-auto dark:bg-gray-950">
         <div class="container mx-auto px-4 text-center">
             <p>&copy; 2024 - Obstacle Registration System - <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-indigo-400 hover:text-indigo-300">Privacy</a></p>
         </div>
@@ -225,12 +237,80 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    @* Beholdt layout.js, men har fjernet Dark Mode logikken fra den filen (som var det forrige trinnet) *@
     <script src="~/js/layout.js" asp-append-version="true"></script>
 
-    <!-- Leaflet JS for maps -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-            crossorigin="anonymous"></script>
+                     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+                     crossorigin="anonymous"></script>
+
+    @* Skriptet for Dark Mode kjører KUN hvis brukeren er autentisert. *@
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <script @Html.Raw(Html.NonceAttribute())>
+            document.addEventListener('DOMContentLoaded', function () {
+                const html = document.documentElement;
+                const desktopToggle = document.getElementById('dark-mode-toggle');
+                const mobileToggle = document.getElementById('mobile-dark-mode-toggle');
+                const desktopSun = document.getElementById('sun-icon');
+                const desktopMoon = document.getElementById('moon-icon');
+                const mobileSun = document.getElementById('mobile-sun-icon');
+                const mobileMoon = document.getElementById('mobile-moon-icon');
+                const darkModeText = document.getElementById('dark-mode-text');
+
+                // Setter tema til Light for Bootstrap før vi sjekker Dark Mode
+                html.setAttribute('data-bs-theme', 'light');
+
+                // --- Core Dark Mode Logic ---
+                function enableDarkMode() {
+                    html.classList.add('dark');
+                    html.setAttribute('data-bs-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    updateIcons(true);
+                }
+
+                function disableDarkMode() {
+                    html.classList.remove('dark');
+                    html.setAttribute('data-bs-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                    updateIcons(false);
+                }
+
+                function updateIcons(isDark) {
+                    if (desktopSun && desktopMoon) {
+                        desktopSun.classList.toggle('hidden', !isDark);
+                        desktopMoon.classList.toggle('hidden', isDark);
+                    }
+                    if (mobileSun && mobileMoon) {
+                        mobileSun.classList.toggle('hidden', !isDark);
+                        mobileMoon.classList.toggle('hidden', isDark);
+                    }
+                    if (darkModeText) darkModeText.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+                }
+
+                function toggleDarkMode() {
+                    if (html.classList.contains('dark')) {
+                        disableDarkMode();
+                    } else {
+                        enableDarkMode();
+                    }
+                }
+
+                // --- Initialization (Runs ONLY when logged in) ---
+                const storedTheme = localStorage.getItem('theme');
+                if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    enableDarkMode();
+                } else {
+                    disableDarkMode();
+                }
+
+                // --- Event Listeners ---
+                if (desktopToggle) desktopToggle.addEventListener('click', toggleDarkMode);
+                if (mobileToggle) mobileToggle.addEventListener('click', toggleDarkMode);
+            });
+        </script>
+    }
+
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

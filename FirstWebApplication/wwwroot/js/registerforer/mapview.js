@@ -53,7 +53,7 @@ async function loadObstacles() {
                     🔄 Retry
                 </button>
             </div>`;
-        document.getElementById('retry-btn').addEventListener('click', function() {
+        document.getElementById('retry-btn').addEventListener('click', function () {
             location.reload();
         });
     }
@@ -130,6 +130,9 @@ function displayObstacles(obstacles) {
                 className: ''
             });
 
+            // ENDRET: Bruker ID i tittelen i stedet for Navn
+            const titleHtml = `<h3 style="margin: 0 0 10px 0; color: #1f2937; font-size: 16px;">Obstacle #${obstacle.id}</h3>`;
+
             if (geometryWKT.startsWith('POINT')) {
                 const coords = geometryWKT.replace('POINT(', '').replace(')', '').split(' ');
                 const lat = parseFloat(coords[1]);
@@ -139,13 +142,13 @@ function displayObstacles(obstacles) {
 
                 const popupContent = `
                     <div style="min-width: 200px;">
-                        <h3 style="margin: 0 0 10px 0; color: #1f2937; font-size: 16px;">${obstacle.name}</h3>
+                        ${titleHtml}
                         <p style="margin: 5px 0;"><strong>Type:</strong> ${obstacle.type}</p>
                         <p style="margin: 5px 0;"><strong>Height:</strong> ${obstacle.height}m</p>
                         <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: ${markerColor}; font-weight: bold;">${statusText}</span></p>
                         <p style="margin: 5px 0;"><strong>Registered by:</strong> ${obstacle.registeredBy}</p>
                         ${obstacle.description ? `<p style="margin: 10px 0 0 0; font-size: 13px; color: #6b7280;">${obstacle.description}</p>` : ''}
-                        <a href="${window.mapViewConfig.viewObstacleUrl}?id=${obstacle.id}"
+                        <a href="${window.mapViewConfig.viewObstacleUrl}?id=${obstacle.id}" 
                            style="display: inline-block; margin-top: 10px; padding: 6px 12px; background: #667eea; color: white; text-decoration: none; border-radius: 6px; font-size: 13px;">
                             View Details →
                         </a>
@@ -166,7 +169,7 @@ function displayObstacles(obstacles) {
 
                 const popupContent = `
                     <div>
-                        <h3 style="margin: 0 0 10px 0;">${obstacle.name}</h3>
+                        ${titleHtml}
                         <p><strong>Type:</strong> ${obstacle.type}</p>
                         <p><strong>Status:</strong> <span style="color: ${markerColor};">${statusText}</span></p>
                         <a href="${window.mapViewConfig.viewObstacleUrl}?id=${obstacle.id}">View Details</a>
@@ -187,7 +190,7 @@ function displayObstacles(obstacles) {
 
                 const popupContent = `
                     <div>
-                        <h3 style="margin: 0 0 10px 0;">${obstacle.name}</h3>
+                        ${titleHtml}
                         <p><strong>Type:</strong> ${obstacle.type}</p>
                         <p><strong>Status:</strong> <span style="color: ${markerColor};">${statusText}</span></p>
                         <a href="${window.mapViewConfig.viewObstacleUrl}?id=${obstacle.id}">View Details</a>
@@ -258,7 +261,13 @@ function applyFilters() {
     const showRejected = document.getElementById('filter-status-rejected').checked;
 
     const filteredObstacles = allObstacles.filter(obstacle => {
-        if (searchText && !obstacle.name.toLowerCase().includes(searchText)) return false;
+        // ENDRET: Søk på ID eller Type i stedet for Navn
+        if (searchText) {
+            const idMatch = obstacle.id.toString().includes(searchText);
+            const typeMatch = obstacle.type.toLowerCase().includes(searchText);
+            if (!idMatch && !typeMatch) return false;
+        }
+
         if (!allTypesChecked && selectedTypes.length > 0 && !selectedTypes.includes(obstacle.type)) return false;
 
         let matchesStatus = false;

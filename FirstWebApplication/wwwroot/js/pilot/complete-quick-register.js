@@ -1,85 +1,95 @@
-// Toggle custom type input field
-function toggleCustomType() {
-    var select = document.getElementById('obstacleTypeSelect');
-    var customGroup = document.getElementById('customTypeGroup');
-    var customInput = document.getElementById('customTypeName');
+// Map and Marker Logic
+var map;
+var currentMarker = null;
 
-    if (select.value === 'Other') {
-        customGroup.style.display = 'block';
-        customInput.required = true;
-    } else {
-        customGroup.style.display = 'none';
-        customInput.required = false;
-        customInput.value = '';
-    }
-}
-
-// Add event listener for select change
-document.addEventListener('DOMContentLoaded', function() {
-    var select = document.getElementById('obstacleTypeSelect');
-    if (select) {
-        select.addEventListener('change', toggleCustomType);
-    }
-});
-
-// Update obstacle type with custom value before form submit
-document.querySelector('form').addEventListener('submit', function(e) {
-    var select = document.getElementById('obstacleTypeSelect');
-    var customInput = document.getElementById('customTypeName');
-
-    if (select.value === 'Other' && customInput.value.trim()) {
-        var hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = 'CustomObstacleType';
-        hiddenInput.value = customInput.value.trim();
-        this.appendChild(hiddenInput);
-    }
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize map
-    var map = L.map('mapid').setView([60.4720, 8.4689], 6);
+function initializeMap(geometryWKT) {
+    // Standard initialization
+    map = L.map('map').setView([60.4720, 8.4689], 6);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 19
     }).addTo(map);
 
-    // Get saved geometry from data attribute
-    var geometryWKT = document.getElementById('mapid').getAttribute('data-geometry');
+    // Initial placement based on saved geometry
+    if (geometryWKT && geometryWKT.startsWith('POINT')) {
+        placeMarkerFromWKT(geometryWKT);
+    } else {
+        // Fallback: If it's LINESTRING or unknown, center map on Norway
+        map.setView([60.4720, 8.4689], 6);
+    }
 
-    if (geometryWKT) {
-        try {
-            if (geometryWKT.startsWith('POINT')) {
-                var coords = geometryWKT.replace('POINT(', '').replace(')', '').split(' ');
-                var lat = parseFloat(coords[1]);
-                var lng = parseFloat(coords[0]);
+    // Enable placing a new marker by clicking on the map
+    map.on('click', function (e) {
+        placeMarker(e.latlng);
+    });
+}
 
-                var marker = L.marker([lat, lng]).addTo(map);
-                map.setView([lat, lng], 13);
-            } else if (geometryWKT.startsWith('LINESTRING')) {
-                var coordsStr = geometryWKT.replace('LINESTRING(', '').replace(')', '');
-                var coordPairs = coordsStr.split(',');
-                var latlngs = coordPairs.map(pair => {
-                    var coords = pair.trim().split(' ');
-                    return [parseFloat(coords[1]), parseFloat(coords[0])];
-                });
+function placeMarkerFromWKT(wkt) {
+    // Converts WKT POINT(lng lat) to L.LatLng
+    try {
+        var coordsString = wkt.replace('POINT(', '').replace(')', '').trim();
+        var parts = coordsString.split(' ');
+        var lng = parseFloat(parts[0]);
+        var lat = parseFloat(parts[1]);
 
-                var polyline = L.polyline(latlngs, {color: 'blue'}).addTo(map);
-                map.fitBounds(polyline.getBounds());
-            } else if (geometryWKT.startsWith('POLYGON')) {
-                var coordsStr = geometryWKT.replace('POLYGON((', '').replace('))', '');
-                var coordPairs = coordsStr.split(',');
-                var latlngs = coordPairs.map(pair => {
-                    var coords = pair.trim().split(' ');
-                    return [parseFloat(coords[1]), parseFloat(coords[0])];
-                });
+        if (!isNaN(lat) && !isNaN(lng)) {
+            var latlng = L.latLng(lat, lng);
+            placeMarker(latlng);
+            map.setView(latlng, 15);
+        }
+    } catch (e) {
+        console.error('Failed to parse WKT:', e);
+    }
+}
 
-                var polygon = L.polygon(latlngs, {color: 'blue'}).addTo(map);
-                map.fitBounds(polygon.getBounds());
-            }
-        } catch (e) {
-            console.error('Error parsing geometry:', e);
+// Main function to place/move a marker and update the hidden input
+function placeMarker(latlng) {
+    if (currentMarker) {
+        // Move existing marker
+        currentMarker.setLatLng(latlng);
+    } else {
+        // Create new draggable marker
+        currentMarker = L.marker(latlng, { draggable: true }).addTo(map);
+
+        // Add drag event listener
+        currentMarker.on('dragend', function (e) {
+            updateGeometryInput(e.target.getLatLng());
+        });
+    }
+
+    // Update geometry input immediately
+    updateGeometryInput(latlng);
+}
+
+function updateGeometryInput(latlng) {
+    var wkt = `POINT(${latlng.lng} ${latlng.lat})`;
+    document.getElementById('obstacleGeometryInput').value = wkt;
+    console.log("New WKT:", wkt);
+}
+
+// Toggle custom type input field
+function toggleCustomType() {
+    var select = document.getElementById('obstacleTypeSelect');
+    var customGroup = document.getElementById('customTypeGroup');
+    if (select && customGroup) {
+        if (select.value === 'Other') {
+            customGroup.style.display = 'block';
+        } else {
+            customGroup.style.display = 'none';
         }
     }
+}
+
+// DOM READY: Initialization
+document.addEventListener('DOMContentLoaded', function () {
+    var mapDiv = document.getElementById('map');
+    if (mapDiv) {
+        var existingGeometry = mapDiv.getAttribute('data-geometry');
+        initializeMap(existingGeometry);
+    }
+
+    // Initial check for custom type selection (if coming back with validation errors)
+    document.getElementById('obstacleTypeSelect').addEventListener('change', toggleCustomType);
+    toggleCustomType();
 });

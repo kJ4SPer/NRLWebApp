@@ -6,7 +6,6 @@
     public class ObstacleDetailsViewModel
     {
         public long Id { get; set; }
-        public string Name { get; set; } = string.Empty;
         public decimal Height { get; set; }
         public string Description { get; set; } = string.Empty;
         public string? Type { get; set; }

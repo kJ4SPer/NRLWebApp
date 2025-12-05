@@ -1,0 +1,123 @@
+﻿@page
+@using FirstWebApplication.Helpers
+@model LoginModel
+@{
+    ViewData["Title"] = "Logg inn";
+}
+
+<style nonce="@CspHelper.GetNonce(Html)">
+    header, footer, .border-top.footer {
+        display: none !important;
+    }
+
+    .main-content {
+        background-color: transparent !important;
+    }
+
+    body {
+        overflow: hidden;
+    }
+
+    #map-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -2;
+        filter: grayscale(20%);
+    }
+
+    #map-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background-color: rgba(33, 37, 41, 0.65);
+        pointer-events: none;
+    }
+
+    .auth-container {
+        height: 100vh;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow-y: auto;
+    }
+
+    .auth-card {
+        border: none;
+        border-radius: 15px;
+        background-color: rgba(255, 255, 255, 0.98);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.25);
+        width: 100%;
+        max-width: 500px;
+    }
+
+    .back-link {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        margin-top: 20px;
+        display: inline-block;
+    }
+
+        .back-link:hover {
+            color: white;
+            text-decoration: underline;
+        }
+</style>
+
+<div id="map-background"></div>
+<div id="map-overlay"></div>
+
+<div class="auth-container">
+    <div class="container d-flex flex-column align-items-center">
+        <div class="card auth-card p-4 p-md-5">
+            <div class="card-body">
+                <div class="text-center mb-5">
+                    <h1 class="fw-bold text-dark display-5 mb-2">Logg inn</h1>
+                    <p class="text-muted fs-5">Velkommen tilbake</p>
+                </div>
+                <form id="account" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="name@example.com" />
+                        <label asp-for="Input.Email">E-postadresse</label>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-4">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="current-password" placeholder="password" />
+                        <label asp-for="Input.Password">Passord</label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" asp-for="Input.RememberMe" />
+                        <label class="form-check-label text-muted" asp-for="Input.RememberMe">Husk meg</label>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button id="login-submit" type="submit" class="btn btn-primary btn-lg shadow-sm">Logg inn</button>
+                    </div>
+                    <div class="text-center mt-4">
+                        <p class="mb-0">Har du ikke bruker? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="fw-bold text-primary">Registrer deg</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <a href="/" class="back-link">Tilbake til forsiden</a>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
+    <script src="~/lib/leaflet/leaflet.js"></script>
+    <script nonce="@CspHelper.GetNonce(Html)">
+        document.addEventListener("DOMContentLoaded", function () {
+            var map = L.map('map-background', { zoomControl: false, dragging: false, scrollWheelZoom: false, attributionControl: false }).setView([59.9139, 10.7522], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+        });
+    </script>
+}

@@ -1,99 +1,98 @@
 using FirstWebApplication.Data;
 using FirstWebApplication.Entities;
-using FirstWebApplication.Services;
 using FirstWebApplication.Middleware;
+using FirstWebApplication.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Razor;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
-builder.Services.AddControllersWithViews();
+// ----------------------
+//   SERVICE CONFIG
+// ----------------------
 
-// Configure database connection
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Localization (required for IViewLocalizer)
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+builder.Services
+    .AddControllersWithViews()
+    .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+    .AddDataAnnotationsLocalization();
+
+builder.Services.AddRazorPages();
+
+// Database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connectionString, new MariaDbServerVersion(new Version(10, 11, 0))));
+    options.UseMySql(
+        connectionString,
+        new MariaDbServerVersion(new Version(10, 11, 0)),
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null)
+    ));
 
-// Register DatabaseSeeder
-builder.Services.AddScoped<DatabaseSeeder>();
-
-// Configure ASP.NET Identity with ApplicationUser and roles
+// Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    // Password settings
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 6;
+    options.SignIn.RequireConfirmedAccount = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultUI()
 .AddDefaultTokenProviders();
 
-// Register services
-builder.Services.AddScoped<IUserRoleService, UserRoleService>();
-builder.Services.AddScoped<RoleInitializerService>();
-builder.Services.AddScoped<UserSeederService>();
-
-// Configure cookie settings
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = "/Home/Index";
-    options.LogoutPath = "/Account/Logout";
-    options.AccessDeniedPath = "/Home/Index";
-    options.ExpireTimeSpan = TimeSpan.FromHours(24);
-    options.SlidingExpiration = true;
-    options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-    options.Cookie.SameSite = SameSiteMode.Lax;
-});
+builder.Services.AddScoped<DatabaseSeeder>();
 
 var app = builder.Build();
 
-// Use CSP middleware (must be early in the pipeline)
-app.UseCspMiddleware();
-
-
-// Initialize database, roles, and seed users
+// ----------------------
+//   DATABASE SEEDING
+// ----------------------
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApplicationDbContext>();
     var logger = services.GetRequiredService<ILogger<Program>>();
 
     try
     {
-        // Step 1: Get database context
-        var context = services.GetRequiredService<ApplicationDbContext>();
+        await context.Database.MigrateAsync();
 
-        // Step 2: Apply migrations (creates database if it doesn't exist)
-        logger.LogInformation("Applying database migrations...");
-        context.Database.Migrate();
-        logger.LogInformation("Database migrations applied successfully");
-
-        // Step 3: Initialize roles (database exists now!)
-        logger.LogInformation("Initializing roles...");
-        var roleInitializer = services.GetRequiredService<RoleInitializerService>();
-        await roleInitializer.InitializeAsync();
-        logger.LogInformation("Roles initialized successfully");
-
-        // Step 4: Seed test users (only in Development)
         if (app.Environment.IsDevelopment())
         {
-            logger.LogInformation("Seeding test users...");
-            var userSeeder = services.GetRequiredService<UserSeederService>();
-            await userSeeder.SeedAsync();
-            logger.LogInformation("Test users seeded successfully");
+            var seeder = services.GetRequiredService<DatabaseSeeder>();
+            await seeder.SeedAsync();
         }
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "An error occurred during database initialization");
-        // Don't crash the app, just log the error
+        logger.LogError(ex, "Database initialization failed.");
     }
 }
 
-// Configure the HTTP request pipeline
+// ----------------------
+//  REQUEST LOCALIZATION
+// ----------------------
+var supportedCultures = new[] { "nb-NO", "en-US" };
+
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture("nb-NO")
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+// ----------------------
+//   MIDDLEWARE PIPELINE
+// ----------------------
+app.UseCspMiddleware();
+app.UseRequestLocalization(localizationOptions);
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -102,12 +101,11 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
-// Authentication must come before Authorization
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapRazorPages();
 
 app.MapControllerRoute(
     name: "default",
