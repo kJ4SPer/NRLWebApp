@@ -168,7 +168,7 @@ namespace FirstWebApplication.Controllers
             });
         }
 
-        // COMPLETE QUICK REGISTRATION
+        // Complete Quick Register GET
 
         [HttpGet]
         public async Task<IActionResult> CompleteQuickRegister(long id)
@@ -196,6 +196,8 @@ namespace FirstWebApplication.Controllers
 
             return View(model);
         }
+
+        // Complete Quick Register POST
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -277,6 +279,8 @@ namespace FirstWebApplication.Controllers
             return View(viewModel);
         }
 
+        // Oversikt
+
         [HttpGet]
         public async Task<IActionResult> Overview(long id)
         {
@@ -293,6 +297,8 @@ namespace FirstWebApplication.Controllers
             var viewModel = BuildObstacleDetailsViewModel(obstacle);
             return View(viewModel);
         }
+
+        // Slett en registrering
 
         [HttpPost]
         [ValidateAntiForgeryToken]
