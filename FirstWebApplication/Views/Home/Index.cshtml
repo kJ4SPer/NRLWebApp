@@ -10,107 +10,138 @@
 
 @* --- CSS: KART, LAYOUT OG DESIGN --- *@
 <style nonce="@Html.GetNonce()">
+
     /* 1. Skjul standard navbar og footer */
-    header, footer, .border-top.footer {
-        display: none !important;
+        header, footer, .border-top.footer {
+                display: none !important;
+
     }
+
+    /* NY REGEL: Gjør hovedinnholdsområdet transparent */
+    .main-content {
+        background-color: transparent !important;
+    }
+
 
     /* Forhindre scrolling på selve body */
-    body {
-        overflow: hidden;
+        body {
+                overflow: hidden;
+
     }
+
 
     /* 2. Bakgrunnskart */
-    #map-background {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -2;
-        filter: grayscale(20%);
+        #map-background {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: -2;
+                filter: grayscale(20%);
+
     }
+
 
     /* 3. Mørk overlay */
-    #map-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        background-color: rgba(33, 37, 41, 0.75);
-        pointer-events: none;
+        #map-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: -1;
+                background-color: rgba(33, 37, 41, 0.75);
+                pointer-events: none;
+
     }
+
 
     /* 4. Hovedcontainer */
-    .landing-container {
-        height: 100vh;
-        width: 100%;
-        overflow-y: auto; /* Tillat scroll hvis skjermen er liten */
-        padding-top: 5vh;
-        padding-bottom: 50px;
+        .landing-container {
+                height: 100vh;
+                width: 100%;
+                overflow-y: auto; /* Tillat scroll hvis skjermen er liten */
+                padding-top: 5vh;
+                padding-bottom: 50px;
+
     }
 
-    /* 5. HERO TEKST */
-    .hero-section {
-        margin-bottom: 3rem;
-        text-align: center;
-        color: white;
+
+    /* 5. HERO TEKST - JUSTERT FOR LYS BAKGRUNN */
+        .hero-section {
+                margin-bottom: 3rem;
+                text-align: center;
+                color: #1f2937; /* SATT TIL MØRK GRÅ (Tailwind gray-800) for lesbarhet mot den lyse bakgrunnen */
+
     }
 
-    .hero-title {
-        font-weight: 800;
-        text-transform: uppercase;
+        .hero-title {
+                font-weight: 800;
+                text-transform: uppercase;
+
+        /* Fjerner hvit farge og bruker inherited #1f2937 */
+
     }
 
-    .hero-subtitle {
-        font-weight: 400;
-        opacity: 0.9;
-        margin-top: 10px;
+        .hero-subtitle {
+                font-weight: 400;
+                opacity: 0.9;
+                margin-top: 10px;
+
+        /* Fjerner hvit farge og bruker inherited #1f2937 */
+
     }
 
-    .hero-divider {
-        width: 100px;
-        height: 5px;
-        background-color: #fff;
-        margin: 20px auto;
-        border-radius: 2px;
+        .hero-divider {
+                width: 100px;
+                height: 5px;
+                background-color: #1f2937; /* Gjør streken mørk grå */
+                margin: 20px auto;
+                border-radius: 2px;
+
     }
+
 
     /* 6. Kort-design - HØYERE OG SMALERE */
-    .action-card {
-        border: none;
-        border-radius: 15px;
-        transition: transform 0.2s;
-        min-height: 350px; 
-        display: flex;
-        flex-direction: column;
-        justify-content: center; 
+        .action-card {
+                border: none;
+                border-radius: 15px;
+                transition: transform 0.2s;
+                min-height: 350px;
+                  display: flex;
+                flex-direction: column;
+                justify-content: center;
+
     }
 
-        .action-card:hover {
-            transform: scale(1.02);
+                .action-card:hover {
+                        transform: scale(1.02);
+
         }
+
 
     /* 7. Privacy link */
-    .privacy-link-container {
-        margin-top: auto;
-        padding-top: 30px;
-        text-align: center;
-        width: 100%;
-        padding-bottom: 20px;
+        .privacy-link-container {
+                margin-top: auto;
+                padding-top: 30px;
+                text-align: center;
+                width: 100%;
+                padding-bottom: 20px;
+
     }
 
-    .privacy-link {
-        color: rgba(255, 255, 255, 0.6);
-        text-decoration: none;
+        .privacy-link {
+                color: #1f2937; /* Mørk lenketekst */
+                text-decoration: none;
+
     }
 
-        .privacy-link:hover {
-            color: white;
-            text-decoration: underline;
-        }
+            .privacy-link:hover {
+                    color: #3b82f6; /* Blå hover */
+                    text-decoration: underline;
+
+    }
 </style>
 
 @* --- HTML STRUKTUR --- *@

@@ -1,5 +1,13 @@
 /* Layout-specific styles for _Layout.cshtml */
 
+body {
+    background-color: #f9fafb;
+}
+
+.dark body {
+    background-color: #0f172a;
+}
+
 /* Ensure content doesn't collide with fixed navbar */
 .main-content {
     padding-top: 1rem;

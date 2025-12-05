@@ -1,21 +1,29 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using System;
 
 namespace FirstWebApplication.Helpers
 {
     public static class CspHelper
     {
-        // Gets the CSP nonce for the current request
         public static string GetNonce(this IHtmlHelper htmlHelper)
         {
             var httpContext = htmlHelper.ViewContext.HttpContext;
-            if (httpContext.Items.TryGetValue("csp-nonce", out var nonce))
+
+            // Prøv å hente nonce fra context (satt av middleware)
+            if (httpContext.Items.TryGetValue("csp-nonce", out var nonce) && nonce != null)
             {
-                return nonce?.ToString() ?? string.Empty;
+                return nonce.ToString() ?? "";
             }
-            return string.Empty;
+
+            // FALLBACK: Hvis middleware ikke kjørte, lag en ny her og nå.
+            // Dette hindrer "Object reference not set" feil.
+            var newNonce = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+            httpContext.Items["csp-nonce"] = newNonce;
+
+            return newNonce;
         }
 
-        // Generates a nonce attribute for script/style tags
         public static string NonceAttribute(this IHtmlHelper htmlHelper)
         {
             var nonce = htmlHelper.GetNonce();

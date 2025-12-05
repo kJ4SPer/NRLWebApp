@@ -1,0 +1,66 @@
+﻿@using FirstWebApplication.Helpers
+@model FirstWebApplication.Models.Settings.SettingsViewModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["SettingsTitle"];
+}
+
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
+            @Localizer["SettingsTitle"]
+        </h2>
+
+        <!-- Language section -->
+        <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
+                @Localizer["LanguageSection"]
+            </h3>
+
+            <form asp-controller="Settings"
+                  asp-action="SetLanguage"
+                  method="post"
+                  class="flex flex-col gap-4 max-w-sm">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+
+                <div>
+                    <label asp-for="CurrentLanguage"
+                           class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        @Localizer["ChooseLanguage"]
+                    </label>
+
+                    <select asp-for="CurrentLanguage"
+                            asp-items="@(new SelectList(Model.AvailableLanguages, "Key", "Value"))"
+                            class="block w-full rounded-md border-gray-300 shadow-sm
+                                   focus:border-indigo-500 focus:ring-indigo-500
+                                   dark:bg-gray-700 dark:border-gray-600 dark:text-white py-2 px-3">
+                    </select>
+                </div>
+
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    @Localizer["LanguageNote"]
+                </p>
+            </form>
+        </div>
+
+        <!-- Du kan legge til flere settings-seksjoner her senere -->
+    </div>
+</div>
+
+@section Scripts {
+    <script @Html.Raw(Html.NonceAttribute())>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Auto-submit når brukeren endrer språk
+            var languageSelect = document.querySelector('select[name="CurrentLanguage"]');
+            if (languageSelect && languageSelect.form) {
+                languageSelect.addEventListener('change', function () {
+                    languageSelect.form.submit();
+                });
+            }
+        });
+    </script>
+}

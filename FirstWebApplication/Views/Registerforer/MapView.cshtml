@@ -16,74 +16,76 @@
     <div id="map"></div>
 </div>
 
-<div class="map-sidebar">
-    <h2 style="font-size: 24px; font-weight: bold; color: #1f2937; margin-bottom: 20px;">
-        🗺️ Obstacle Map View
+<div class="map-sidebar bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white transition-colors duration-300">
+    <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
+        🗺️ Obstacle Map
     </h2>
 
-    <div class="stats-panel">
-        <h3 style="margin: 0 0 15px 0; font-size: 18px;">📊 Statistics</h3>
-        <div class="stat-item">
+    <div class="stats-panel bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-6">
+        <h3 class="text-lg font-bold mb-3 text-gray-900 dark:text-white">📊 Statistics</h3>
+        <div class="stat-item flex justify-between mb-2 text-sm text-gray-700 dark:text-gray-200">
             <span>Total Obstacles:</span>
-            <span class="stat-value" id="stat-total">0</span>
+            <span class="stat-value font-bold" id="stat-total">0</span>
         </div>
-        <div class="stat-item">
+        <div class="stat-item flex justify-between mb-2 text-sm text-gray-700 dark:text-gray-200">
             <span>✅ Approved:</span>
-            <span class="stat-value" id="stat-approved">0</span>
+            <span class="stat-value font-bold" id="stat-approved">0</span>
         </div>
-        <div class="stat-item">
+        <div class="stat-item flex justify-between mb-2 text-sm text-gray-700 dark:text-gray-200">
             <span>⏳ Pending:</span>
-            <span class="stat-value" id="stat-pending">0</span>
+            <span class="stat-value font-bold" id="stat-pending">0</span>
         </div>
-        <div class="stat-item">
+        <div class="stat-item flex justify-between mb-2 text-sm text-gray-700 dark:text-gray-200">
             <span>❌ Rejected:</span>
-            <span class="stat-value" id="stat-rejected">0</span>
+            <span class="stat-value font-bold" id="stat-rejected">0</span>
         </div>
     </div>
 
-    <div class="search-box">
-        <input type="text" id="search-input" class="search-input" placeholder="🔍 Search by obstacle name..." />
+    <div class="search-box mb-6">
+        <input type="text" id="search-input" class="search-input w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400" placeholder="🔍 Search by obstacle name..." />
     </div>
 
-    <div class="filter-section" id="type-filter-section">
-        <h3>🏗️ Filter by Type</h3>
-        <div class="filter-option">
-            <input type="checkbox" id="filter-type-all" checked>
-            <label for="filter-type-all">All Types</label>
-        </div>
-        <!-- Dynamiske type-filtre legges til her av JavaScript -->
-    </div>
+    <div class="filter-section mb-6 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg" id="type-filter-section">
+        <h3 class="text-lg font-bold mb-3 text-gray-900 dark:text-white">🏗️ Filter by Type</h3>
 
-    <div class="filter-section">
-        <h3>📋 Filter by Status</h3>
-        <div class="filter-option">
-            <input type="checkbox" id="filter-status-approved" checked>
-            <label for="filter-status-approved">Approved</label>
-            <span class="color-indicator color-green"></span>
-        </div>
-        <div class="filter-option">
-            <input type="checkbox" id="filter-status-pending" checked>
-            <label for="filter-status-pending">Pending</label>
-            <span class="color-indicator color-yellow"></span>
-        </div>
-        <div class="filter-option">
-            <input type="checkbox" id="filter-status-rejected" checked>
-            <label for="filter-status-rejected">Rejected</label>
-            <span class="color-indicator color-red"></span>
+        <div class="filter-option flex items-center mb-2">
+            <input type="checkbox" id="filter-type-all" checked class="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+            <label for="filter-type-all" class="text-gray-700 dark:text-gray-200 font-medium">All Types</label>
         </div>
     </div>
 
-    <button class="reset-btn" id="reset-filters-btn">
+    <div class="filter-section mb-6 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+        <h3 class="text-lg font-bold mb-3 text-gray-900 dark:text-white">📋 Filter by Status</h3>
+
+        <div class="filter-option flex items-center mb-2">
+            <input type="checkbox" id="filter-status-approved" checked class="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+            <label for="filter-status-approved" class="text-gray-700 dark:text-gray-200 font-medium">Approved</label>
+            <span class="color-indicator ml-2 w-3 h-3 rounded-full bg-green-500 inline-block"></span>
+        </div>
+
+        <div class="filter-option flex items-center mb-2">
+            <input type="checkbox" id="filter-status-pending" checked class="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+            <label for="filter-status-pending" class="text-gray-700 dark:text-gray-200 font-medium">Pending</label>
+            <span class="color-indicator ml-2 w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>
+        </div>
+
+        <div class="filter-option flex items-center mb-2">
+            <input type="checkbox" id="filter-status-rejected" checked class="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+            <label for="filter-status-rejected" class="text-gray-700 dark:text-gray-200 font-medium">Rejected</label>
+            <span class="color-indicator ml-2 w-3 h-3 rounded-full bg-red-500 inline-block"></span>
+        </div>
+    </div>
+
+    <button class="reset-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-800 dark:text-white py-2 rounded transition font-medium" id="reset-filters-btn">
         🔄 Reset All Filters
     </button>
 
-    <a asp-action="RegisterforerDashboard" class="block mt-4 text-center text-blue-600 font-medium hover:underline">
+    <a asp-action="RegisterforerDashboard" class="block mt-6 text-center text-blue-600 dark:text-blue-400 font-medium hover:underline">
         ← Back to Dashboard
     </a>
 </div>
 
 @section Scripts {
-    <!-- Configuration for mapview.js -->
     <script @Html.Raw(Html.NonceAttribute())>
         window.mapViewConfig = {
             getObstaclesUrl: '@Url.Action("GetObstaclesForMapView", "Registerforer")',

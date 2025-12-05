@@ -213,7 +213,6 @@ namespace FirstWebApplication.Services
 
                 var obstacle = new Obstacle
                 {
-                    Name = $"{type.Name} {i + 1}",
                     Height = _random.Next(20, 300),
                     Description = "Automatisk generert testdata",
                     Location = $"POINT({lng.ToString(System.Globalization.CultureInfo.InvariantCulture)} {lat.ToString(System.Globalization.CultureInfo.InvariantCulture)})",

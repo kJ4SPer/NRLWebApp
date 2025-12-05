@@ -6,7 +6,7 @@
     ViewData["Title"] = "Obstacle Overview";
     var formattedHeight = Model.Height.ToString("F2");
 
-    // Fallback hvis RegisteredBy er tom (siden dette er Overview for eier, vet vi hvem det er)
+    // Fallback hvis RegisteredBy er tom
     var registeredByDisplay = !string.IsNullOrEmpty(Model.RegisteredBy)
         ? Model.RegisteredBy
         : User.Identity?.Name ?? "Ukjent bruker";
@@ -59,11 +59,6 @@
                     </div>
                 </div>
 
-                <div class="detail-row">
-                    <div class="detail-label">Navn:</div>
-                    <div class="detail-value">@(Model.Name ?? "Ikke navngitt")</div>
-                </div>
-
                 @if (!string.IsNullOrEmpty(Model.Type))
                 {
                     <div class="detail-row">
@@ -98,7 +93,6 @@
                                     <div>📏 <strong>Linje-koordinater:</strong></div>
                                     <div class="max-h-40 overflow-y-auto bg-gray-50 p-2 rounded border mt-1">
                                         @{
-                                            // Parse LINESTRING(lng lat, lng lat, ...)
                                             var raw = Model.Location.Replace("LINESTRING(", "").Replace(")", "");
                                             var pairs = raw.Split(',');
                                             int count = 1;
@@ -189,8 +183,8 @@
             <div class="details-card">
                 <h2 class="text-2xl font-bold text-gray-900 mb-4">Kartvisning</h2>
                 <div id="map"
+                     data-id="@Model.Id"
                      data-geometry="@Model.Location"
-                     data-name="@Model.Name"
                      data-height="@formattedHeight"></div>
                 <p class="text-xs text-gray-400 mt-2 font-mono break-all">Data: @Model.Location</p>
             </div>
@@ -210,5 +204,44 @@
 @section Scripts {
     <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
     <script src="~/lib/leaflet/leaflet.js"></script>
-    <script src="~/js/pilot/overview.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var mapElement = document.getElementById('map');
+            var geometry = mapElement.getAttribute('data-geometry');
+            var id = mapElement.getAttribute('data-id'); // Henter ID i stedet
+            var height = mapElement.getAttribute('data-height');
+
+            var map = L.map('map').setView([60.4720, 8.4689], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            if (geometry) {
+                var layer;
+                if (geometry.startsWith('POINT')) {
+                    var coords = geometry.replace('POINT(', '').replace(')', '').split(' ');
+                    var lat = parseFloat(coords[1]);
+                    var lng = parseFloat(coords[0]);
+                    layer = L.marker([lat, lng]).addTo(map);
+                    map.setView([lat, lng], 13);
+                } else if (geometry.startsWith('LINESTRING')) {
+                    // Enkel parsing av linje (samme som før)
+                    var coordsStr = geometry.replace('LINESTRING(', '').replace(')', '');
+                    var pairs = coordsStr.split(',');
+                    var latlngs = pairs.map(function(pair) {
+                        var p = pair.trim().split(' ');
+                        return [parseFloat(p[1]), parseFloat(p[0])];
+                    });
+                    layer = L.polyline(latlngs, { color: 'blue' }).addTo(map);
+                    map.fitBounds(layer.getBounds());
+                }
+
+                if (layer) {
+                    // Bruker ID i popup i stedet for Navn
+                    layer.bindPopup("<b>Obstacle #" + id + "</b><br>Height: " + height + "m").openPopup();
+                }
+            }
+        });
+    </script>
 }

@@ -9,10 +9,7 @@ namespace FirstWebApplication.Models.Obstacle
     {
         public long ObstacleId { get; set; }
 
-        [Required(ErrorMessage = "Obstacle name is required")]
-        [StringLength(100)]
-        [Display(Name = "Obstacle Name")]
-        public string ObstacleName { get; set; } = string.Empty;
+        // REMOVED: ObstacleName - Generated automatically by the controller
 
         [Required(ErrorMessage = "Height is required")]
         [Range(0.1, 10000, ErrorMessage = "Height must be between 0.1 and 10000 meters")]
@@ -28,7 +25,7 @@ namespace FirstWebApplication.Models.Obstacle
         [Display(Name = "Obstacle Type")]
         public string? ObstacleType { get; set; }
 
-        // Read-only fields (satt av controller)
+        // Read-only fields (set by controller)
         public string ObstacleGeometry { get; set; } = string.Empty;
         public DateTime RegisteredDate { get; set; }
         public string? RegisteredBy { get; set; }

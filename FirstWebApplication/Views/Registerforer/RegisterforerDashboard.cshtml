@@ -2,115 +2,111 @@
     ViewData["Title"] = "Registerfører Dashboard";
 }
 
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Registerfører Dashboard</h1>
+<div class="py-10 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">Registerfører Dashboard</h1>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-            @TempData["SuccessMessage"]
-        </div>
-    }
-
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <!-- Pending Card -->
-        <a asp-action="AllObstacles" asp-route-status="pending" class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500 hover:shadow-lg transition">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-600 text-sm font-medium">Pending Review</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">@ViewBag.PendingCount</p>
-                </div>
-                <div class="bg-yellow-100 rounded-full p-3">
-                    <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 px-4 py-3 rounded mb-6 shadow-sm">
+                @TempData["SuccessMessage"]
             </div>
-            <span class="text-indigo-600 text-sm font-medium mt-4 inline-block">
-                View Pending →
-            </span>
-        </a>
+        }
 
-        <!-- Approved Card -->
-        <a asp-action="AllObstacles" asp-route-status="approved" class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500 hover:shadow-lg transition">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-600 text-sm font-medium">Approved</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">@ViewBag.ApprovedCount</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <a asp-action="AllObstacles" asp-route-status="pending" class="block bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-l-4 border-yellow-500 hover:shadow-lg transition group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Pending Review</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">@ViewBag.PendingCount</p>
+                    </div>
+                    <div class="bg-yellow-100 dark:bg-yellow-900/40 rounded-full p-3">
+                        <svg class="w-8 h-8 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
                 </div>
-                <div class="bg-green-100 rounded-full p-3">
-                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-            </div>
-            <span class="text-indigo-600 text-sm font-medium mt-4 inline-block">
-                View Approved →
-            </span>
-        </a>
-
-        <!-- Rejected Card -->
-        <a asp-action="AllObstacles" asp-route-status="rejected" class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500 hover:shadow-lg transition">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-600 text-sm font-medium">Rejected</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">@ViewBag.RejectedCount</p>
-                </div>
-                <div class="bg-red-100 rounded-full p-3">
-                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-            </div>
-            <span class="text-indigo-600 text-sm font-medium mt-4 inline-block">
-                View Rejected →
-            </span>
-        </a>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 class="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a asp-action="AllObstacles" asp-route-status="pending" class="flex items-center p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition border border-yellow-200">
-                <svg class="w-6 h-6 text-yellow-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                </svg>
-                <div>
-                    <p class="font-semibold text-gray-900">Review Pending</p>
-                    <p class="text-sm text-gray-600">@ViewBag.PendingCount obstacles waiting</p>
-                </div>
+                <span class="text-indigo-600 dark:text-indigo-400 text-sm font-medium mt-4 inline-block group-hover:underline">
+                    View Pending →
+                </span>
             </a>
 
-            <a asp-action="AllObstacles" class="flex items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition border border-blue-200">
-                <svg class="w-6 h-6 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
-                </svg>
-                <div>
-                    <p class="font-semibold text-gray-900">All Obstacles</p>
-                    <p class="text-sm text-gray-600">View and filter all obstacles</p>
+            <a asp-action="AllObstacles" asp-route-status="approved" class="block bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-l-4 border-green-500 hover:shadow-lg transition group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Approved</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">@ViewBag.ApprovedCount</p>
+                    </div>
+                    <div class="bg-green-100 dark:bg-green-900/40 rounded-full p-3">
+                        <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
                 </div>
+                <span class="text-indigo-600 dark:text-indigo-400 text-sm font-medium mt-4 inline-block group-hover:underline">
+                    View Approved →
+                </span>
             </a>
 
-            <a asp-action="MapView" class="flex items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition border border-purple-200">
-                <svg class="w-6 h-6 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
-                </svg>
-                <div>
-                    <p class="font-semibold text-gray-900">Map View</p>
-                    <p class="text-sm text-gray-600">View obstacles on map</p>
+            <a asp-action="AllObstacles" asp-route-status="rejected" class="block bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-l-4 border-red-500 hover:shadow-lg transition group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Rejected</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">@ViewBag.RejectedCount</p>
+                    </div>
+                    <div class="bg-red-100 dark:bg-red-900/40 rounded-full p-3">
+                        <svg class="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
                 </div>
+                <span class="text-indigo-600 dark:text-indigo-400 text-sm font-medium mt-4 inline-block group-hover:underline">
+                    View Rejected →
+                </span>
             </a>
         </div>
-    </div>
 
-    <!-- Information -->
-    <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-6">
-        <h3 class="font-semibold text-indigo-900 mb-2">Your Role</h3>
-        <p class="text-indigo-800 text-sm">
-            As a Registerfører, you are responsible for reviewing and verifying obstacle registrations submitted by pilots.
-            Please ensure all information is accurate before approving.
-        </p>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 border border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <a asp-action="AllObstacles" asp-route-status="pending" class="flex items-center p-4 bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 rounded-lg transition border border-yellow-200 dark:border-yellow-800">
+                    <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <div>
+                        <p class="font-semibold text-gray-900 dark:text-white">Review Pending</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">@ViewBag.PendingCount obstacles waiting</p>
+                    </div>
+                </a>
+
+                <a asp-action="AllObstacles" class="flex items-center p-4 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition border border-blue-200 dark:border-blue-800">
+                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                    </svg>
+                    <div>
+                        <p class="font-semibold text-gray-900 dark:text-white">All Obstacles</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">View and filter all obstacles</p>
+                    </div>
+                </a>
+
+                <a asp-action="MapView" class="flex items-center p-4 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition border border-purple-200 dark:border-purple-800">
+                    <svg class="w-6 h-6 text-purple-600 dark:text-purple-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                    </svg>
+                    <div>
+                        <p class="font-semibold text-gray-900 dark:text-white">Map View</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">View obstacles on map</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-6">
+            <h3 class="font-semibold text-indigo-900 dark:text-indigo-300 mb-2">Your Role</h3>
+            <p class="text-indigo-800 dark:text-indigo-300 text-sm">
+                As a Registerfører, you are responsible for reviewing and verifying obstacle registrations submitted by pilots.
+                Please ensure all information is accurate before approving.
+            </p>
+        </div>
     </div>
 </div>

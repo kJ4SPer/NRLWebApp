@@ -138,7 +138,8 @@ namespace FirstWebApplication.Controllers
 
             await UpdateObstacleStatusAsync(obstacle, 3, userId, model.Comments ?? "");
 
-            TempData["SuccessMessage"] = $"Obstacle '{obstacle.Name}' has been approved.";
+            // ENDRET: Bruker ID i meldingen siden Name er fjernet
+            TempData["SuccessMessage"] = $"Obstacle #{obstacle.Id} has been approved.";
             return RedirectToAction("AllObstacles");
         }
 
@@ -167,7 +168,8 @@ namespace FirstWebApplication.Controllers
 
             await UpdateObstacleStatusAsync(obstacle, 4, userId, comments);
 
-            TempData["SuccessMessage"] = $"Obstacle '{obstacle.Name}' has been rejected.";
+            // ENDRET: Bruker ID i meldingen siden Name er fjernet
+            TempData["SuccessMessage"] = $"Obstacle #{obstacle.Id} has been rejected.";
             return RedirectToAction("AllObstacles");
         }
 
@@ -197,7 +199,6 @@ namespace FirstWebApplication.Controllers
         }
 
         // Viser alle hindringer med filtrering og sortering
-        // Støtter filtrering på status og sortering på ulike felt
         [HttpGet]
         public async Task<IActionResult> AllObstacles(string? status = null, string? sortBy = null, string? sortOrder = "desc")
         {
@@ -229,7 +230,6 @@ namespace FirstWebApplication.Controllers
         }
 
         // Henter hindringer for kartvisning som JSON
-        // Støtter filtrering på type og status
         [HttpGet]
         public async Task<IActionResult> GetObstaclesForMapView(string? type = null, string? status = null)
         {
@@ -268,7 +268,7 @@ namespace FirstWebApplication.Controllers
                     .Select(o => new
                     {
                         id = o.Id,
-                        name = o.Name ?? "Unnamed",
+                        // NAME ER FJERNET HER
                         type = o.ObstacleType != null ? o.ObstacleType.Name : "Unknown",
                         height = o.Height ?? 0,
                         description = o.Description ?? "",
@@ -293,8 +293,9 @@ namespace FirstWebApplication.Controllers
                     var geomPreview = string.IsNullOrEmpty(first.geometry)
                         ? "NULL"
                         : first.geometry.Substring(0, Math.Min(50, first.geometry.Length));
-                    _logger.LogInformation("First obstacle: Id={Id}, Name={Name}, Type={Type}, Geometry={Geometry}",
-                        first.id, first.name, first.type, geomPreview);
+                    // ENDRET: Fjernet name fra logging
+                    _logger.LogInformation("First obstacle: Id={Id}, Type={Type}, Geometry={Geometry}",
+                        first.id, first.type, geomPreview);
                 }
 
                 var stats = new
@@ -319,13 +320,11 @@ namespace FirstWebApplication.Controllers
 
         // Hjelpe-metoder
 
-        // Henter innlogget brukers ID
         private string GetCurrentUserId()
         {
             return User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
         }
 
-        // Henter statistikk for dashboard
         private async Task<RegisterforerStatistics> GetDashboardStatisticsAsync()
         {
             var pending = await GetObstacleCountByStatusAsync(2);
@@ -340,7 +339,6 @@ namespace FirstWebApplication.Controllers
             };
         }
 
-        // Teller antall hindringer med gitt status
         private async Task<int> GetObstacleCountByStatusAsync(int statusTypeId)
         {
             return await _context.ObstacleStatuses
@@ -350,7 +348,7 @@ namespace FirstWebApplication.Controllers
                 .CountAsync();
         }
 
-        // Mapper Obstacle til ObstacleListItemViewModel med gitt status
+        // Mapper Obstacle til ObstacleListItemViewModel
         private ObstacleListItemViewModel MapToListItemViewModel(
             Obstacle obstacle,
             bool isPending,
@@ -360,7 +358,7 @@ namespace FirstWebApplication.Controllers
             return new ObstacleListItemViewModel
             {
                 Id = obstacle.Id,
-                Name = obstacle.Name ?? "Unnamed",
+                // NAME ER FJERNET HER
                 Type = obstacle.ObstacleType?.Name,
                 Height = obstacle.Height ?? 0,
                 Location = obstacle.Location ?? string.Empty,
@@ -381,7 +379,7 @@ namespace FirstWebApplication.Controllers
             return new ObstacleListItemViewModel
             {
                 Id = obstacle.Id,
-                Name = obstacle.Name ?? "Unnamed",
+                // NAME ER FJERNET HER
                 Type = obstacle.ObstacleType?.Name,
                 Height = obstacle.Height ?? 0,
                 Location = obstacle.Location ?? string.Empty,
@@ -397,7 +395,6 @@ namespace FirstWebApplication.Controllers
             };
         }
 
-        // Henter hindring med alle detaljer og relasjoner
         private async Task<Obstacle?> GetObstacleWithDetailsAsync(long id)
         {
             return await _context.Obstacles
@@ -410,7 +407,6 @@ namespace FirstWebApplication.Controllers
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
-        // Henter inaktiv statushistorikk for en hindring
         private async Task<List<ObstacleStatus>> GetObstacleStatusHistoryAsync(long obstacleId)
         {
             return await _context.ObstacleStatuses
@@ -421,7 +417,7 @@ namespace FirstWebApplication.Controllers
                 .ToListAsync();
         }
 
-        // Bygger ObstacleDetailsViewModel med full informasjon
+        // Bygger ObstacleDetailsViewModel
         private ObstacleDetailsViewModel BuildObstacleDetailsViewModel(
             Obstacle obstacle,
             List<ObstacleStatus> statusHistory)
@@ -429,7 +425,7 @@ namespace FirstWebApplication.Controllers
             return new ObstacleDetailsViewModel
             {
                 Id = obstacle.Id,
-                Name = obstacle.Name ?? "Unnamed",
+                // NAME ER FJERNET HER
                 Type = obstacle.ObstacleType?.Name,
                 Height = obstacle.Height ?? 0,
                 Description = obstacle.Description ?? "",
@@ -455,17 +451,14 @@ namespace FirstWebApplication.Controllers
             };
         }
 
-        // Oppdaterer hindringsstatus og deaktiverer forrige status
         private async Task UpdateObstacleStatusAsync(Obstacle obstacle, int statusTypeId, string userId, string comments)
         {
-            // Deaktiver gammel status
             if (obstacle.CurrentStatus != null)
             {
                 obstacle.CurrentStatus.IsActive = false;
                 _context.ObstacleStatuses.Update(obstacle.CurrentStatus);
             }
 
-            // Opprett ny status
             var newStatus = new ObstacleStatus
             {
                 ObstacleId = obstacle.Id,
@@ -479,13 +472,11 @@ namespace FirstWebApplication.Controllers
             _context.ObstacleStatuses.Add(newStatus);
             await _context.SaveChangesAsync();
 
-            // Oppdater CurrentStatusId
             obstacle.CurrentStatusId = newStatus.Id;
             _context.Obstacles.Update(obstacle);
             await _context.SaveChangesAsync();
         }
 
-        // Bygger query for AllObstacles med statusfiltrering
         private IQueryable<Obstacle> BuildAllObstaclesQuery(string? status)
         {
             var query = _context.Obstacles
@@ -499,7 +490,6 @@ namespace FirstWebApplication.Controllers
                 .Where(o => o.CurrentStatus != null && o.CurrentStatus.StatusTypeId != 1)
                 .AsQueryable();
 
-            // Filtrer på status
             if (!string.IsNullOrEmpty(status) && status.ToLower() != "all")
             {
                 query = ApplyStatusFilter(query, status);
@@ -508,7 +498,6 @@ namespace FirstWebApplication.Controllers
             return query;
         }
 
-        // Anvender statusfilter på query
         private IQueryable<Obstacle> ApplyStatusFilter(IQueryable<Obstacle> query, string status)
         {
             return status.ToLower() switch
@@ -520,14 +509,12 @@ namespace FirstWebApplication.Controllers
             };
         }
 
-        // Anvender sortering på query basert på sortBy og sortOrder
+        // Anvender sortering på query (Fjernet sortering på Name)
         private IQueryable<Obstacle> ApplySorting(IQueryable<Obstacle> query, string? sortBy, string? sortOrder)
         {
             return sortBy?.ToLower() switch
             {
-                "name" => sortOrder == "asc"
-                    ? query.OrderBy(o => o.Name)
-                    : query.OrderByDescending(o => o.Name),
+                // "NAME" CASE ER FJERNET HERFRA
                 "type" => sortOrder == "asc"
                     ? query.OrderBy(o => o.ObstacleType!.Name)
                     : query.OrderByDescending(o => o.ObstacleType!.Name),
@@ -543,8 +530,6 @@ namespace FirstWebApplication.Controllers
                 _ => query.OrderByDescending(o => o.RegisteredDate)
             };
         }
-
-        // Hjelpeklasse
 
         private class RegisterforerStatistics
         {

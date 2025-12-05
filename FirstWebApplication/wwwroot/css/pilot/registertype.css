@@ -26,14 +26,14 @@ html, body {
     height: 100%;
 }
 
-/* Dark overlay - keep below navbar mobile menu (z-index 100) */
+/* Dark overlay over map (LIGHT MODE baseline) */
 .register-overlay {
     position: fixed;
     top: 64px;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.35); /* litt lysere i lys modus */
     backdrop-filter: blur(2px);
     z-index: 10;
     display: flex;
@@ -68,57 +68,57 @@ html, body {
     display: block;
 }
 
-.option-box:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
-}
+    .option-box:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+    }
 
-.option-box .icon {
-    font-size: 80px;
-    margin-bottom: 20px;
-}
+    .option-box .icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+    }
 
-.option-box h2 {
-    font-size: 28px;
-    font-weight: bold;
-    color: #1f2937;
-    margin-bottom: 15px;
-}
+    .option-box h2 {
+        font-size: 28px;
+        font-weight: bold;
+        color: #1f2937;
+        margin-bottom: 15px;
+    }
 
-.option-box p {
-    font-size: 16px;
-    color: #6b7280;
-    line-height: 1.6;
-    margin-bottom: 30px;
-}
+    .option-box p {
+        font-size: 16px;
+        color: #6b7280;
+        line-height: 1.6;
+        margin-bottom: 30px;
+    }
 
-.option-box .btn {
-    display: inline-block;
-    padding: 14px 40px;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
+    .option-box .btn {
+        display: inline-block;
+        padding: 14px 40px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
 
-.option-box.quick .btn {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-}
+    .option-box.quick .btn {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
 
-.option-box.quick:hover .btn {
-    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
-}
+    .option-box.quick:hover .btn {
+        box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+    }
 
-.option-box.full .btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
+    .option-box.full .btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
 
-.option-box.full:hover .btn {
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-}
+    .option-box.full:hover .btn {
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
 
 /* Responsive design */
 @media (max-width: 768px) {
@@ -132,11 +132,57 @@ html, body {
         padding: 30px 20px;
     }
 
-    .option-box .icon {
-        font-size: 60px;
+        .option-box .icon {
+            font-size: 60px;
+        }
+
+        .option-box h2 {
+            font-size: 22px;
+        }
+}
+
+/* =========================================
+   DARK MODE – RegisterType
+   ========================================= */
+
+/* Mørkere overlay over kartet i dark mode */
+.dark .register-overlay {
+    background-color: rgba(15, 23, 42, 0.75); /* mørkere enn i lys modus */
+    backdrop-filter: blur(3px);
+}
+
+    /* Selve kortene blir mørke med lys tekst */
+    .dark .register-overlay .option-box {
+        background: #020617; /* veldig mørk blå/sort */
+        color: #e5e7eb;
+        border-radius: 20px;
+        border: 1px solid #1f2937;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
     }
 
-    .option-box h2 {
-        font-size: 22px;
-    }
-}
+        /* Overskrift og tekst i kortene */
+        .dark .register-overlay .option-box h2 {
+            color: #f9fafb;
+        }
+
+        .dark .register-overlay .option-box p {
+            color: #d1d5db;
+        }
+
+        /* Ikonene kan få mer «glow» i dark mode */
+        .dark .register-overlay .option-box.quick .icon {
+            color: #22c55e; /* grønn-ish */
+        }
+
+        .dark .register-overlay .option-box.full .icon {
+            color: #a855f7; /* lilla-ish */
+        }
+
+        /* Knappene beholder fargene, men popper mer i dark mode */
+        .dark .register-overlay .option-box .btn {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+        }
+
+            .dark .register-overlay .option-box .btn:hover {
+                filter: brightness(1.08);
+            }

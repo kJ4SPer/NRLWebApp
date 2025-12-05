@@ -10,8 +10,6 @@ namespace FirstWebApplication.Entities
     {
         [Key]
         public long Id { get; set; }
-
-        // FK til ObstacleType
         public long? ObstacleTypeId { get; set; }
         public ObstacleType? ObstacleType { get; set; }
 
@@ -26,9 +24,6 @@ namespace FirstWebApplication.Entities
         public ObstacleStatus? CurrentStatus { get; set; }
 
         // Kjernedata
-        [StringLength(100)]
-        public string? Name { get; set; }
-
         [Range(0.1, 10000)]
         public decimal? Height { get; set; }
 

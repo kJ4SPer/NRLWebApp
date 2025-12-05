@@ -110,3 +110,27 @@ label {
     background-color: #9ca3af;
     cursor: not-allowed;
 }
+
+/* =========================================
+   DARK MODE – Full Register Form
+   ========================================= */
+
+.dark .registration-form {
+    background: #1f2937; /* Mørk bakgrunn for skjemaet */
+    color: #e5e7eb; /* Lys tekstfarge */
+    box-shadow: -2px 0 10px rgba(255, 255, 255, 0.1);
+}
+
+    .dark .registration-form label {
+        color: #e5e7eb; /* Lys farge på etiketter */
+    }
+
+    .dark .registration-form .form-control {
+        background: #374151; /* Litt lysere mørk bakgrunn for input-felt */
+        border: 1px solid #4b5563; /* Lysere kantlinje */
+        color: #f9fafb; /* Hvit tekst i input */
+    }
+
+        .dark .registration-form .form-control:focus {
+            border-color: #6366f1; /* Lilla fokusfarge */
+        }

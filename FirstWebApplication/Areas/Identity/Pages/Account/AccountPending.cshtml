@@ -1,12 +1,17 @@
 ﻿@page
+@using FirstWebApplication.Helpers
 @model AccountPendingModel
 @{
-    ViewData["Title"] = "Konto venter på godkjenning";
+    ViewData["Title"] = "Konto venter";
 }
 
-<style nonce="@FirstWebApplication.Helpers.CspHelper.GetNonce(Html)">
+<style nonce="@CspHelper.GetNonce(Html)">
     header, footer, .border-top.footer {
         display: none !important;
+    }
+
+    .main-content {
+        background-color: transparent !important;
     }
 
     body {
@@ -46,10 +51,10 @@
         border: none;
         border-radius: 15px;
         background-color: rgba(255, 255, 255, 0.98);
-        box-shadow: 0 1rem 3rem rgba(0,0,0,.25);
         width: 100%;
         max-width: 500px;
         text-align: center;
+        padding: 40px;
     }
 </style>
 
@@ -57,19 +62,10 @@
 <div id="map-overlay"></div>
 
 <div class="auth-container">
-    <div class="card auth-card p-5">
+    <div class="card auth-card">
         <div class="card-body">
-            <div class="mb-4">
-                <i class="bi bi-lock-fill text-danger" style="font-size: 4rem;"></i>
-            </div>
             <h2 class="fw-bold mb-3">Ikke godkjent</h2>
-            <p class="lead mb-4">
-                Din brukerkonto er foreløpig ikke godkjent av en administrator.
-            </p>
-            <p class="text-muted mb-5">
-                Du kan ikke utføre handlinger før godkjenning er gitt. Vennligst prøv igjen senere eller kontakt support.
-            </p>
-
+            <p class="lead mb-4">Din brukerkonto er foreløpig ikke godkjent av en administrator.</p>
             <form asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
                 <button type="submit" class="btn btn-danger btn-lg w-100">Logg ut</button>
             </form>
@@ -80,9 +76,9 @@
 @section Scripts {
     <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
     <script src="~/lib/leaflet/leaflet.js"></script>
-    <script nonce="@FirstWebApplication.Helpers.CspHelper.GetNonce(Html)">
+    <script nonce="@CspHelper.GetNonce(Html)">
         document.addEventListener("DOMContentLoaded", function () {
-            var map = L.map('map-background', { zoomControl: false, dragging: false, scrollWheelZoom: false, attributionControl: false }).setView([59.91, 10.75], 12);
+           var map = L.map('map-background', { zoomControl: false, dragging: false, scrollWheelZoom: false, attributionControl: false }).setView([59.91, 10.75], 12);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
         });
     </script>
