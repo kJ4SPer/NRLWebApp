@@ -1,13 +1,11 @@
 ﻿using FirstWebApplication.Controllers;
 using FirstWebApplication.Entities;
-using FirstWebApplication.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures; // VIKTIG FOR TEMPDATA
 using Moq;
 using NRLWebApp.Tests.Mocks;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -15,69 +13,54 @@ namespace NRLWebApp.Tests.Controllers
 {
     public class AdminControllerTests
     {
-        // Hjelpefunksjon for å sette opp Controlleren med nødvendige mocks og kontekst
-        private AdminController CreateController(string loggedInUserId, List<ApplicationUser> adminUsers, Mock<UserManager<ApplicationUser>> mockUserManager, Mock<UserRoleService> mockRoleService)
+        [Fact]
+        public async Task AdminDashboard_Counts_Pending_And_TotalUsers_Correctly()
         {
-            var dbContext = TestDbContext.Create();
-
-            // Simuler at UserRoleService returnerer ønsket antall Admin-brukere
-            mockRoleService
-                .Setup(s => s.GetUsersInRoleAsync("Admin"))
-                .ReturnsAsync(adminUsers);
-
-            // Simuler den innloggede brukeren som en Admin
-            var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            var users = new List<ApplicationUser>
             {
-                new Claim(ClaimTypes.NameIdentifier, loggedInUserId),
-                new Claim(ClaimTypes.Name, "logged@in.com"),
-                new Claim(ClaimTypes.Role, "Admin")
-            }, "mock"));
-
-            var controller = new AdminController(mockUserManager.Object, mockRoleService.Object, dbContext)
-            {
-                ControllerContext = new ControllerContext()
-                {
-                    HttpContext = new DefaultHttpContext() { User = user }
-                }
+                new ApplicationUser { Id = "1", IsApproved = false },
+                new ApplicationUser { Id = "2", IsApproved = true },
+                new ApplicationUser { Id = "3", IsApproved = true }
             };
 
-            return controller;
+            var mockUserManager = MockHelpers.MockUserManager(users);
+            var mockRoleManager = MockHelpers.MockRoleManager();
+            var context = TestDbContext.Create();
+
+            var controller = new AdminController(mockUserManager.Object, mockRoleManager.Object, context);
+
+            var result = await controller.AdminDashboard();
+
+            var viewResult = Assert.IsType<ViewResult>(result);
+            Assert.Equal(1, viewResult.ViewData["PendingCount"]);
+            Assert.Equal(3, viewResult.ViewData["TotalUsers"]);
         }
 
         [Fact]
-        public async Task DeleteUser_WhenDeletingLastAdmin_ReturnsErrorAndPreventsDeletion()
+        public async Task ApproveUser_UpdatesUser_And_Redirects()
         {
             // Arrange
-            var userToDelete = new ApplicationUser { Id = "admin-to-delete", Email = "admin@user.com" };
-            var mockUserManager = MockUserManager.Create();
+            var user = new ApplicationUser { Id = "user1", Email = "test@test.com", IsApproved = false };
+            var usersList = new List<ApplicationUser> { user };
 
-            // Mock RoleService til å kun returnere ÉN admin (Siste Admin)
-            var mockRoleService = new Mock<UserRoleService>(
-                new Mock<RoleManager<IdentityRole>>().Object,
-                mockUserManager.Object,
-                new Mock<IUserStore<ApplicationUser>>().Object
-            );
-            mockRoleService.Setup(s => s.GetUsersInRoleAsync("Admin")).ReturnsAsync(new List<ApplicationUser> { userToDelete });
+            var mockUserManager = MockHelpers.MockUserManager(usersList);
+            mockUserManager.Setup(x => x.FindByIdAsync("user1")).ReturnsAsync(user);
 
-            // Simuler at brukeren som slettes er Admin
-            mockUserManager.Setup(m => m.FindByIdAsync(userToDelete.Id)).ReturnsAsync(userToDelete);
-            mockUserManager.Setup(m => m.GetRolesAsync(userToDelete)).ReturnsAsync(new List<string> { "Admin" });
+            var controller = new AdminController(mockUserManager.Object, MockHelpers.MockRoleManager().Object, TestDbContext.Create());
 
-            // Simuler en annen Admin som er innlogget (må ha en annen ID enn den som slettes)
-            var controller = CreateController("other-admin-id", new List<ApplicationUser> { userToDelete }, mockUserManager, mockRoleService);
+            // --- LØSNING FOR NULLREFERENCEEXCEPTION ---
+            controller.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+            // ------------------------------------------
 
             // Act
-            var result = await controller.DeleteUser(userToDelete.Id);
+            var result = await controller.ApproveUser("user1");
 
             // Assert
-            var redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("AdminUsers", redirectToActionResult.ActionName);
+            Assert.True(user.IsApproved);
+            mockUserManager.Verify(x => x.UpdateAsync(user), Times.Once);
 
-            // Sjekk at feilmeldingen ble satt i TempData
-            Assert.Contains("Cannot delete the last Admin user!", controller.TempData["Error"]?.ToString() ?? string.Empty);
-
-            // Sjekk at selve slette-metoden ALDRI ble kalt (Kritisk)
-            mockUserManager.Verify(m => m.DeleteAsync(It.IsAny<ApplicationUser>()), Times.Never);
+            var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+            Assert.Equal("AdminPendingUsers", redirectResult.ActionName);
         }
     }
 }

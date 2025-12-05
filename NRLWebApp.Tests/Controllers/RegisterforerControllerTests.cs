@@ -1,95 +1,102 @@
 ﻿using FirstWebApplication.Controllers;
-using FirstWebApplication.Data;
 using FirstWebApplication.Entities;
 using FirstWebApplication.Models.Obstacle;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NRLWebApp.Tests.Mocks;
-using System.Security.Claims;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace NRLWebApp.Tests.Controllers
 {
     public class RegisterforerControllerTests
     {
-        private readonly Mock<ILogger<RegisterforerController>> _mockLogger = new Mock<ILogger<RegisterforerController>>();
-
-        // Hjelpefunksjon for å sette opp Controlleren med en simulert Registerfører
-        private RegisterforerController CreateController(ApplicationDbContext context, string userId = "registerforer-id-456")
-        {
-            var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, userId),
-                new Claim(ClaimTypes.Role, "Registerfører")
-            }, "mock"));
-
-            var controller = new RegisterforerController(context, _mockLogger.Object)
-            {
-                ControllerContext = new ControllerContext()
-                {
-                    HttpContext = new DefaultHttpContext() { User = user }
-                }
-            };
-
-            return controller;
-        }
-
-        // Hjelpefunksjon for å legge til StatusType-data i In-Memory DB
-        private async Task SeedStatusTypes(ApplicationDbContext context)
-        {
-            if (!context.StatusTypes.Any())
-            {
-                context.StatusTypes.Add(new StatusType { Id = 2, Name = "Pending" });
-                context.StatusTypes.Add(new StatusType { Id = 3, Name = "Approved" });
-                await context.SaveChangesAsync();
-            }
-        }
-
         [Fact]
-        public async Task ApproveObstacle_PendingToApproved_StatusIsUpdatedCorrectly()
+        public async Task PendingObstacles_Returns_Only_Pending_Items()
         {
             // Arrange
             var context = TestDbContext.Create();
-            await SeedStatusTypes(context);
-            var registerforerId = "registerforer-id-456";
+            var mockLogger = new Mock<ILogger<RegisterforerController>>();
 
-            // Opprett en test-hindring i Pending (2) status
-            var obstacle = new Obstacle { Id = 201, RegisteredByUserId = "pilot-id", Name = "Test Obstacle" };
-            context.Obstacles.Add(obstacle);
+            // 1. Opprett Dummy Bruker (For foreign keys)
+            var user = new ApplicationUser { Id = "testuser", Email = "test@test.com", IsApproved = true };
+            context.Users.Add(user);
 
-            var initialStatus = new ObstacleStatus
-            { ObstacleId = 201, StatusTypeId = 2, ChangedByUserId = "pilot-id", IsActive = true };
-            context.ObstacleStatuses.Add(initialStatus);
+            // 2. Opprett StatusTyper (Kritisk for filtreringen)
+            context.StatusTypes.AddRange(
+                new StatusType { Id = 2, Name = "Pending" },
+                new StatusType { Id = 3, Name = "Approved" }
+            );
+
+            // 3. Opprett Hindringer (Obstacles)
+            // Merk: Vi fyller ut ALLE required fields
+            var obs1 = new Obstacle
+            {
+                Id = 100L,
+                Name = "Skal Vises",
+                Location = "POINT(10 10)",
+                RegisteredByUserId = "testuser",
+                CurrentStatusId = 1000L // Kobler til statusen vi lager under
+            };
+
+            var obs2 = new Obstacle
+            {
+                Id = 200L,
+                Name = "Skal Ikke Vises",
+                Location = "POINT(20 20)",
+                RegisteredByUserId = "testuser",
+                CurrentStatusId = 2000L
+            };
+            context.Obstacles.AddRange(obs1, obs2);
+
+            // 4. Opprett Status-historikk
+            // Status 2 = Pending (Denne skal fanges opp)
+            var status1 = new ObstacleStatus
+            {
+                Id = 1000L,
+                ObstacleId = 100L,
+                StatusTypeId = 2, // <--- DETTE ER NØKKELEN (2 = Pending)
+                IsActive = true,
+                ChangedByUserId = "testuser",
+                Comments = "Pending test"
+            };
+
+            // Status 3 = Approved (Denne skal ignoreres)
+            var status2 = new ObstacleStatus
+            {
+                Id = 2000L,
+                ObstacleId = 200L,
+                StatusTypeId = 3,
+                IsActive = true,
+                ChangedByUserId = "testuser",
+                Comments = "Approved test"
+            };
+            context.ObstacleStatuses.AddRange(status1, status2);
+
             await context.SaveChangesAsync();
 
-            obstacle.CurrentStatusId = initialStatus.Id;
-            context.Obstacles.Update(obstacle);
-            await context.SaveChangesAsync();
+            // 5. Nullstill ChangeTracker for å simulere en helt ny request mot databasen
+            context.ChangeTracker.Clear();
 
-            var controller = CreateController(context, registerforerId);
-            var model = new ApproveObstacleViewModel { ObstacleId = 201, Comments = "Approved by Registerforer" };
+            var controller = new RegisterforerController(context, mockLogger.Object);
+
+            // Sett opp TempData for å unngå null-feil
+            controller.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
             // Act
-            await controller.ApproveObstacle(model);
+            var result = await controller.PendingObstacles();
 
             // Assert
-            // 1. Sjekk at den gamle statusen er Inaktiv (Historikk)
-            var oldStatus = await context.ObstacleStatuses.FindAsync(initialStatus.Id);
-            Assert.False(oldStatus?.IsActive);
+            var viewResult = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsAssignableFrom<List<ObstacleListItemViewModel>>(viewResult.Model);
 
-            // 2. Sjekk at ny CurrentStatus er satt til Approved (3) av Registerføreren
-            var updatedObstacle = await context.Obstacles
-                .Include(o => o.CurrentStatus)
-                .FirstOrDefaultAsync(o => o.Id == 201);
-            Assert.NotNull(updatedObstacle?.CurrentStatus); // Sikre at CurrentStatus ikke er null før den brukes
-            Assert.Equal(3, updatedObstacle!.CurrentStatus!.StatusTypeId);
-            Assert.True(updatedObstacle.CurrentStatus.IsActive);
-            Assert.Equal(registerforerId, updatedObstacle.CurrentStatus.ChangedByUserId);
+            // Vi forventer nøyaktig 1 treff (obs1)
+            Assert.Single(model);
+            Assert.Equal("Skal Vises", model[0].Name);
         }
     }
 }
