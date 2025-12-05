@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Quick Register";
+    ViewData["Title"] = "Hurtigregistrering";
 }
 
 <link rel="stylesheet" href="~/css/pilot/quick-register.css" />
@@ -14,26 +14,26 @@
     <div class="status-box">
         <div id="loading-state">
             <div class="icon">📍</div>
-            <h2>Getting Your Location</h2>
-            <p>Please allow location access to quickly register this obstacle.</p>
+            <h2>Finner lokasjonen din</h2>
+            <p>Vennligst tillat tilgang til posisjon for å raskt registrere denne hindringen.</p>
             <div class="spinner"></div>
-            <p style="font-size: 14px; color: #9ca3af;">This may take a few seconds...</p>
+            <p style="font-size: 14px; color: #9ca3af;">Dette kan ta noen sekunder...</p>
         </div>
 
         <div id="success-state" class="hidden">
             <div class="icon success-icon">✓</div>
-            <h2>Location Saved Successfully!</h2>
-            <p>Your GPS location has been saved. You can complete the details later from My Registrations.</p>
-            <p class="redirect-timer">Redirecting in <span id="countdown">3</span> seconds...</p>
+            <h2>Lokasjonen din lagret!</h2>
+            <p>GPS-posisjonen din er lagret. Du kan fullføre detaljene senere fra Mine registreringer.</p>
+            <p class="redirect-timer">Omdirigerer om <span id="countdown">3</span> sekunder...</p>
             <div style="margin-top: 30px;">
-                <a href="@Url.Action("RegisterType", "Pilot")" class="action-btn">Continue Now</a>
+                <a href="@Url.Action("RegisterType", "Pilot")" class="action-btn">Fortsett nå</a>
             </div>
         </div>
 
         <div id="error-state" class="hidden">
             <div class="icon error-icon">✗</div>
-            <h2 class="error-text">Location Access Problem</h2>
-            <p id="error-message">We couldn't get your location.</p>
+            <h2 class="error-text">Problem med stedstilgang</h2>
+            <p id="error-message">Vi kunne ikke få tak i posisjonen din.</p>
 
             <div class="help-text">
                 <strong>💡 Common Solutions:</strong>
@@ -46,8 +46,8 @@
             </div>
 
             <div style="margin-top: 30px;">
-                <button id="btn-retry-location" class="action-btn">🔄 Try Again</button>
-                <a href="@Url.Action("FullRegister", "Pilot")" class="action-btn secondary">📝 Use Full Register</a>
+                <button id="btn-retry-location" class="action-btn">🔄 Prøv igjen</button>
+                <a href="@Url.Action("FullRegister", "Pilot")" class="action-btn secondary">📝 Bruk full register</a>
             </div>
         </div>
     </div>
