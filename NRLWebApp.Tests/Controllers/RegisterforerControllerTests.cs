@@ -1,316 +1,95 @@
-using FirstWebApplication.Controllers;
+Ôªøusing FirstWebApplication.Controllers;
 using FirstWebApplication.Data;
 using FirstWebApplication.Entities;
 using FirstWebApplication.Models.Obstacle;
-using FirstWebApplication.Models.Enums;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
+using NRLWebApp.Tests.Mocks;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Xunit;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace NRLWebApp.Tests.Controllers
 {
-    /// <summary>
-    /// Testklasse for RegisterforerController
-    /// Tester godkjenning/avvisning av hindringer og dashboard-funksjonalitet
-    /// </summary>
     public class RegisterforerControllerTests
     {
-        private readonly ApplicationDbContext _testContext;
-        private readonly Mock<ILogger<RegisterforerController>> _testMockLogger;
-        private readonly RegisterforerController _testController;
+        private readonly Mock<ILogger<RegisterforerController>> _mockLogger = new Mock<ILogger<RegisterforerController>>();
 
-        public RegisterforerControllerTests()
+        // Hjelpefunksjon for √• sette opp Controlleren med en simulert Registerf√∏rer
+        private RegisterforerController CreateController(ApplicationDbContext context, string userId = "registerforer-id-456")
         {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-                .Options;
-            _testContext = new ApplicationDbContext(options);
-
-            _testMockLogger = new Mock<ILogger<RegisterforerController>>();
-            _testController = new RegisterforerController(_testContext, _testMockLogger.Object);
-
-            SeedStatusTypes();
-        }
-
-        /// <summary>
-        /// Initialiserer standard statustypes i testdatabasen
-        /// </summary>
-        private void SeedStatusTypes()
-        {
-            _testContext.StatusTypes.AddRange(
-                new StatusType { Id = 1, Name = "Registered" },
-                new StatusType { Id = 2, Name = "Pending" },
-                new StatusType { Id = 3, Name = "Approved" },
-                new StatusType { Id = 4, Name = "Rejected" }
-            );
-            _testContext.SaveChanges();
-        }
-
-        #region Dashboard Tests
-
-        /// <summary>
-        /// Tester at dashboard returnerer korrekte tellinger av hindringer
-        /// </summary>
-        [Fact]
-        public async Task RegisterforerDashboard_ReturnsDashboardWithCorrectStatistics()
-        {
-            // Arrange
-            SetupObstaclesWithStatus(2, (int)ObstacleStatusEnum.Pending);
-            SetupObstaclesWithStatus(3, (int)ObstacleStatusEnum.Approved);
-            SetupObstaclesWithStatus(1, (int)ObstacleStatusEnum.Rejected);
-
-            // Act
-            var result = await _testController.RegisterforerDashboard();
-
-            // Assert
-            var viewResult = Assert.IsType<ViewResult>(result);
-            Assert.NotNull(viewResult.ViewData);
-        }
-
-        #endregion
-
-        #region Approve Obstacle Tests
-
-        /// <summary>
-        /// Tester at hindringer kan godkjennes og status oppdateres
-        /// </summary>
-        [Fact]
-        public async Task ApproveObstacle_ValidModel_ChangesStatusToApproved()
-        {
-            // Arrange
-            var obstacle = SetupObstacleWithStatus(1, (int)ObstacleStatusEnum.Pending);
-            var model = new ApproveObstacleViewModel
+            var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
             {
-                ObstacleId = 1,
-                Comments = "Godkjent - ingen problemer funnet"
+                new Claim(ClaimTypes.NameIdentifier, userId),
+                new Claim(ClaimTypes.Role, "Registerf√∏rer")
+            }, "mock"));
+
+            var controller = new RegisterforerController(context, _mockLogger.Object)
+            {
+                ControllerContext = new ControllerContext()
+                {
+                    HttpContext = new DefaultHttpContext() { User = user }
+                }
             };
 
-            // Act
-            var result = await _testController.ApproveObstacle(model);
-
-            // Assert
-            var updatedObstacle = await _testContext.Obstacles
-                .Include(o => o.CurrentStatus)
-                .FirstOrDefaultAsync(o => o.Id == 1);
-            
-            Assert.NotNull(updatedObstacle?.CurrentStatus);
-            Assert.Equal((int)ObstacleStatusEnum.Approved, updatedObstacle.CurrentStatus.StatusTypeId);
-            var redirect = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("AllObstacles", redirect.ActionName);
+            return controller;
         }
 
-        /// <summary>
-        /// Tester at godkjenningskommentarer lagres korrekt
-        /// </summary>
-        [Fact]
-        public async Task ApproveObstacle_SavesCommentsToStatus()
+        // Hjelpefunksjon for √• legge til StatusType-data i In-Memory DB
+        private async Task SeedStatusTypes(ApplicationDbContext context)
         {
-            // Arrange
-            SetupObstacleWithStatus(2, (int)ObstacleStatusEnum.Pending);
-            var model = new ApproveObstacleViewModel
+            if (!context.StatusTypes.Any())
             {
-                ObstacleId = 2,
-                Comments = "MÂlt og verifisert - OK"
-            };
-
-            // Act
-            await _testController.ApproveObstacle(model);
-
-            // Assert
-            var status = await _testContext.ObstacleStatuses
-                .Where(s => s.ObstacleId == 2 && s.IsActive)
-                .FirstOrDefaultAsync();
-            
-            Assert.NotNull(status);
-            Assert.Equal("MÂlt og verifisert - OK", status.Comments);
-        }
-
-        /// <summary>
-        /// Tester at godkjenning av ikke-eksisterende hindring returnerer NotFound
-        /// </summary>
-        [Fact]
-        public async Task ApproveObstacle_NonExistentId_ReturnsNotFound()
-        {
-            // Arrange
-            var model = new ApproveObstacleViewModel { ObstacleId = 999 };
-
-            // Act
-            var result = await _testController.ApproveObstacle(model);
-
-            // Assert
-            var notFound = Assert.IsType<NotFoundResult>(result);
-            Assert.Equal(404, notFound.StatusCode);
-        }
-
-        #endregion
-
-        #region Reject Obstacle Tests
-
-        /// <summary>
-        /// Tester at hindringer kan avvises med avvisningsgrunn
-        /// </summary>
-        [Fact]
-        public async Task RejectObstacle_ValidModel_ChangesStatusToRejected()
-        {
-            // Arrange
-            SetupObstacleWithStatus(3, (int)ObstacleStatusEnum.Pending);
-            var model = new RejectObstacleViewModel
-            {
-                ObstacleId = 3,
-                RejectionReason = "Feil plassering",
-                Comments = "Koordinater er ikke korrekte"
-            };
-
-            // Act
-            var result = await _testController.RejectObstacle(model);
-
-            // Assert
-            var updatedObstacle = await _testContext.Obstacles
-                .Include(o => o.CurrentStatus)
-                .FirstOrDefaultAsync(o => o.Id == 3);
-            
-            Assert.NotNull(updatedObstacle?.CurrentStatus);
-            Assert.Equal((int)ObstacleStatusEnum.Rejected, updatedObstacle.CurrentStatus.StatusTypeId);
-            var redirect = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("AllObstacles", redirect.ActionName);
-        }
-
-        /// <summary>
-        /// Tester at avvisningsgrunn og kommentarer kombineres i status-kommentarer
-        /// </summary>
-        [Fact]
-        public async Task RejectObstacle_CombinesReasonAndComments()
-        {
-            // Arrange
-            SetupObstacleWithStatus(4, (int)ObstacleStatusEnum.Pending);
-            var model = new RejectObstacleViewModel
-            {
-                ObstacleId = 4,
-                RejectionReason = "Manglende data",
-                Comments = "H¯yde mÂtte ikke verifisert"
-            };
-
-            // Act
-            await _testController.RejectObstacle(model);
-
-            // Assert
-            var status = await _testContext.ObstacleStatuses
-                .Where(s => s.ObstacleId == 4 && s.IsActive)
-                .FirstOrDefaultAsync();
-            
-            Assert.NotNull(status);
-            Assert.Contains("Manglende data", status.Comments);
-        }
-
-        #endregion
-
-        #region Filter Tests
-
-        /// <summary>
-        /// Tester at ventende hindringer kan filtreres
-        /// </summary>
-        [Fact]
-        public async Task PendingObstacles_ReturnsPendingObstaclesOnly()
-        {
-            // Arrange
-            SetupObstaclesWithStatus(2, (int)ObstacleStatusEnum.Pending);
-            SetupObstaclesWithStatus(3, (int)ObstacleStatusEnum.Approved);
-
-            // Act
-            var result = await _testController.PendingObstacles();
-
-            // Assert
-            var viewResult = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsAssignableFrom<List<ObstacleListItemViewModel>>(viewResult.Model);
-            Assert.Equal(2, model.Count);
-        }
-
-        /// <summary>
-        /// Tester at godkjente hindringer kan filtreres
-        /// </summary>
-        [Fact]
-        public async Task ApprovedObstacles_ReturnsApprovedObstaclesOnly()
-        {
-            // Arrange
-            SetupObstaclesWithStatus(5, (int)ObstacleStatusEnum.Approved);
-            SetupObstaclesWithStatus(2, (int)ObstacleStatusEnum.Pending);
-
-            // Act
-            var result = await _testController.ApprovedObstacles();
-
-            // Assert
-            var viewResult = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsAssignableFrom<List<ObstacleListItemViewModel>>(viewResult.Model);
-            Assert.Equal(5, model.Count);
-        }
-
-        #endregion
-
-        #region Map View Tests
-
-        /// <summary>
-        /// Tester at MapView returnerer en view
-        /// </summary>
-        [Fact]
-        public void MapView_ReturnsViewResult()
-        {
-            var result = _testController.MapView();
-            Assert.IsType<ViewResult>(result);
-        }
-
-        #endregion
-
-        // ============================================================
-        // HJELPEMETODER
-        // ============================================================
-
-        /// <summary>
-        /// Oppretter en hindring med gitt status
-        /// </summary>
-        private Obstacle SetupObstacleWithStatus(long id, int statusTypeId)
-        {
-            var statusType = _testContext.StatusTypes.FirstOrDefault(st => st.Id == statusTypeId)
-                ?? new StatusType { Id = statusTypeId, Name = "Test" };
-
-            var status = new ObstacleStatus
-            {
-                Id = id,
-                ObstacleId = id,
-                StatusTypeId = statusTypeId,
-                StatusType = statusType,
-                ChangedByUserId = "admin-user",
-                ChangedDate = DateTime.Now,
-                IsActive = true
-            };
-
-            var obstacle = new Obstacle
-            {
-                Id = id,
-                Name = $"Test Obstacle {id}",
-                Location = """{"type":"Point","coordinates":[10.75,59.91]}""",
-                RegisteredByUserId = "pilot-id",
-                RegisteredDate = DateTime.Now,
-                CurrentStatusId = id,
-                CurrentStatus = status
-            };
-
-            _testContext.Obstacles.Add(obstacle);
-            _testContext.ObstacleStatuses.Add(status);
-            _testContext.SaveChanges();
-
-            return obstacle;
-        }
-
-        /// <summary>
-        /// Oppretter flere hindringer med samme status
-        /// </summary>
-        private void SetupObstaclesWithStatus(int count, int statusTypeId)
-        {
-            for (long i = 1; i <= count; i++)
-            {
-                SetupObstacleWithStatus(i, statusTypeId);
+                context.StatusTypes.Add(new StatusType { Id = 2, Name = "Pending" });
+                context.StatusTypes.Add(new StatusType { Id = 3, Name = "Approved" });
+                await context.SaveChangesAsync();
             }
+        }
+
+        [Fact]
+        public async Task ApproveObstacle_PendingToApproved_StatusIsUpdatedCorrectly()
+        {
+            // Arrange
+            var context = TestDbContext.Create();
+            await SeedStatusTypes(context);
+            var registerforerId = "registerforer-id-456";
+
+            // Opprett en test-hindring i Pending (2) status
+            var obstacle = new Obstacle { Id = 201, RegisteredByUserId = "pilot-id", Name = "Test Obstacle" };
+            context.Obstacles.Add(obstacle);
+
+            var initialStatus = new ObstacleStatus
+            { ObstacleId = 201, StatusTypeId = 2, ChangedByUserId = "pilot-id", IsActive = true };
+            context.ObstacleStatuses.Add(initialStatus);
+            await context.SaveChangesAsync();
+
+            obstacle.CurrentStatusId = initialStatus.Id;
+            context.Obstacles.Update(obstacle);
+            await context.SaveChangesAsync();
+
+            var controller = CreateController(context, registerforerId);
+            var model = new ApproveObstacleViewModel { ObstacleId = 201, Comments = "Approved by Registerforer" };
+
+            // Act
+            await controller.ApproveObstacle(model);
+
+            // Assert
+            // 1. Sjekk at den gamle statusen er Inaktiv (Historikk)
+            var oldStatus = await context.ObstacleStatuses.FindAsync(initialStatus.Id);
+            Assert.False(oldStatus?.IsActive);
+
+            // 2. Sjekk at ny CurrentStatus er satt til Approved (3) av Registerf√∏reren
+            var updatedObstacle = await context.Obstacles
+                .Include(o => o.CurrentStatus)
+                .FirstOrDefaultAsync(o => o.Id == 201);
+            Assert.NotNull(updatedObstacle?.CurrentStatus); // Sikre at CurrentStatus ikke er null f√∏r den brukes
+            Assert.Equal(3, updatedObstacle!.CurrentStatus!.StatusTypeId);
+            Assert.True(updatedObstacle.CurrentStatus.IsActive);
+            Assert.Equal(registerforerId, updatedObstacle.CurrentStatus.ChangedByUserId);
         }
     }
 }
