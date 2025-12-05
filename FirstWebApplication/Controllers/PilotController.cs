@@ -205,54 +205,67 @@ namespace FirstWebApplication.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CompleteQuickRegister(CompleteQuickRegViewModel model, string? CustomObstacleType)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                ModelState.AddModelError("", "Vennligst sjekk alle markerte felt og fyll inn manglende data.");
+                return View(model);
+            }
 
             var userId = _userManager.GetUserId(User);
             if (userId == null) return Unauthorized();
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            // FIKS: Implementer Execution Strategy for å støtte retrying execution strategy med transaksjoner.
+            var strategy = _context.Database.CreateExecutionStrategy();
+
+            return await strategy.ExecuteAsync<IActionResult>(async () =>
             {
-                var obstacle = await _context.Obstacles
-                    .Include(o => o.CurrentStatus)
-                    .FirstOrDefaultAsync(o => o.Id == model.ObstacleId && o.RegisteredByUserId == userId);
-
-                if (obstacle == null) return NotFound();
-
-                // AUTOMATISK NAVN ER FJERNET HERFRA
-
-                obstacle.Height = model.ObstacleHeight;
-                obstacle.Description = model.ObstacleDescription;
-                await SetObstacleTypeAsync(obstacle, model.ObstacleType, CustomObstacleType);
-
-                if (obstacle.CurrentStatus != null)
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    obstacle.CurrentStatus.IsActive = false;
-                    _context.ObstacleStatuses.Update(obstacle.CurrentStatus);
+                    // Linje 221 i din feilmelding peker hit:
+                    var obstacle = await _context.Obstacles
+                        .Include(o => o.CurrentStatus)
+                        .FirstOrDefaultAsync(o => o.Id == model.ObstacleId && o.RegisteredByUserId == userId);
+
+                    if (obstacle == null) return NotFound();
+
+                    // AUTOMATISK NAVN ER FJERNET HERFRA
+
+                    obstacle.Height = model.ObstacleHeight;
+                    obstacle.Description = model.ObstacleDescription;
+                    // Merk: SetObstacleTypeAsync er antatt fikset i forrige steg (fjerning av SaveChangesAsync)
+                    await SetObstacleTypeAsync(obstacle, model.ObstacleType, CustomObstacleType);
+
+                    if (obstacle.CurrentStatus != null)
+                    {
+                        obstacle.CurrentStatus.IsActive = false;
+                        _context.ObstacleStatuses.Update(obstacle.CurrentStatus);
+                    }
+
+                    var newStatus = CreateObstacleStatus(obstacle.Id, (int)ObstacleStatusEnum.Pending, userId, "Hurtigregistrering fullført");
+                    _context.ObstacleStatuses.Add(newStatus);
+                    await _context.SaveChangesAsync();
+
+                    obstacle.CurrentStatusId = newStatus.Id;
+                    _context.Obstacles.Update(obstacle);
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+
+                    TempData["SuccessMessage"] = "Registrering fullført!";
+                    return RedirectToAction("MyRegistrations");
                 }
-
-                var newStatus = CreateObstacleStatus(obstacle.Id, (int)ObstacleStatusEnum.Pending, userId, "Hurtigregistrering fullført");
-                _context.ObstacleStatuses.Add(newStatus);
-                await _context.SaveChangesAsync();
-
-                obstacle.CurrentStatusId = newStatus.Id;
-                _context.Obstacles.Update(obstacle);
-                await _context.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-
-                TempData["SuccessMessage"] = "Registrering fullført!";
-                return RedirectToAction("MyRegistrations");
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Feil under CompleteQuickRegister");
-                return View(model);
-            }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Feil under CompleteQuickRegister");
+                    ModelState.AddModelError("", "En serverfeil oppstod under lagring. Vennligst prøv igjen.");
+                    return View(model);
+                }
+            }); 
         }
 
-        // ... [Rest of controller remains unchanged] ...
+
 
         [HttpGet]
         public async Task<IActionResult> MyRegistrations()
@@ -390,7 +403,6 @@ namespace FirstWebApplication.Controllers
                 {
                     var newType = new ObstacleType { Name = customType, Description = "Egendefinert type", MinHeight = 0, MaxHeight = 9999 };
                     _context.ObstacleTypes.Add(newType);
-                    await _context.SaveChangesAsync();
                     obstacle.ObstacleTypeId = newType.Id;
                 }
             }
