@@ -1,5 +1,5 @@
 ﻿using FirstWebApplication.Data;
-using Microsoft.EntityFrameworkCore; 
+using Microsoft.EntityFrameworkCore;
 using System;
 
 namespace NRLWebApp.Tests.Mocks
