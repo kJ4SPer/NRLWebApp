@@ -11,9 +11,9 @@
 <div class="py-10 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
     <div class="container mx-auto px-4">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">All Obstacles</h1>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">All Hindre</h1>
             <a asp-action="RegisterforerDashboard" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 text-white rounded-lg transition">
-                Back to Dashboard
+                Tilbake til Dashbord
             </a>
         </div>
 
@@ -40,7 +40,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Approved</p>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Godkjent</p>
                         <p class="text-3xl font-bold text-green-600 dark:text-green-400">@Model.Count(o => o.IsApproved)</p>
                     </div>
                     <div class="bg-green-100 dark:bg-green-900/30 rounded-full p-3">
@@ -52,7 +52,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Pending</p>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Til Godkjenning</p>
                         <p class="text-3xl font-bold text-yellow-600 dark:text-yellow-400">@Model.Count(o => o.IsPending)</p>
                     </div>
                     <div class="bg-yellow-100 dark:bg-yellow-900/30 rounded-full p-3">
@@ -64,7 +64,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Rejected</p>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Avslått</p>
                         <p class="text-3xl font-bold text-red-600 dark:text-red-400">@Model.Count(o => o.IsRejected)</p>
                     </div>
                     <div class="bg-red-100 dark:bg-red-900/30 rounded-full p-3">
@@ -77,40 +77,40 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6 border border-gray-200 dark:border-gray-700">
             <form id="filterForm" method="get" asp-action="AllObstacles" class="flex flex-wrap gap-4 items-end">
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Status</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filtrer Basert På Status</label>
                     <select name="status" class="filter-select w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                        <option value="all" selected="@(currentStatus == "all" ? "selected" : null)">All Statuses</option>
-                        <option value="pending" selected="@(currentStatus == "pending" ? "selected" : null)">Pending</option>
-                        <option value="approved" selected="@(currentStatus == "approved" ? "selected" : null)">Approved</option>
-                        <option value="rejected" selected="@(currentStatus == "rejected" ? "selected" : null)">Rejected</option>
+                        <option value="all" selected="@(currentStatus == "all" ? "selected" : null)">Alle statuser</option>
+                        <option value="pending" selected="@(currentStatus == "pending" ? "selected" : null)">Til Godkjenning</option>
+                        <option value="approved" selected="@(currentStatus == "approved" ? "selected" : null)">Godkjent</option>
+                        <option value="rejected" selected="@(currentStatus == "rejected" ? "selected" : null)">Avslått</option>
                     </select>
                 </div>
 
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sorter med</label>
                     <select name="sortBy" class="filter-select w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                        <option value="registereddate" selected="@(currentSortBy == "registereddate" ? "selected" : null)">Registration Date</option>
+                        <option value="registereddate" selected="@(currentSortBy == "registereddate" ? "selected" : null)">Registreringsdato</option>
                         <option value="type" selected="@(currentSortBy == "type" ? "selected" : null)">Type</option>
-                        <option value="height" selected="@(currentSortBy == "height" ? "selected" : null)">Height</option>
+                        <option value="height" selected="@(currentSortBy == "height" ? "selected" : null)">Høyde</option>
                         <option value="status" selected="@(currentSortBy == "status" ? "selected" : null)">Status</option>
                     </select>
                 </div>
 
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Order</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rekkefølge</label>
                     <select name="sortOrder" class="filter-select w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                        <option value="desc" selected="@(currentSortOrder == "desc" ? "selected" : null)">Newest First</option>
-                        <option value="asc" selected="@(currentSortOrder == "asc" ? "selected" : null)">Oldest First</option>
+                        <option value="desc" selected="@(currentSortOrder == "desc" ? "selected" : null)">Nyeste Først</option>
+                        <option value="asc" selected="@(currentSortOrder == "asc" ? "selected" : null)">Eldste Først</option>
                     </select>
                 </div>
 
                 @* FIKS: Lagt til eksplisitt "Apply" knapp for å garantere innsending av skjemaet. *@
                 <div class="flex gap-4 items-end">
                     <button type="submit" class="inline-block px-6 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition font-medium">
-                        Apply
+                        Bruk
                     </button>
                     <a asp-action="AllObstacles" class="inline-block px-6 py-2 bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500 text-white rounded-lg transition font-medium">
-                        Reset
+                        Nullstill
                     </a>
                 </div>
             </form>
@@ -158,11 +158,11 @@
                                     <span class="font-medium text-gray-900 dark:text-white">@(obstacle.Type ?? "Unknown")</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600 dark:text-gray-400">Height:</span>
+                                    <span class="text-gray-600 dark:text-gray-400">Høyde:</span>
                                     <span class="font-medium text-gray-900 dark:text-white">@obstacle.Height.ToString("F2") m</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600 dark:text-gray-400">Location:</span>
+                                    <span class="text-gray-600 dark:text-gray-400">Sted:</span>
                                     <span class="font-medium text-gray-900 dark:text-white">
                                         @{
                                             var coords = obstacle.Location?.Replace("POINT(", "").Replace(")", "").Split(' ');
@@ -174,17 +174,17 @@
                                     </span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600 dark:text-gray-400">Registered by:</span>
+                                    <span class="text-gray-600 dark:text-gray-400">Registrert av:</span>
                                     <span class="font-medium text-gray-900 dark:text-white">@obstacle.RegisteredBy</span>
                                 </div>
                                 @if (!string.IsNullOrEmpty(obstacle.ProcessedBy))
                                 {
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600 dark:text-gray-400">Processed by:</span>
+                                        <span class="text-gray-600 dark:text-gray-400">Behandlet av:</span>
                                         <span class="font-medium text-gray-900 dark:text-white">@obstacle.ProcessedBy</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600 dark:text-gray-400">Processed date:</span>
+                                        <span class="text-gray-600 dark:text-gray-400">Behandlingsdato:</span>
                                         <span class="font-medium text-gray-900 dark:text-white">@obstacle.ProcessedDate?.ToString("dd.MM.yyyy")</span>
                                     </div>
                                 }
@@ -195,14 +195,14 @@
                                 {
                                     <a asp-action="ReviewObstacle" asp-route-id="@obstacle.Id"
                                        class="block w-full text-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition font-medium">
-                                        Review
+                                        Behandle
                                     </a>
                                 }
                                 else
                                 {
                                     <a asp-action="ViewObstacle" asp-route-id="@obstacle.Id"
                                        class="block w-full text-center px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg transition font-medium">
-                                        View Details
+                                        Vis Detaljer
                                     </a>
                                 }
                             </div>
@@ -216,7 +216,7 @@
             <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center">
                 <p class="text-gray-600 dark:text-gray-400 text-lg">No obstacles found matching your filters.</p>
                 <a asp-action="AllObstacles" class="mt-4 inline-block px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">
-                    Show All Obstacles
+                    Vis alle hindre
                 </a>
             </div>
         }

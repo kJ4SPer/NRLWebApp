@@ -61,33 +61,33 @@
                             @if (User.IsInRole("Pilot"))
                             {
                                 <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap dark:hover:text-indigo-400">
-                                    <a asp-controller="Pilot" asp-action="RegisterType">Register</a>
+                                    <a asp-controller="Pilot" asp-action="RegisterType">Register Hinder</a>
                                 </li>
                                 <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap dark:hover:text-indigo-400">
-                                    <a asp-controller="Pilot" asp-action="MyRegistrations">My Registrations</a>
+                                    <a asp-controller="Pilot" asp-action="MyRegistrations">Mine Registreringer</a>
                                 </li>
                             }
 
                             @if (User.IsInRole("Registerfører"))
                             {
                                 <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap dark:hover:text-indigo-400">
-                                    <a asp-controller="Registerforer" asp-action="RegisterforerDashboard">Dashboard</a>
+                                    <a asp-controller="Registerforer" asp-action="RegisterforerDashboard">Dashbord</a>
                                 </li>
                                 <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap dark:hover:text-indigo-400">
-                                    <a asp-controller="Registerforer" asp-action="MapView">Map View</a>
+                                    <a asp-controller="Registerforer" asp-action="MapView">Kartoversikt</a>
                                 </li>
                                 <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap dark:hover:text-indigo-400">
-                                    <a asp-controller="Registerforer" asp-action="AllObstacles">All Obstacles</a>
+                                    <a asp-controller="Registerforer" asp-action="AllObstacles">Alle Registreringer</a>
                                 </li>
                             }
 
                             @if (User.IsInRole("Admin"))
                             {
                                 <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap dark:hover:text-indigo-400">
-                                    <a asp-controller="Admin" asp-action="AdminDashboard">Dashboard</a>
+                                    <a asp-controller="Admin" asp-action="AdminDashboard">Dashbord</a>
                                 </li>
                                 <li class="px-3 py-2 hover:text-indigo-500 whitespace-nowrap dark:hover:text-indigo-400">
-                                    <a asp-controller="Admin" asp-action="AdminUsers">Users</a>
+                                    <a asp-controller="Admin" asp-action="AdminUsers">Brukere</a>
                                 </li>
                             }
                         </ul>

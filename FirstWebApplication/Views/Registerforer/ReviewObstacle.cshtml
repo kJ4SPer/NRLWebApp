@@ -14,10 +14,10 @@
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Review Obstacle #@Model.Id</h1>
-                <p class="text-gray-600 dark:text-gray-400 mt-2">Review and approve or reject this obstacle registration</p>
+                <p class="text-gray-600 dark:text-gray-400 mt-2">Behandle og godkjenn registrerte hindre</p>
             </div>
             <a asp-action="PendingObstacles" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 text-white rounded-lg transition">
-                ← Back to Pending
+                ← Tilbake til ubehandlet
             </a>
         </div>
 
@@ -38,7 +38,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
             <div class="space-y-6">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Obstacle Information</h2>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Hindreinformasjon</h2>
 
                     <div class="space-y-3">
 
@@ -69,24 +69,24 @@
                         </div>
 
                         <div class="py-2 border-b border-gray-200 dark:border-gray-700">
-                            <span class="font-semibold text-gray-700 dark:text-gray-300 block mb-2">Description:</span>
+                            <span class="font-semibold text-gray-700 dark:text-gray-300 block mb-2">Beskrivelse:</span>
                             <p class="text-gray-900 dark:text-white">@Model.Description</p>
                         </div>
 
                         <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                            <span class="font-semibold text-gray-700 dark:text-gray-300">Registered By:</span>
+                            <span class="font-semibold text-gray-700 dark:text-gray-300">Registrert av:</span>
                             <span class="text-gray-900 dark:text-white">@Model.RegisteredBy</span>
                         </div>
 
                         <div class="flex justify-between py-2">
-                            <span class="font-semibold text-gray-700 dark:text-gray-300">Registered Date:</span>
+                            <span class="font-semibold text-gray-700 dark:text-gray-300">Registreringsdato:</span>
                             <span class="text-gray-900 dark:text-white">@Model.RegisteredDate.ToString("dd.MM.yyyy HH:mm")</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Location</h2>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Plassering</h2>
                     <div id="map"
                          data-geometry="@Model.Location"
                          data-height="@formattedHeight"></div>
@@ -120,44 +120,44 @@
                 @if (Model.IsPending)
                 {
                     <div class="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-lg shadow-md p-6">
-                        <h2 class="text-2xl font-bold text-green-900 dark:text-green-400 mb-4">Approve Obstacle</h2>
+                        <h2 class="text-2xl font-bold text-green-900 dark:text-green-400 mb-4">Godkjenn hinder</h2>
                         <form asp-action="ApproveObstacle" method="post">
                             <input type="hidden" name="ObstacleId" value="@Model.Id" />
 
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Comments (optional)
+                                    Kommentarer (valgfritt)
                                 </label>
                                 <textarea name="Comments" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Add any comments about this approval..."></textarea>
                             </div>
 
                             <button type="submit" class="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition" id="btn-approve-obstacle">
-                                Approve This Obstacle
+                                Godkjenn dette hinderet
                             </button>
                         </form>
                     </div>
 
                     <div class="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg shadow-md p-6">
-                        <h2 class="text-2xl font-bold text-red-900 dark:text-red-400 mb-4">Reject Obstacle</h2>
+                        <h2 class="text-2xl font-bold text-red-900 dark:text-red-400 mb-4">Avslå hinder</h2>
                         <form asp-action="RejectObstacle" method="post">
                             <input type="hidden" name="ObstacleId" value="@Model.Id" />
 
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Rejection Reason (required) *
+                                    Kommentar (påkrevd) *
                                 </label>
                                 <textarea name="RejectionReason" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Explain why this obstacle is being rejected..." required></textarea>
                             </div>
 
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Additional Comments (optional)
+                                    Tileggskommentarer (valgfritt)
                                 </label>
                                 <textarea name="Comments" rows="2" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Any additional information..."></textarea>
                             </div>
 
                             <button type="submit" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition" id="btn-reject-obstacle">
-                                Reject This Obstacle
+                                Avslå dette hinderet
                             </button>
                         </form>
                     </div>
@@ -166,7 +166,7 @@
                 {
                     <div class="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
                         <p class="text-yellow-800 dark:text-yellow-400">
-                            This obstacle has already been processed and cannot be approved or rejected again.
+                            Dette hinderet har allerede blitt behandlet. 
                         </p>
                     </div>
                 }
