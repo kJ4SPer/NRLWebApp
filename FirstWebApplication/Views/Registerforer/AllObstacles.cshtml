@@ -1,4 +1,5 @@
 @model List<FirstWebApplication.Models.Obstacle.ObstacleListItemViewModel>
+@using FirstWebApplication.Helpers
 
 @{
     ViewData["Title"] = "All Obstacles";
@@ -103,7 +104,11 @@
                     </select>
                 </div>
 
-                <div>
+                @* FIKS: Lagt til eksplisitt "Apply" knapp for å garantere innsending av skjemaet. *@
+                <div class="flex gap-4 items-end">
+                    <button type="submit" class="inline-block px-6 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition font-medium">
+                        Apply
+                    </button>
                     <a asp-action="AllObstacles" class="inline-block px-6 py-2 bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500 text-white rounded-lg transition font-medium">
                         Reset
                     </a>
@@ -113,7 +118,8 @@
 
         @if (Model.Any())
         {
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2
+                    lg:grid-cols-3 gap-6">
                 @foreach (var obstacle in Model)
                 {
                     // Dynamisk styling for Dark Mode
@@ -218,7 +224,8 @@
 </div>
 
 @section Scripts {
-    <script>
+    @* FIKS: Lagt til @Html.NonceAttribute() for å unngå CSP-feil på inline script. *@
+    <script @Html.NonceAttribute()>
         // Auto-submit form when any filter changes
         document.querySelectorAll('.filter-select').forEach(function(select) {
             select.addEventListener('change', function() {
