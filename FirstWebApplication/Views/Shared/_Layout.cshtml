@@ -2,7 +2,6 @@
 
 <!DOCTYPE html>
 <html lang="en">
- @* Fjernet data-bs-theme="light" herfra *@@* HTML-taggen starter i nøytral tilstand *@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -26,7 +25,6 @@
 </head>
 <body>
     <header>
-        @* Fjernet dark:bg/shadow fra nav-baren, da det styres av JS KUN når logget inn *@
         <nav class="bg-gray-200 shadow shadow-gray-300 w-100 px-4 lg:px-8 dark:bg-gray-800 dark:shadow-gray-700">
             <div class="h-16 mx-auto container flex items-center justify-between">
                 <div class="text-indigo-500 flex items-center flex-shrink-0 dark:text-indigo-400">
@@ -217,7 +215,6 @@
         </nav>
     </header>
 
-    @* Fjernet dark:bg-gray-900 herfra for å unngå at Logg Inn-siden blir mørk *@@* Logg inn siden bruker standard bg-gray-50 *@@* Dark Mode-bakgrunn styres nå kun av tema-sidene *@
     <main role="main" class="min-h-screen main-content bg-gray-50">
         @RenderBody()
     </main>
@@ -231,7 +228,6 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @* Beholdt layout.js, men har fjernet Dark Mode logikken fra den filen (som var det forrige trinnet) *@
     <script src="~/js/layout.js" asp-append-version="true"></script>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
